@@ -489,7 +489,7 @@ The alternation operator is @samp{|}.
 
 The characters @samp{^} and @samp{$} always represent the beginning and end of a string respectively, except within square brackets.  Within brackets, @samp{^} can be used to invert the membership of the character class being specified.  
 
-@samp{*}, @samp{+} and @samp{?} are special at any point in a regular expression except the following places, where they are illegal:
+@samp{*}, @samp{+} and @samp{?} are special at any point in a regular expression except the following places, where they are not allowed:
 @enumerate
 
 @item At the beginning of a regular expression
@@ -702,7 +702,7 @@ The alternation operator is @samp{|}.
 
 The characters @samp{^} and @samp{$} always represent the beginning and end of a string respectively, except within square brackets.  Within brackets, @samp{^} can be used to invert the membership of the character class being specified.  
 
-@samp{*}, @samp{+} and @samp{?} are special at any point in a regular expression except the following places, where they are illegal:
+@samp{*}, @samp{+} and @samp{?} are special at any point in a regular expression except the following places, where they are not allowed:
 @enumerate
 
 @item At the beginning of a regular expression

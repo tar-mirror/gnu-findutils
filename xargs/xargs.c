@@ -327,7 +327,7 @@ get_char_oct_or_hex_escape(const char *s)
   else
     {
       error(1, 0,
-	    _("Ilegal escape sequence %s in input delimiter specification."),
+	    _("Invalid escape sequence %s in input delimiter specification."),
 	    s);
     }
   errno = 0;
@@ -345,13 +345,13 @@ get_char_oct_or_hex_escape(const char *s)
       if (16 == base)
 	{
 	  error(1, 0,
-		_("Ilegal escape sequence %s in input delimiter specification; character values must not exceed %lx."),
+		_("Invalid escape sequence %s in input delimiter specification; character values must not exceed %lx."),
 		s, (unsigned long)UCHAR_MAX);
 	}
       else
 	{
 	  error(1, 0,
-		_("Ilegal escape sequence %s in input delimiter specification; character values must not exceed %lo."),
+		_("Invalid escape sequence %s in input delimiter specification; character values must not exceed %lo."),
 		s, (unsigned long)UCHAR_MAX);
 	}
     }
@@ -360,7 +360,7 @@ get_char_oct_or_hex_escape(const char *s)
   if (0 != *endp)
     {
       error(1, 0,
-	    _("Ilegal escape sequence %s in input delimiter specification; trailing characters %s not recognised."),
+	    _("Invalid escape sequence %s in input delimiter specification; trailing characters %s not recognised."),
 	    s, endp);
     }
   
@@ -407,7 +407,7 @@ get_input_delimiter(const char *s)
       else
 	{
 	  error(1, 0,
-		_("Illegal input delimiter specification %s: the delimited must be either a single character or an escape sequence starting with \\."),
+		_("Invalid input delimiter specification %s: the delimiter must be either a single character or an escape sequence starting with \\."),
 		s);
 	}
     }
@@ -664,7 +664,18 @@ main (int argc, char **argv)
 	      (posix_arg_size_max - size_of_environment));
       fprintf(stderr,
 	      _("Size of command buffer we are actually using: %ld\n"),
-	      arg_size);
+	      bc_ctl.arg_max);
+      
+      if (isatty(STDIN_FILENO))
+	{
+	  fprintf(stderr,
+		  "\n"
+		  "Execution of xargs will continue now, and it will "
+		  "try to read its input and run commands; if this is "
+		  "not what you wanted to happen, please type the "
+		  "end-of-file keystroke.\n");
+	}
+      
     }
   
   linebuf = (char *) xmalloc (bc_ctl.arg_max + 1);

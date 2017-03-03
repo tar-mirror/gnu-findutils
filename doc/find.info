@@ -42,7 +42,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.26, for `find' version 4.2.26.
+   This is edition 4.2.27, for `find' version 4.2.27.
 
 * Menu:
 
@@ -80,9 +80,35 @@ maintainer of GNU findutils (and this manual) is James Youngman.  Many
 other people have contributed bug fixes, small improvements, and
 helpful suggestions.  Thanks!
 
-   Mail suggestions and bug reports for these programs to
-`bug-findutils@gnu.org'.  Please include the version number, which you
-can get by running `find --version'.
+   To report a bug in GNU findutils, please use the form on the Savannah
+web site at `http://savannah.gnu.org/bugs/?group=findutils'.  Reporting
+bugs this way means that you will then be able to track progress in
+fixing the problem.
+
+   If you don't have web access, you can also just send mail to the
+mailing list.  The mailing list <bug-findutils@gnu.org> carries
+discussion of bugs in findutils, questions and answers about the
+software and discussion of the development of the programs.  To join
+the list, send email to <bug-findutils-request@gnu.org>.
+
+   Please read any relevant sections of this manual before asking for
+help on the mailing list.  You may also find it helpful to read the
+NON-BUGS section of the `find' manual page.
+
+   If you ask for help on the mailing list, people will be able to help
+you much more effectively if you include the following things:
+
+   * The version of the software you are running.  You can find this
+     out by running `locate --version'.
+
+   * What you were trying to do
+
+   * The _exact_ command line you used
+
+   * The _exact_ output you got (if this is very long, try to find a
+     smaller example which exhibits the same problem)
+
+   * The output you expected to get
 
 * Menu:
 
@@ -308,18 +334,27 @@ File: find.info,  Node: Base Name Patterns,  Next: Full Name Patterns,  Up: Name
  -- Test: -iname pattern
      True if the base of the file name (the path with the leading
      directories removed) matches shell pattern PATTERN.  For `-iname',
-     the match is case-insensitive.  To ignore a whole directory tree,
-     use `-prune' (*note Directories::).  As an example, to find
+     the match is case-insensitive.(1) To ignore a whole directory
+     tree, use `-prune' (*note Directories::).  As an example, to find
      Texinfo source files in `/usr/local/doc':
 
           find /usr/local/doc -name '*.texi'
 
-Notice that the wildcard must be enclosed in quotes in order to protect
-it from expansion by the shell.
+     Notice that the wildcard must be enclosed in quotes in order to
+     protect it from expansion by the shell.
 
-   Patterns for `-name' and `-iname' will match a file name with a
-leading `.'.  For example the command `find /tmp -name \*bar' will
-match the file `/tmp/.foobar'.
+     As of findutils version 4.2.2, patterns for `-name' and `-iname'
+     will match a file name with a leading `.'.  For example the
+     command `find /tmp -name \*bar' will match the file
+     `/tmp/.foobar'.  Braces within the pattern (`{}') are not
+     considered to be special (that is, `find . -name 'foo{1,2}''
+     matches a file named `foo{1,2}', not the files `foo1' and `foo2'.
+
+   ---------- Footnotes ----------
+
+   (1) Because we need to perform case-insensitive matching, the GNU
+fnmatch implementation is always used; if the C library includes the GNU
+implementation, we use that and otherwise we use the one from gnulib
 
 
 File: find.info,  Node: Full Name Patterns,  Next: Fast Full Name Search,  Prev: Base Name Patterns,  Up: Name
@@ -570,7 +605,10 @@ links are as follows :-
 
 `-follow'
      This option forms part of the "expression" and must be specified
-     after the file names, but it is otherwise equivalent to `-L'.
+     after the file names, but it is otherwise equivalent to `-L'.  The
+     `-follow' option affects only those tests which appear after it on
+     the command line.  This option is deprecated.  Where possible, you
+     should use `-L' instead.
 
    The following differences in behavior occur when the `-L' option is
 used:
@@ -647,7 +685,8 @@ searching, since hard links to a file must be on the same filesystem.
 
  -- Test: -inum n
      File has inode number N.  The `+' and `-' qualifiers also work,
-     though these are rarely useful.
+     though these are rarely useful.  Much of the time it is easier to
+     use `-samefile' rather than this option.
 
    You can also search for files that have a certain number of links,
 with `-links'.  Directories normally have at least two hard links;
@@ -725,9 +764,11 @@ These tests are mainly useful with ranges (`+N' and `-N').
 
           find ~ -daystart -type f -mtime 1
 
-   The `-daystart' option is unlike most other options in that it has
-an effect on the way that other tests are performed.  The affected
-tests are `-amin', `-cmin', `-mmin', `-atime', `-ctime' and `-mtime'.
+     The `-daystart' option is unlike most other options in that it has
+     an effect on the way that other tests are performed.  The affected
+     tests are `-amin', `-cmin', `-mmin', `-atime', `-ctime' and
+     `-mtime'.  The `-daystart' option only affects the behaviour of
+     any tests which appear after it on the command line.
 
 
 File: find.info,  Node: Comparing Timestamps,  Prev: Age Ranges,  Up: Time
@@ -786,10 +827,10 @@ File: find.info,  Node: Size,  Next: Type,  Prev: Time,  Up: Finding Files
           2-byte words
 
     `M'
-          Megabytes
+          Megabytes (units of 1048576 bytes)
 
     `G'
-          Gigabytes
+          Gigabytes (units of 1073741824 bytes)
 
      The `b' suffix always considers blocks to be 512 bytes.  This is
      not affected by the setting (or non-setting) of the POSIXLY_CORRECT
@@ -921,6 +962,7 @@ structured and how to specify them.
 
      If MODE starts with `-', true if _all_ of the permissions set in
      MODE are set for the file; permissions not set in MODE are ignored.
+
      If MODE starts with `/', true if _any_ of the permissions set in
      MODE are set for the file; permissions not set in MODE are ignored.
      This is a GNU extension.
@@ -966,8 +1008,25 @@ structured and how to specify them.
           Search for files which are writeable by both their owner and
           their group.
 
+    `-perm -444 -perm /222 ! -perm /111'
+          Search for files which are readable for everybody, have at
+          least one write bit set (i.e. somebody can write to them),
+          but which cannot be executed by anybody.  Note that in some
+          shells the `!' must be escaped;.
+
+    `-perm -a+r -perm /a+w ! -perm /a+x'
+          As above.
+
     `-perm -g+w,o+w'
           As above.
+
+          Warning: If you specify `-perm /000' or `-perm /mode' where
+          the symbolic mode `mode' has no bits set, the test currently
+          matches no files.  This differs from the behaviour of `-perm
+          -000', which matches all files.  The behaviour of `-perm
+          /000' will be changed to be consistent with the behaviour of
+          `-perm -000'.  The change will probably be made in early 2006.
+
 
 
 File: find.info,  Node: Contents,  Next: Directories,  Prev: Permissions,  Up: Finding Files
@@ -1065,7 +1124,9 @@ slice of a directory tree.
      occurred).  No child processes will be left running, but no more
      files specified on the command line will be processed.  For
      example, `find /tmp/foo /tmp/bar -print -quit' will print only
-     `/tmp/foo'.
+     `/tmp/foo'.  Any command lines which have been built by `-exec ...
+     \+' or `-execdir ... \+' are invoked before the program is
+     executed.
 
  -- Option: -noleaf
      Do not optimize by assuming that directories contain 2 fewer
@@ -1094,6 +1155,10 @@ slice of a directory tree.
      from `find' is undesirable, so this option neatly solves the
      problem.  There is no way to search one part of the filesystem
      with this option on and part of it with this option off, though.
+     When this option is turned on and find discovers that one of the
+     start-point files specified on the command line does not exist, no
+     error message will be issued.
+
 
  -- Option: -noignore_readdir_race
      This option reverses the effect of the `-ignore_readdir_race'
@@ -1146,7 +1211,8 @@ operators are, in order of decreasing precedence:
 
 `! EXPR'
 `-not EXPR'
-     True if EXPR is false.
+     True if EXPR is false.  In some shells, it is necessary to protect
+     the `!' from shell interpretation by quoting it.
 
 `EXPR1 EXPR2'
 `EXPR1 -a EXPR2'
@@ -1209,15 +1275,22 @@ File: find.info,  Node: Print File Name,  Next: Print File Information,  Up: Act
 
  -- Action: -print
      True; print the entire file name on the standard output, followed
-     by a newline.
+     by a newline.  If there is the faintest possibility that one of
+     the files for which you are searching might contain a newline, you
+     should use `-print0' instead.
 
  -- Action: -fprint file
      True; print the entire file name into file FILE, followed by a
      newline.  If FILE does not exist when `find' is run, it is
-     created; if it does exist, it is truncated to 0 bytes.  The file
-     names `/dev/stdout' and `/dev/stderr' are handled specially; they
-     refer to the standard output and standard error output,
-     respectively.
+     created; if it does exist, it is truncated to 0 bytes.  The named
+     output file is always created, even if no output is sent to it.
+     The file names `/dev/stdout' and `/dev/stderr' are handled
+     specially; they refer to the standard output and standard error
+     output, respectively.
+
+     If there is the faintest possibility that one of the files for
+     which you are searching might contain a newline, you should use
+     `-fprint0' instead.
 
 
 File: find.info,  Node: Print File Information,  Next: Run Commands,  Prev: Print File Name,  Up: Actions
@@ -1268,22 +1341,25 @@ File: find.info,  Node: Print File Information,  Next: Run Commands,  Prev: Prin
 
  -- Action: -fls file
      True; like `-ls' but write to FILE like `-fprint' (*note Print
-     File Name::).
+     File Name::).  The named output file is always created, even if no
+     output is sent to it.
 
  -- Action: -printf format
      True; print FORMAT on the standard output, interpreting `\'
      escapes and `%' directives.  Field widths and precisions can be
      specified as with the `printf' C function.  Format flags (like `#'
      for example) may not work as you expect because many of the
-     fields, even numeric ones, are printed with %s.  This means though
-     that the format flag `-' will work; it forces left-alignment of
-     the field.  Unlike `-print', `-printf' does not add a newline at
-     the end of the string.  If you want a newline at the end of the
-     string, add a `\n'.
+     fields, even numeric ones, are printed with %s.  Numeric flags
+     which are affected in this way include G, U, b, D, k and n.  This
+     difference in behaviour means though that the format flag `-' will
+     work; it forces left-alignment of the field.  Unlike `-print',
+     `-printf' does not add a newline at the end of the string.  If you
+     want a newline at the end of the string, add a `\n'.
 
  -- Action: -fprintf file format
      True; like `-printf' but write to FILE like `-fprint' (*note Print
-     File Name::).
+     File Name::).  The output file is always created, even if no
+     output is ever sent to it.
 
 * Menu:
 
@@ -1325,6 +1401,9 @@ The escapes that `-printf' and `-fprintf' recognize are:
 
 `\\'
      A literal backslash (`\').
+
+`\0'
+     ASCII NUL.
 
 `\NNN'
      The character whose ASCII code is NNN (octal).
@@ -1415,6 +1494,16 @@ File: find.info,  Node: Ownership Directives,  Next: Size Directives,  Prev: Nam
      File's permissions (in octal).  If you always want to have a
      leading zero on the number, use the '#' format flag, for example
      '%#m'.
+
+     The permisison numbers used are the traditional Unix permission
+     numbers, which will be as expected on most systems, but if your
+     system's permission bit layout differs from the traditional Unix
+     semantics, you will see a difference between the mode as printed by
+     `%m' and the mode as it appears in `struct stat'.
+
+`%M'
+     File's permissions (in symbolic form, as for `ls').  This
+     directive is supported in findutils 4.2.5 and later.
 
 
 File: find.info,  Node: Size Directives,  Next: Location Directives,  Prev: Ownership Directives,  Up: Format Directives
@@ -1692,10 +1781,16 @@ Here is how to run a command on one file at a time.
      shell.  The command is executed in the directory in which `find'
      was run.
 
-     For example, to compare each C header file in the current directory
-     with the file `/tmp/master':
+     For example, to compare each C header file in or below the current
+     directory with the file `/tmp/master':
 
           find . -name '*.h' -execdir diff -u '{}' /tmp/master ';'
+
+   If you use``-execdir', you must ensure that the current directory is
+not on $PATH, because otherwise an attacker could make `find' run
+commands of their choice simply by leaving a suitably-named file in the
+right directory.  GNU find will refuse to run if you use `-execdir' and
+the current directory is in $PATH.
 
    Another similar option, `-exec' is supported, but is less secure.
 *Note Security Considerations::, for a discussion of the security
@@ -1708,6 +1803,10 @@ problems surrounding `-exec'.
      expanded to a relative path starting with the name of one of the
      starting directories, rather than just the basename of the matched
      file.
+
+     While some implementations of `find' replace the `{}' only whwre
+     it appears on its own in an argument, GNU `find' replaces `{}'
+     wherever it appears.
 
 
 File: find.info,  Node: Multiple Files,  Next: Querying,  Prev: Single File,  Up: Run Commands
@@ -1859,7 +1958,7 @@ option to GNU `xargs', GNU `tar', GNU `cpio', or `perl'.
 
  -- Action: -fprint0 file
      True; like `-print0' but write to FILE like `-fprint' (*note Print
-     File Name::).
+     File Name::).  The output file is always created.
 
    As of findutils version 4.2.4, the `locate' program also has a
 `--null' option which does the same thing.  For similarity with
@@ -1912,7 +2011,7 @@ described below.
      Unusual characters are always escaped.  White space, backslash, and
      double quote characters are printed using C-style escaping (for
      example `\f', `\"').  Other unusual characters are printed using
-     an octal escape.  Other Printable characters (for `-ls' and `-fls'
+     an octal escape.  Other printable characters (for `-ls' and `-fls'
      these are the characters between octal 041 and 0176) are printed
      as-is.
 
@@ -1971,7 +2070,7 @@ options modify those values.
 `-r'
      If the standard input does not contain any nonblanks, do not run
      the command.  By default, the command is run once even if there is
-     no input.
+     no input.  This option is a GNU extension.
 
 `--max-lines[=MAX-LINES]'
 `-L MAX-LINES'
@@ -1996,7 +2095,9 @@ options modify those values.
      command initial arguments and the terminating nulls at the ends of
      the argument strings.  If you specify a value for this option
      which is too large or small, a warning message is printed and the
-     appropriate upper or lower limit is used instead.
+     appropriate upper or lower limit is used instead.  You can use
+     `--show-limits' option to understand the command-line limits
+     applying to `xargs' and how this is affected by any other options.
 
 `--max-procs=MAX-PROCS'
 `-P MAX-PROCS'
@@ -2033,6 +2134,30 @@ operation is equivalent to `find -exec' (*note Single File::).
      The equivalent command using `find -execdir' is:
 
           find bills -type f -execdir sort -o '{}.sorted' '{}' ';'
+
+   When you use the `-I' option, each line read from the input is
+buffered internally.  This means that there is an upper limit on the
+length of input line that xargs will accept when used with the `-I'
+option.  To work around this limitation, you can use the `-s' option to
+increase the amount of buffer space that xargs uses, and you can also
+use an extra invocation of xargs to ensure that very long lines do not
+occur.  For example:
+
+     somecommand | xargs -s 50000 echo | xargs -I '{}' -s 100000 rm '{}'
+
+   Here, the first invocation of `xargs' has no input line length limit
+because it doesn't use the `-I' option. The second invocation of
+`xargs' does have such a limit, but we have ensured that the it never
+encounters a line which is longer than it can handle.
+
+   This is not an ideal solution.  Instead, the `-I' option should not
+impose a line length limit (apart from any limit imposed by the
+operating system) and so one might consider this limitation to be a
+bug.  A better solution would be to allow `xargs -I' to automatically
+move to a larger value for the `-s' option when this is needed.
+
+   This sort of problem doesn't occur with the output of `find' because
+it emits just one filename per line.
 
 
 File: find.info,  Node: Querying,  Prev: Multiple Files,  Up: Run Commands
@@ -2203,6 +2328,9 @@ machines with different byte orderings to share the databases.  The new
 GNU `locate' can read both the old and new database formats.  However,
 old versions of `locate' and `find' produce incorrect results if given
 a new-format database.
+
+   Support for the old database format will eventually be discontinued,
+first in `updatedb' and later in `xargs'.
 
    If you run `locate --statistics', the resulting summary indicates
 the type of each `locate' database.
@@ -2785,6 +2913,7 @@ discussed in this manual.
 * Invoking updatedb::
 * Invoking xargs::
 * Regular Expressions::
+* Environment Variables::
 
 
 File: find.info,  Node: Invoking find,  Next: Invoking locate,  Up: Reference
@@ -2798,7 +2927,9 @@ File: find.info,  Node: Invoking find,  Next: Invoking locate,  Up: Reference
 evaluating the EXPRESSION on each file it finds in the tree.
 
    The options `-H', `-L' or `-P' may be specified at the start of the
-command line (if none of these is specified, `-P' is assumed).  The
+command line (if none of these is specified, `-P' is assumed).  If you
+specify more than one of these options, the last one specified takes
+effect (but note that the `-follow' option is equivalent to `-L').  The
 arguments after these are a list of files or directories that should be
 searched.
 
@@ -2843,6 +2974,7 @@ missing, `-print' is assumed.
      Print a summary of the command line usage and exit.
 
 `--version'
+`-version'
      Print the version number of `find' and exit.
 
 * Menu:
@@ -2947,7 +3079,9 @@ databases returning each match of PATTERN.
      names which existed when the database was created).  Note that
      this may slow down the program a lot, if there are many matches in
      the database.  The way in which broken symbolic links are treated
-     is affected by the `-L', `-P' and `-H' options.
+     is affected by the `-L', `-P' and `-H' options.  Please note that
+     it is possible for the file to be deleted after `locate' has
+     checked that it exists, but before you use it.
 
 `--non-existing'
 `-E'
@@ -2955,7 +3089,10 @@ databases returning each match of PATTERN.
      such names which existed when the database was created).  Note that
      this may slow down the program a lot, if there are many matches in
      the database.  The way in which broken symbolic links are treated
-     is affected by the `-L', `-P' and `-H' options.
+     is affected by the `-L', `-P' and `-H' options.  Please note that
+     `locate' checks that the file does not exist, but a file of the
+     same name might be created after `locate''s check but before you
+     read `locate''s output.
 
 `--follow'
 `-L'
@@ -3157,9 +3294,15 @@ File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invok
 1
      if some other error occurred.
 
+   Exit codes greater than 128 are used by the shell to indicate that a
+program died due to a fatal signal.
+
 `--arg-file=INPUTFILE'
 `-a oINPUTFILE'
-     Read names from the file INPUTFILE instead of standard input.
+     Read names from the file INPUTFILE instead of standard input.  If
+     you use this option, the standard input stream remains unchanged
+     when commands are run. Otherwise, stdin is redirected from
+     `/dev/null'.
 
 `--null'
 `-0'
@@ -3181,32 +3324,40 @@ File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invok
      code.  Octal and hexadecimal escape codes are understood as for the
      `printf' command.  Multibyte characters are not supported.
 
+`-E EOF-STR'
 `--eof[=EOF-STR]'
 `-e[EOF-STR]'
      Set the end of file string to EOF-STR.  If the end of file string
      occurs as a line of input, the rest of the input is ignored.  If
-     EOF-STR is omitted, there is no end of file string.  If this
-     option is not given, the end of file string defaults to `_'.
+     EOF-STR is omitted (`-e') or blank (either `-e' or `-E'), there is
+     no end of file string.  The `-e' form of this option is deprecated
+     in favour of the POSIX-compliant `-E' option, which you should use
+     instead.  As of GNU xargs version 4.2.9, the default behaviour of
+     xargs is not to have a logical end-of-file marker.  The POSIX
+     standard (IEEE Std 1003.1, 2004 Edition) allows this.
 
 `--help'
      Print a summary of the options to `xargs' and exit.
 
-`--replace[=REPLACE-STR]'
 `-I REPLACE-STR'
+`--replace[=REPLACE-STR]'
 `-i[REPLACE-STR]'
      Replace occurrences of REPLACE-STR in the initial arguments with
      names read from standard input.  Also, unquoted blanks do not
      terminate arguments; instead, the input is split at newlines only.
      If REPLACE-STR is omitted (omitting it is allowed only for `-i'),
      it defaults to `{}' (like for `find -exec').  Implies `-x' and `-l
-     1'.  `-i' is deprecated in favour of `-I'.
+     1'.  The `-i' option is deprecated in favour of the `-I' option.
 
+`-L MAX-LINES'
 `--max-lines[=MAX-LINES]'
 `-l[MAX-LINES]'
-     Use at most MAX-LINES non-blank input lines per command line;
-     MAX-LINES defaults to 1 if omitted.  Trailing blanks cause an
-     input line to be logically continued on the next input line, for
-     the purpose of counting the lines.  Implies `-x'.
+     Use at most MAX-LINES non-blank input lines per command line.  For
+     `-l', MAX-LINES defaults to 1 if omitted.  For `-L', the argument
+     is mandatory.  Trailing blanks cause an input line to be logically
+     continued on the next input line, for the purpose of counting the
+     lines.  Implies `-x'.  The `-l' form of this option is deprecared
+     in favour of the POSIX-compliant `-L' option.
 
 `--max-args=MAX-ARGS'
 `-n MAX-ARGS'
@@ -3232,6 +3383,12 @@ File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invok
      command, initial arguments and any terminating nulls at the ends of
      the argument strings.
 
+`--show-limits'
+     Display the limits on the command-line length which are imposed by
+     the operating system, `xargs'' choice of buffer size and the `-s'
+     option.  Pipe the input from `/dev/null' (and perhaps specify
+     `--no-run-if-empty') if you don't want `xargs' to do anything.
+
 `--verbose'
 `-t'
      Print the command line on the standard error output before
@@ -3251,7 +3408,7 @@ File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invok
      possible simultaneously.
 
 
-File: find.info,  Node: Regular Expressions,  Prev: Invoking xargs,  Up: Reference
+File: find.info,  Node: Regular Expressions,  Next: Environment Variables,  Prev: Invoking xargs,  Up: Reference
 
 6.5 Regular Expressions
 =======================
@@ -3789,7 +3946,7 @@ a string respectively, except within square brackets.  Within brackets,
 specified.
 
    `*', `+' and `?' are special at any point in a regular expression
-except the following places, where they are illegal:
+except the following places, where they are not allowed:
   1. At the beginning of a regular expression
 
   2. After an open-group, signified by `('
@@ -4022,7 +4179,7 @@ a string respectively, except within square brackets.  Within brackets,
 specified.
 
    `*', `+' and `?' are special at any point in a regular expression
-except the following places, where they are illegal:
+except the following places, where they are not allowed:
   1. At the beginning of a regular expression
 
   2. After an open-group, signified by `('
@@ -4036,6 +4193,60 @@ except the following places, where they are illegal:
    The longest possible match is returned; this applies to the regular
 expression as a whole and (subject to this constraint) to
 subexpressions within groups.
+
+
+File: find.info,  Node: Environment Variables,  Prev: Regular Expressions,  Up: Reference
+
+6.6 Environment Variables
+=========================
+
+LANG
+     Provides a default value for the internationalization variables
+     that are unset or null.
+
+LC_ALL
+     If set to a non-empty string value, override the values of all the
+     other internationalization variables.
+
+LC_COLLATE
+     The POSIX standard specifies that this variable affects the pattern
+     matching to be used for the `\-name' option.  GNU find uses the
+     GNU version of the `fnmatch' library function.
+
+     POSIX also specifies that the `LC_COLLATE' environment variable
+     affects the interpretation of the user's response to the query
+     issued by `\-ok', but this is not the case for GNU find.
+
+LC_CTYPE
+     This variable affects the treatment of character classes used with
+     the `-name' test, if the system's `fnmatch' library function
+     supports this.   It has no effect on the behaviour of the `-ok'
+     expression.
+
+LC_MESSAGES
+     Determines the locale to be used for internationalised messages.
+
+NLSPATH
+     Determines the location of the internationalisation message
+     catalogues.
+
+PATH
+     Affects the directories which are searched to find the executables
+     invoked by `-exec', `-execdir' `-ok' and `-okdir'.  If the PATH
+     environment variable includes the current directory (by explicitly
+     including `.' or by having an empty element), and the find command
+     line includes `-execdir' or `-okdir', `find' will refuse to run.
+     *Note Security Considerations::, for a more detailed discussion of
+     security matters.
+
+POSIXLY_CORRECT
+     Determines the block size used by `-ls' and `-fls'.  If
+     POSIXLY_CORRECT is set, blocks are units of 512 bytes.  Otherwise
+     they are units of 1024 bytes.
+
+TZ
+     Affects the time zone used for some of the time-related format
+     directives of `-printf' and `-fprintf'.
 
 
 File: find.info,  Node: Common Tasks,  Next: Worked Examples,  Prev: Reference,  Up: Top
@@ -5300,7 +5511,8 @@ File: find.info,  Node: Error Messages From xargs,  Next: Error Messages From lo
      invoke any program.  This is an unlikely situation and is more
      likely result of an attempt to test the limits of `xargs', or
      break it.  Please try unsetting some environment variables, or
-     exiting the current shell.
+     exiting the current shell.  You can also use `xargs --show-limits'
+     to understand the relevant sizes.
 
 `can not fit single argument within argument list size limit'
      You are using the `-I' option and `xargs' doesn't have enough
@@ -5372,212 +5584,218 @@ Expressions::, for more information on expressions.
 * Menu:
 
 * !:                                     Combining Primaries With Operators.
-                                                               (line 14)
+                                                              (line  14)
 * ():                                    Combining Primaries With Operators.
-                                                               (line 10)
+                                                              (line  10)
 * ,:                                     Combining Primaries With Operators.
-                                                               (line 26)
+                                                              (line  27)
 * -a:                                    Combining Primaries With Operators.
-                                                               (line 19)
-* -amin:                                 Age Ranges.           (line 18)
+                                                              (line  20)
+* -amin:                                 Age Ranges.          (line  18)
 * -and:                                  Combining Primaries With Operators.
-                                                               (line 19)
-* -anewer:                               Comparing Timestamps. (line 17)
-* -atime:                                Age Ranges.           (line  9)
-* -cmin:                                 Age Ranges.           (line 19)
-* -cnewer:                               Comparing Timestamps. (line 18)
-* -ctime:                                Age Ranges.           (line 10)
-* -d:                                    Directories.          (line 29)
-* -daystart:                             Age Ranges.           (line 29)
-* -delete:                               Delete Files.         (line  7)
-* -depth:                                Directories.          (line 21)
-* -empty:                                Size.                 (line 50)
-* -exec <1>:                             Multiple Files.       (line 25)
-* -exec:                                 Single File.          (line 28)
-* -execdir <1>:                          Multiple Files.       (line 15)
-* -execdir:                              Single File.          (line  9)
+                                                              (line  20)
+* -anewer:                               Comparing Timestamps.
+                                                              (line  17)
+* -atime:                                Age Ranges.          (line   9)
+* -cmin:                                 Age Ranges.          (line  19)
+* -cnewer:                               Comparing Timestamps.
+                                                              (line  18)
+* -ctime:                                Age Ranges.          (line  10)
+* -d:                                    Directories.         (line  29)
+* -daystart:                             Age Ranges.          (line  29)
+* -delete:                               Delete Files.        (line   7)
+* -depth:                                Directories.         (line  21)
+* -empty:                                Size.                (line  50)
+* -exec <1>:                             Multiple Files.      (line  25)
+* -exec:                                 Single File.         (line  34)
+* -execdir <1>:                          Multiple Files.      (line  15)
+* -execdir:                              Single File.         (line   9)
 * -false:                                Combining Primaries With Operators.
-                                                               (line 46)
+                                                              (line  47)
 * -fls:                                  Print File Information.
-                                                               (line 48)
-* -fprint:                               Print File Name.      (line 11)
+                                                              (line  48)
+* -fprint:                               Print File Name.     (line  13)
 * -fprint0:                              Safe File Name Handling.
-                                                               (line 16)
+                                                              (line  16)
 * -fprintf:                              Print File Information.
-                                                               (line 63)
-* -fstype:                               Filesystems.          (line 22)
-* -gid:                                  Owner.                (line 13)
-* -group:                                Owner.                (line  8)
-* -ignore_readdir_race:                  Directories.          (line 84)
-* -ilname:                               Symbolic Links.       (line 84)
-* -iname:                                Base Name Patterns.   (line  8)
-* -inum:                                 Hard Links.           (line 41)
-* -ipath:                                Full Name Patterns.   (line 20)
-* -iregex:                               Full Name Patterns.   (line 26)
-* -iwholename:                           Full Name Patterns.   (line  8)
-* -links:                                Hard Links.           (line 52)
-* -lname:                                Symbolic Links.       (line 83)
+                                                              (line  65)
+* -fstype:                               Filesystems.         (line  22)
+* -gid:                                  Owner.               (line  13)
+* -group:                                Owner.               (line   8)
+* -ignore_readdir_race:                  Directories.         (line  86)
+* -ilname:                               Symbolic Links.      (line  87)
+* -iname:                                Base Name Patterns.  (line   8)
+* -inum:                                 Hard Links.          (line  41)
+* -ipath:                                Full Name Patterns.  (line  20)
+* -iregex:                               Full Name Patterns.  (line  26)
+* -iwholename:                           Full Name Patterns.  (line   8)
+* -links:                                Hard Links.          (line  53)
+* -lname:                                Symbolic Links.      (line  86)
 * -ls:                                   Print File Information.
-                                                               (line  7)
-* -maxdepth:                             Directories.          (line 11)
-* -mindepth:                             Directories.          (line 16)
-* -mmin:                                 Age Ranges.           (line 20)
-* -mount:                                Filesystems.          (line 15)
-* -mtime:                                Age Ranges.           (line 11)
-* -name:                                 Base Name Patterns.   (line  7)
-* -newer:                                Comparing Timestamps. (line 19)
-* -nogroup:                              Owner.                (line 18)
-* -noignore_readdir_race:                Directories.          (line 97)
-* -noleaf:                               Directories.          (line 69)
+                                                              (line   7)
+* -maxdepth:                             Directories.         (line  11)
+* -mindepth:                             Directories.         (line  16)
+* -mmin:                                 Age Ranges.          (line  20)
+* -mount:                                Filesystems.         (line  15)
+* -mtime:                                Age Ranges.          (line  11)
+* -name:                                 Base Name Patterns.  (line   7)
+* -newer:                                Comparing Timestamps.
+                                                              (line  19)
+* -nogroup:                              Owner.               (line  18)
+* -noignore_readdir_race:                Directories.         (line 103)
+* -noleaf:                               Directories.         (line  71)
 * -not:                                  Combining Primaries With Operators.
-                                                               (line 14)
-* -nouser:                               Owner.                (line 17)
+                                                              (line  14)
+* -nouser:                               Owner.               (line  17)
 * -o:                                    Combining Primaries With Operators.
-                                                               (line 23)
-* -ok:                                   Querying.             (line 17)
-* -okdir:                                Querying.             (line 11)
+                                                              (line  24)
+* -ok:                                   Querying.            (line  17)
+* -okdir:                                Querying.            (line  11)
 * -or:                                   Combining Primaries With Operators.
-                                                               (line 23)
-* -path:                                 Full Name Patterns.   (line 19)
-* -perm:                                 Permissions.          (line 10)
-* -print:                                Print File Name.      (line  7)
+                                                              (line  24)
+* -path:                                 Full Name Patterns.  (line  19)
+* -perm:                                 Permissions.         (line  10)
+* -print:                                Print File Name.     (line   7)
 * -print0:                               Safe File Name Handling.
-                                                               (line 12)
+                                                              (line  12)
 * -printf:                               Print File Information.
-                                                               (line 52)
-* -prune:                                Directories.          (line 34)
-* -quit:                                 Directories.          (line 62)
-* -regex:                                Full Name Patterns.   (line 25)
-* -regextype:                            Full Name Patterns.   (line 37)
-* -samefile:                             Hard Links.           (line 36)
-* -size:                                 Size.                 (line  7)
+                                                              (line  53)
+* -prune:                                Directories.         (line  34)
+* -quit:                                 Directories.         (line  62)
+* -regex:                                Full Name Patterns.  (line  25)
+* -regextype:                            Full Name Patterns.  (line  37)
+* -samefile:                             Hard Links.          (line  36)
+* -size:                                 Size.                (line   7)
 * -true:                                 Combining Primaries With Operators.
-                                                               (line 43)
-* -type:                                 Type.                 (line  7)
-* -uid:                                  Owner.                (line 12)
-* -used:                                 Comparing Timestamps. (line 29)
-* -user:                                 Owner.                (line  7)
-* -wholename:                            Full Name Patterns.   (line  7)
-* -xdev:                                 Filesystems.          (line 14)
-* -xtype:                                Type.                 (line 36)
+                                                              (line  44)
+* -type:                                 Type.                (line   7)
+* -uid:                                  Owner.               (line  12)
+* -used:                                 Comparing Timestamps.
+                                                              (line  29)
+* -user:                                 Owner.               (line   7)
+* -wholename:                            Full Name Patterns.  (line   7)
+* -xdev:                                 Filesystems.         (line  14)
+* -xtype:                                Type.                (line  36)
 
 
 
 Tag Table:
 Node: Top1625
 Node: Introduction2670
-Node: Scope3912
-Node: Overview5837
-Node: find Expressions7708
-Node: Finding Files9333
-Node: Name9800
-Node: Base Name Patterns10428
-Node: Full Name Patterns11251
-Node: Fast Full Name Search13914
-Node: Shell Pattern Matching16335
-Node: Links18425
-Node: Symbolic Links18860
-Node: Hard Links23178
-Node: Time25652
-Node: Age Ranges26240
-Node: Comparing Timestamps27638
-Node: Size28930
-Node: Type30719
-Node: Owner32387
-Node: Permissions33214
-Node: Contents35598
-Node: Directories36771
-Node: Filesystems41420
-Node: Combining Primaries With Operators42771
-Node: Actions44291
-Node: Print File Name44853
-Node: Print File Information45471
-Node: Escapes48203
-Node: Format Directives48932
-Node: Name Directives50075
-Node: Ownership Directives51061
-Node: Size Directives51614
-Node: Location Directives52380
-Node: Time Directives53499
-Node: Time Formats54402
-Node: Time Components54838
-Node: Date Components55344
-Node: Combined Time Formats56167
-Node: Formatting Flags56884
-Node: Run Commands57496
-Node: Single File57854
-Node: Multiple Files59284
-Node: Unsafe File Name Handling63138
-Node: Safe File Name Handling64701
-Node: Unusual Characters in File Names66241
-Node: Limiting Command Size69277
-Node: Interspersing File Names71386
-Node: Querying72619
-Node: Delete Files74149
-Node: Adding Tests74553
-Node: Databases77193
-Node: Database Locations77911
-Node: Database Formats78919
-Node: New Database Format79708
-Node: Sample Database81375
-Node: Old Database Format82023
-Node: Newline Handling84083
-Node: File Permissions85529
-Node: Mode Structure86098
-Node: Symbolic Modes88231
-Node: Setting Permissions89233
-Node: Copying Permissions91778
-Node: Changing Special Permissions92588
-Node: Conditional Executability94432
-Node: Multiple Changes95058
-Node: Umask and Protection96714
-Node: Numeric Modes97812
-Node: Reference99627
-Node: Invoking find99949
-Node: Warning Messages102126
-Node: Invoking locate103902
-Node: Invoking updatedb109365
-Node: Invoking xargs113050
-Node: Regular Expressions117040
-Node: findutils-default regular expression syntax118205
-Node: awk regular expression syntax120711
-Node: egrep regular expression syntax122596
-Node: emacs regular expression syntax124807
-Node: gnu-awk regular expression syntax127336
-Node: grep regular expression syntax129676
-Node: posix-awk regular expression syntax132402
-Node: posix-basic regular expression syntax134669
-Node: posix-egrep regular expression syntax137308
-Node: posix-extended regular expression syntax139681
-Node: Common Tasks142152
-Node: Viewing And Editing142577
-Node: Archiving143583
-Node: Cleaning Up145215
-Node: Strange File Names147004
-Node: Fixing Permissions148654
-Node: Classifying Files149218
-Node: Worked Examples149936
-Node: Deleting Files150573
-Node: Updating A Timestamp File163593
-Node: Security Considerations170319
-Node: Levels of Risk171853
-Ref: Levels of Risk-Footnote-1174651
-Node: Security Considerations for find174830
-Ref: Security Considerations for find-Footnote-1177114
-Node: Changing the Current Working Directory177187
-Node: O_NOFOLLOW178914
-Ref: O_NOFOLLOW-Footnote-1180558
-Node: Systems without O_NOFOLLOW180660
-Node: Race Conditions with -exec182764
-Node: Race Conditions with -print and -print0185675
-Node: Security Considerations for xargs186595
-Node: Security Considerations for locate188665
-Node: Security Summary189362
-Node: Error Messages190119
-Node: Error Messages From find191131
-Node: Error Messages From xargs195988
-Node: Error Messages From locate197669
-Node: Error Messages From updatedb198901
-Node: Primary Index199304
+Node: Scope4966
+Node: Overview6891
+Node: find Expressions8762
+Node: Finding Files10387
+Node: Name10854
+Node: Base Name Patterns11482
+Ref: Base Name Patterns-Footnote-112580
+Node: Full Name Patterns12792
+Node: Fast Full Name Search15455
+Node: Shell Pattern Matching17876
+Node: Links19966
+Node: Symbolic Links20401
+Node: Hard Links24898
+Node: Time27452
+Node: Age Ranges28040
+Node: Comparing Timestamps29567
+Node: Size30859
+Node: Type32701
+Node: Owner34369
+Node: Permissions35196
+Node: Contents38361
+Node: Directories39534
+Node: Filesystems44495
+Node: Combining Primaries With Operators45846
+Node: Actions47464
+Node: Print File Name48026
+Node: Print File Information49043
+Node: Escapes52038
+Node: Format Directives52789
+Node: Name Directives53932
+Node: Ownership Directives54918
+Node: Size Directives55935
+Node: Location Directives56701
+Node: Time Directives57820
+Node: Time Formats58723
+Node: Time Components59159
+Node: Date Components59665
+Node: Combined Time Formats60488
+Node: Formatting Flags61205
+Node: Run Commands61817
+Node: Single File62175
+Node: Multiple Files64097
+Node: Unsafe File Name Handling67951
+Node: Safe File Name Handling69514
+Node: Unusual Characters in File Names71090
+Node: Limiting Command Size74126
+Node: Interspersing File Names76419
+Node: Querying78874
+Node: Delete Files80404
+Node: Adding Tests80808
+Node: Databases83448
+Node: Database Locations84166
+Node: Database Formats85174
+Node: New Database Format86078
+Node: Sample Database87745
+Node: Old Database Format88393
+Node: Newline Handling90453
+Node: File Permissions91899
+Node: Mode Structure92468
+Node: Symbolic Modes94601
+Node: Setting Permissions95603
+Node: Copying Permissions98148
+Node: Changing Special Permissions98958
+Node: Conditional Executability100802
+Node: Multiple Changes101428
+Node: Umask and Protection103084
+Node: Numeric Modes104182
+Node: Reference105997
+Node: Invoking find106345
+Node: Warning Messages108677
+Node: Invoking locate110453
+Node: Invoking updatedb116238
+Node: Invoking xargs119923
+Node: Regular Expressions124953
+Node: findutils-default regular expression syntax126148
+Node: awk regular expression syntax128654
+Node: egrep regular expression syntax130539
+Node: emacs regular expression syntax132750
+Node: gnu-awk regular expression syntax135279
+Node: grep regular expression syntax137619
+Node: posix-awk regular expression syntax140345
+Node: posix-basic regular expression syntax142616
+Node: posix-egrep regular expression syntax145255
+Node: posix-extended regular expression syntax147628
+Node: Environment Variables150103
+Node: Common Tasks152047
+Node: Viewing And Editing152472
+Node: Archiving153478
+Node: Cleaning Up155110
+Node: Strange File Names156899
+Node: Fixing Permissions158549
+Node: Classifying Files159113
+Node: Worked Examples159831
+Node: Deleting Files160468
+Node: Updating A Timestamp File173488
+Node: Security Considerations180214
+Node: Levels of Risk181748
+Ref: Levels of Risk-Footnote-1184546
+Node: Security Considerations for find184725
+Ref: Security Considerations for find-Footnote-1187009
+Node: Changing the Current Working Directory187082
+Node: O_NOFOLLOW188809
+Ref: O_NOFOLLOW-Footnote-1190453
+Node: Systems without O_NOFOLLOW190555
+Node: Race Conditions with -exec192659
+Node: Race Conditions with -print and -print0195570
+Node: Security Considerations for xargs196490
+Node: Security Considerations for locate198560
+Node: Security Summary199257
+Node: Error Messages200014
+Node: Error Messages From find201026
+Node: Error Messages From xargs205883
+Node: Error Messages From locate207643
+Node: Error Messages From updatedb208875
+Node: Primary Index209278
 
 End Tag Table
