@@ -1,5 +1,5 @@
-This is find.info, produced by makeinfo version 4.7 from
-/home/jay/src/GNU/findutils/cvs/trunk/findutils/doc/find.texi.
+This is ../../findutils/doc/find.info, produced by makeinfo version 4.7
+from ../../findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
 START-INFO-DIR-ENTRY
@@ -39,7 +39,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.  This is
-edition 4.2.20, for `find' version 4.2.20.
+edition 4.2.23, for `find' version 4.2.23.
 
 * Menu:
 
@@ -172,6 +172,9 @@ Here is a typical use of `find'.  This example prints the names of all
 files in the directory tree rooted in `/usr/src' whose name ends with
 `.c' and that are larger than 100 Kilobytes.
      find /usr/src -name '*.c' -size +100k -print
+
+   Notice that the wildcard must be enclosed in quotes in order to
+protect it from expansion by the shell.
 
    `locate' searches special file name databases for file names that
 match patterns.  The system administrator runs the `updatedb' program
@@ -307,9 +310,12 @@ File: find.info,  Node: Base Name Patterns,  Next: Full Name Patterns,  Up: Name
 
           find /usr/local/doc -name '*.texi'
 
-Patterns for `-name' and `-iname' will match a filename with a leading
-`.'.  For example the command `find /tmp -name \*bar' will match the
-file `/tmp/.foobar'.
+Notice that the wildcard must be enclosed in quotes in order to protect
+it from expansion by the shell.
+
+   Patterns for `-name' and `-iname' will match a filename with a
+leading `.'.  For example the command `find /tmp -name \*bar' will
+match the file `/tmp/.foobar'.
 
 
 File: find.info,  Node: Full Name Patterns,  Next: Fast Full Name Search,  Prev: Base Name Patterns,  Up: Name
@@ -854,14 +860,15 @@ structured and how to specify them.
 
      If MODE starts with `-', true if _all_ of the permissions set in
      MODE are set for the file; permissions not set in MODE are ignored.
-     If MODE starts with `+', true if _any_ of the permissions set in
+     If MODE starts with `/', true if _any_ of the permissions set in
      MODE are set for the file; permissions not set in MODE are ignored.
+     This is a GNU extension.
 
-     If you don't use the `+' or `-' form with a symbolic mode string,
+     If you don't use the `/' or `-' form with a symbolic mode string,
      you may have to specify a rather complex mode string.  For example
      `-perm g=w' will only match files which have mode 0020 (that is,
      ones for which group write permission is the only permission set).
-     It is more likely that you will want to use the `+' or `-' forms,
+     It is more likely that you will want to use the `/' or `-' forms,
      for example `-perm -g=w', which matches any file with group write
      permission.
 
@@ -879,19 +886,19 @@ structured and how to specify them.
           permission bits (for example the executable bit).  This will
           match a file which has mode 0777, for example.
 
-    `-perm +222'
+    `-perm /222'
           Match files which are writeable by somebody (their owner, or
           their group, or anybody else).
 
-    `-perm +022'
+    `-perm /022'
           Match files which are writeable by either their owner or their
           group.  The files don't have to be writeable by both the
           owner and group to be matched; either will do.
 
-    `-perm +g+w,o+w'
+    `-perm /g+w,o+w'
           As above.
 
-    `-perm +g=w,o=w'
+    `-perm /g=w,o=w'
           As above
 
     `-perm -022'
@@ -1193,7 +1200,10 @@ File: find.info,  Node: Print File Information,  Next: Run Commands,  Prev: Prin
        8. The date the file was last modified.
 
        9. The file's name.  `-ls' quotes non-printable characters in
-          the file names using C-like backslash escapes.
+          the file names using C-like backslash escapes.  This may
+          change soon, as the treatment of unprintable characters is
+          harmonised for `-ls', `-fls', `-print', `-fprint', `-printf'
+          and `-fprintf'.
 
  -- Action: -fls file
      True; like `-ls' but write to FILE like `-fprint' (*note Print
@@ -1352,13 +1362,16 @@ File: find.info,  Node: Size Directives,  Next: Location Directives,  Prev: Owne
 .......................
 
 `%k'
-     Amount of disk space occupied by the file, measured in 1K blocks
-     (rounded up).  This can be less than the length of the file if it
-     is a sparse file (that is, it has "holes").
+     The amount of disk space used for this file in 1K blocks. Since
+     disk space is allocated in multiples of the filesystem block size
+     this is usually greater than %s/1024, but it can also be smaller
+     if the file is a sparse file (that is, it has "holes").
 
 `%b'
-     File's size in 512-byte blocks (rounded up).  This also can be less
-     than the length of the file, if the file is sparse.
+     The amount of disk space used for this file in 512-byte blocks.
+     Since disk space is allocated in multiples of the filesystem block
+     size this is usually greater than %s/1024, but it can also be
+     smaller if the file is a sparse file (that is, it has "holes").
 
 `%s'
      File's size in bytes.
@@ -1717,6 +1730,7 @@ the `--eof' option.
 
 * Unsafe File Name Handling::
 * Safe File Name Handling::
+* Unusual Characters in File Names::
 * Limiting Command Size::
 * Interspersing File Names::
 
@@ -1767,7 +1781,7 @@ this:
      ./# ./# /u/joeuser/.plan /#foo
 
 
-File: find.info,  Node: Safe File Name Handling,  Next: Limiting Command Size,  Prev: Unsafe File Name Handling,  Up: Multiple Files
+File: find.info,  Node: Safe File Name Handling,  Next: Unusual Characters in File Names,  Prev: Unsafe File Name Handling,  Up: Multiple Files
 
 3.3.2.2 Safe File Name Handling
 ...............................
@@ -1805,9 +1819,84 @@ in just one step:
      xargs --null --arg-file=<(find / -name xyzzy -print0) munge
 
 
-File: find.info,  Node: Limiting Command Size,  Next: Interspersing File Names,  Prev: Safe File Name Handling,  Up: Multiple Files
+File: find.info,  Node: Unusual Characters in File Names,  Next: Limiting Command Size,  Prev: Safe File Name Handling,  Up: Multiple Files
 
-3.3.2.3 Limiting Command Size
+3.3.2.3 Unusual Characters in File Names
+........................................
+
+As discussed above, you often need to be careful about how the names of
+files are handled by `find' and other programs.  If the output of
+`find' is not going to another program but instead is being shown on a
+terminal, this can still be a problem.  For example, some character
+sequences can reprogram the function keys on some terminals.  *Note
+Security Considerations::, for a discussion of other security problems
+relating to `find'.
+
+   Unusual characters are handled differently by various actions, as
+described below.
+
+`-print0'
+`-fprint0'
+     Always print the exact filename, unchanged, even if the output is
+     going to a terminal.
+
+`-ok'
+`-okdir'
+     Always print the exact filename, unchanged.  This will probably
+     change in a future release.
+
+`-ls'
+`-fls'
+     Unusual characters are always escaped.  White space, backslash, and
+     double quote characters are printed using C-style escaping (for
+     example `\f', `\"').  Other unusual characters are printed using
+     an octal escape.  Other Printable characters (for `-ls' and `-fls'
+     these are the characters between octal 041 and 0176) are printed
+     as-is.
+
+`-printf'
+`-fprintf'
+     If the output is not going to a terminal, it is printed as-is.
+     Otherwise, the result depends on which directive is in use:
+
+    %D, %F, %H, %Y, %y
+          These expand to values which are not under control of files'
+          ownwers, and so are printed as-is.
+
+    %a, %b, %c, %d, %g, %G, %i, %k, %m, %M, %n, %s, %t, %u, %U
+          These have values which are under the control of files'
+          ownwers but which cannot be used to send arbitrary data to
+          the terminal, and so these are printed as-is.
+
+    %f, %h, %l, %p, %P
+          The output of these directives is quoted if the output is
+          going to a terminal.
+
+          This quoting is performed in the same way as for GNU `ls'.
+          This is not the same quoting mechanism as the one used for
+          `-ls' and `fls'.   If you are able to decide what format to
+          use for the output of `find' then it is normally better to
+          use `\0' as a terminator than to use newline, as file names
+          can contain white space and newline characters.
+
+`-print'
+`-fprint'
+     Quoting is handled in the same way as for the `%p' directive of
+     `-printf' and `-fprintf'.  If you are using `find' in a script or
+     in a situation where the matched files might have arbitrary names,
+     you should consider using `-print0' instead of `-print'.
+
+   The `locate' program quotes and escapes unusual characters in file
+names in the same way as `find''s `-print' action.
+
+   The behaviours described above may change soon, as the treatment of
+unprintable characters is harmonised for `-ls', `-fls', `-print',
+`-fprint', `-printf' and `-fprintf'.
+
+
+File: find.info,  Node: Limiting Command Size,  Next: Interspersing File Names,  Prev: Unusual Characters in File Names,  Up: Multiple Files
+
+3.3.2.4 Limiting Command Size
 .............................
 
 `xargs' gives you control over how many arguments it passes to the
@@ -1823,11 +1912,14 @@ options modify those values.
      no input.
 
 `--max-lines[=MAX-LINES]'
+`-L[MAX-LINES]'
 `-l[MAX-LINES]'
      Use at most MAX-LINES nonblank input lines per command line;
      MAX-LINES defaults to 1 if omitted.  Trailing blanks cause an
      input line to be logically continued on the next input line, for
-     the purpose of counting the lines.  Implies `-x'.
+     the purpose of counting the lines.  Implies `-x'.   The preferred
+     name for this option is `-L' as this is specified by POSIX.  This
+     option should be compatible with `-I' but currently it is not.
 
 `--max-args=MAX-ARGS'
 `-n MAX-ARGS'
@@ -1848,13 +1940,13 @@ options modify those values.
 `-P MAX-PROCS'
      Run up to MAX-PROCS processes at a time; the default is 1.  If
      MAX-PROCS is 0, `xargs' will run as many processes as possible at
-     a time.  Use the `-n', `-s', or `-l' option with `-P'; otherwise
+     a time.  Use the `-n', `-s', or `-L' option with `-P'; otherwise
      chances are that the command will be run only once.
 
 
 File: find.info,  Node: Interspersing File Names,  Prev: Limiting Command Size,  Up: Multiple Files
 
-3.3.2.4 Interspersing File Names
+3.3.2.5 Interspersing File Names
 ................................
 
 `xargs' can insert the name of the file it is processing between
@@ -1874,9 +1966,9 @@ operation is equivalent to `find -exec' (*note Single File::).
 
           find bills -type f | xargs -iXX sort -o XX.sorted XX
 
-     The equivalent command using `find -exec' is:
+     The equivalent command using `find -execdir' is:
 
-          find bills -type f -exec sort -o '{}.sorted' '{}' ';'
+          find bills -type f -execdir sort -o '{}.sorted' '{}' ';'
 
 
 File: find.info,  Node: Querying,  Prev: Multiple Files,  Up: Run Commands
@@ -1885,12 +1977,21 @@ File: find.info,  Node: Querying,  Prev: Multiple Files,  Up: Run Commands
 --------------
 
 To ask the user whether to execute a command on a single file, you can
-use the `find' primary `-ok' instead of `-exec':
+use the `find' primary `-okdir' instead of `-execdir', and the `find'
+primary `-ok' instead of `-exec':
+
+ -- Action: -okdir command ;
+     Like `-execdir' (*note Single File::), but ask the user first (on
+     the standard input); if the response does not start with `y' or
+     `Y', do not run the command, and return false.
 
  -- Action: -ok command ;
-     Like `-exec' (*note Single File::), but ask the user first (on the
-     standard input); if the response does not start with `y' or `Y',
-     do not run the command, and return false.
+     This insecure variant of the `-okdir' action is specified by
+     POSIX.  The main difference is that the command is executed in the
+     directory from which `find' was invoked, meaning that `{}' is
+     expanded to a relative path starting with the name of one of the
+     starting directories, rather than just the basename of the matched
+     file.
 
    When processing multiple files with a single command, to query the
 user you give `xargs' the following option.  When using this option, you
@@ -1938,7 +2039,7 @@ unstripped binaries in the `/usr/local' directory tree.  Builtin tests
 avoid running `file' on files that are not regular files or are not
 executable.
 
-     find /usr/local -type f -perm +a=x | xargs file |
+     find /usr/local -type f -perm /a=x | xargs file |
        grep 'not stripped' | cut -d: -f1
 
 The `cut' program removes everything after the file name from the
@@ -1973,7 +2074,7 @@ Here is an example of using the script (assuming it is in your search
 path).  It lists the stripped executables (and shell scripts) in the
 file `sbins' and the unstripped ones in `ubins'.
 
-     find /usr/local -type f -perm +a=x \
+     find /usr/local -type f -perm /a=x \
        \( -execdir unstripped '{}' \; -fprint ubins -o -fprint sbins \)
 
 
@@ -2132,7 +2233,7 @@ pattern.  If you are using an old shell, this approach might not work if
 the file name contains a character with the high bit set; the shell may
 strip it off.  A more reliable way is:
 
-     find . -maxdepth 1 TESTS -ok rm '{}' \;
+     find . -maxdepth 1 TESTS -okdir rm '{}' \;
 
 where TESTS uniquely identify the file.  The `-maxdepth 1' option
 prevents `find' from wasting time searching for the file in any
@@ -2146,16 +2247,16 @@ inode number; use
 you have found that its inode number is 12345.  This command prompts
 you for whether to remove it:
 
-     find . -maxdepth 1 -inum 12345 -ok rm -f '{}' \;
+     find . -maxdepth 1 -inum 12345 -okdir rm -f '{}' \;
 
    If you don't want to be asked, perhaps because the file name may
 contain a strange character sequence that will mess up your screen when
-printed, then use `-exec' instead of `-ok'.
+printed, then use `-execdir' instead of `-okdir'.
 
    If you want to rename the file instead, you can use `mv' instead of
 `rm':
 
-     find . -maxdepth 1 -inum 12345 -ok mv '{}' NEW-FILE-NAME \;
+     find . -maxdepth 1 -inum 12345 -okdir mv '{}' NEW-FILE-NAME \;
 
 
 File: find.info,  Node: Fixing Permissions,  Next: Classifying Files,  Prev: Strange File Names,  Up: Common Tasks
@@ -2953,6 +3054,11 @@ File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoki
 
      locate [OPTION...] PATTERN...
 
+`--all'
+`-A'
+     Print only names which match all non-option arguments, not those
+     matching one or more non-option arguments.
+
 `--basename'
 `-b'
      The specified pattern is matched against just the last component of
@@ -2965,7 +3071,8 @@ File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoki
 `--count'
 `-c'
      Instead of printing the matched filenames, just print the total
-     number of matches we found.
+     number of matches we found, unless `--print' (`-p') is also
+     present.
 
 `--database=PATH'
 `-d PATH'
@@ -2975,7 +3082,10 @@ File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoki
      `LOCATE_PATH' to set the list of database files to search.  The
      option overrides the environment variable if both are used.  Empty
      elements in PATH (that is, a leading or trailing colon, or two
-     colons in a row) are taken to stand for the default database.
+     colons in a row) are taken to stand for the default database.  A
+     database can be supplied on stdin, using `-' as an element of
+     `path'. If more than one element of `path' is `-', later instances
+     are ignored (but a warning message is printed).
 
 `--existing'
 `-e'
@@ -2985,18 +3095,27 @@ File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoki
      the database.  The way in which broken symbolic links are treated
      is affected by the `-L', `-P' and `-H' options.
 
+`--non-existing'
+`-E'
+     Only print out such names which currently do not exist (instead of
+     such names which existed when the database was created).  Note that
+     this may slow down the program a lot, if there are many matches in
+     the database.  The way in which broken symbolic links are treated
+     is affected by the `-L', `-P' and `-H' options.
+
 `--follow'
 `-L'
-     If testing for the existence of files (with the `-e' option), omit
-     broken symbolic links.  This is the default.
+     If testing for the existence of files (with the `-e' or `-E'
+     options), consider broken symbolic links to be non-existing.  This
+     is the default.
 
 `--nofollow'
 `-P'
 `-H'
-     If testing for the existence of files (with the `-e' option),
-     treat broken symbolic links count as if they were exiting files.
-     The `-H' form of this option is provided purely for similarity with
-     `find'; the use of `-P' is recommended over `-H'.
+     If testing for the existence of files (with the `-e' or `-E'
+     options), treat broken symbolic links as if they were existing
+     files.  The `-H' form of this option is provided purely for
+     similarity with `find'; the use of `-P' is recommended over `-H'.
 
 `--ignore-case'
 `-i'
@@ -3019,6 +3138,11 @@ File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoki
      newline character.  To get the full benefit of the use of this
      option, use the new locate database format (that is the default
      anyway).
+
+`--print'
+`-p'
+     Print search results when they normally would not, because of the
+     presence of `--statistics' (`-S') or `--count' (`-c').
 
 `--wholename'
 `-w'
@@ -3047,7 +3171,7 @@ File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoki
 `--statistics'
 `-S'
      Print some summary information for each locate database.  No
-     search is performed.
+     search is performed unless non-option arguments are given.
 
 `--help'
      Print a summary of the options to `locate' and exit.
@@ -3078,7 +3202,11 @@ File: find.info,  Node: Invoking updatedb,  Next: Invoking xargs,  Prev: Invokin
 `--prunepaths='PATH...''
      Directories to omit from the database, which would otherwise be
      included.  The environment variable `PRUNEPATHS' also sets this
-     value.  Default is `/tmp /usr/tmp /var/tmp /afs'.
+     value.  Default is `/tmp /usr/tmp /var/tmp /afs'.  The paths are
+     used as regular expressions (with `find ... -regex', so you need
+     to specify these paths in the same way that `find' will encounter
+     them.  This means for example that the paths must not include
+     trailing slashes.
 
 `--prunefs='PATH...''
      File systems to omit from the database, which would otherwise be
@@ -3469,8 +3597,8 @@ in the subdirectory it expected.  If not, an error message is issued
 and `find' exits immediately.  This method prevents filesystem
 manipulation attacks from persuading `find' to search parts of the
 filesystem it did not intend.  However, we heve to take special steps
-in order not to unneccessarily conclude that there is a problem with
-any "automount" mount points.
+in order not to unnecessarily conclude that there is a problem with any
+"automount" mount points.
 
 
 File: find.info,  Node: Working with automounters,  Next: Problems with dead NFS servers,  Prev: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
@@ -3890,12 +4018,12 @@ Expressions::, for more information on expressions.
 * -false:                                Combining Primaries With Operators.
                                                                (line 46)
 * -fls:                                  Print File Information.
-                                                               (line 45)
+                                                               (line 48)
 * -fprint:                               Print File Name.      (line 11)
 * -fprint0:                              Safe File Name Handling.
                                                                (line 16)
 * -fprintf:                              Print File Information.
-                                                               (line 60)
+                                                               (line 63)
 * -fstype:                               Filesystems.          (line 22)
 * -gid:                                  Owner.                (line 13)
 * -group:                                Owner.                (line  8)
@@ -3925,7 +4053,8 @@ Expressions::, for more information on expressions.
 * -nouser:                               Owner.                (line 17)
 * -o:                                    Combining Primaries With Operators.
                                                                (line 23)
-* -ok:                                   Querying.             (line 10)
+* -ok:                                   Querying.             (line 16)
+* -okdir:                                Querying.             (line 11)
 * -or:                                   Combining Primaries With Operators.
                                                                (line 23)
 * -path:                                 Full Name Patterns.   (line 19)
@@ -3934,7 +4063,7 @@ Expressions::, for more information on expressions.
 * -print0:                               Safe File Name Handling.
                                                                (line 12)
 * -printf:                               Print File Information.
-                                                               (line 49)
+                                                               (line 52)
 * -prune:                                Directories.          (line 34)
 * -quit:                                 Directories.          (line 62)
 * -regex:                                Full Name Patterns.   (line 25)
@@ -3953,107 +4082,108 @@ Expressions::, for more information on expressions.
 
 
 Tag Table:
-Node: Top1535
-Node: Introduction2501
-Node: Scope3743
-Node: Overview5668
-Node: find Expressions7431
-Node: Finding Files9056
-Node: Name9523
-Node: Base Name Patterns10151
-Node: Full Name Patterns10865
-Node: Fast Full Name Search12363
-Node: Shell Pattern Matching14783
-Node: Links16872
-Node: Symbolic Links17307
-Node: Hard Links21434
-Node: Time23909
-Node: Age Ranges24497
-Node: Comparing Timestamps25895
-Node: Size27187
-Node: Type28985
-Node: Owner29841
-Node: Permissions30668
-Node: Contents33023
-Node: Directories34196
-Node: Filesystems38846
-Node: Combining Primaries With Operators40197
-Node: Actions41717
-Node: Print File Name42282
-Node: Print File Information42896
-Node: Escapes45452
-Node: Format Directives46181
-Node: Name Directives47324
-Node: Ownership Directives48308
-Node: Size Directives48862
-Node: Location Directives49400
-Node: Time Directives50521
-Node: Time Formats51424
-Node: Time Components51860
-Node: Date Components52366
-Node: Combined Time Formats53189
-Node: Formatting Flags53906
-Node: Run Commands54518
-Node: Single File54876
-Node: Multiple Files56297
-Node: Unsafe File Name Handling60114
-Node: Safe File Name Handling61677
-Node: Limiting Command Size63204
-Node: Interspersing File Names65139
-Node: Querying66258
-Node: Delete Files67182
-Node: Adding Tests67586
-Node: Common Tasks70237
-Node: Viewing And Editing70654
-Node: Archiving71660
-Node: Cleaning Up73292
-Node: Strange File Names75081
-Node: Fixing Permissions76716
-Node: Classifying Files77280
-Node: Databases77998
-Node: Database Locations78721
-Node: Database Formats79729
-Node: New Database Format80516
-Node: Sample Database82184
-Node: Old Database Format82832
-Node: Newline Handling84892
-Node: File Permissions86332
-Node: Mode Structure86901
-Node: Symbolic Modes89034
-Node: Setting Permissions90036
-Node: Copying Permissions92581
-Node: Changing Special Permissions93391
-Node: Conditional Executability95235
-Node: Multiple Changes95861
-Node: Umask and Protection97517
-Node: Numeric Modes98615
-Node: Reference100430
-Node: Invoking find100739
-Node: Warning Messages102920
-Node: Invoking locate104686
-Node: Invoking updatedb108614
-Node: Invoking xargs110899
-Node: Security Considerations114137
-Node: Levels of Risk115672
-Ref: Levels of Risk-Footnote-1118466
-Node: Security Considerations for find118645
-Ref: Security Considerations for find-Footnote-1120869
-Node: Changing the Current Working Directory120942
-Node: O_NOFOLLOW122816
-Ref: O_NOFOLLOW-Footnote-1124456
-Node: Systems without O_NOFOLLOW124558
-Node: Working with automounters125427
-Node: Problems with dead NFS servers126487
-Node: Race Conditions with -exec127584
-Node: Race Conditions with -print and -print0130449
-Node: Security Considerations for xargs131370
-Node: Security Considerations for locate133446
-Node: Security Summary134142
-Node: Error Messages134865
-Node: Error Messages From find135917
-Node: Error Messages From xargs140793
-Node: Error Messages From locate142243
-Node: Error Messages From updatedb143469
-Node: Primary Index143883
+Node: Top1523
+Node: Introduction2489
+Node: Scope3731
+Node: Overview5656
+Node: find Expressions7527
+Node: Finding Files9152
+Node: Name9619
+Node: Base Name Patterns10247
+Node: Full Name Patterns11069
+Node: Fast Full Name Search12567
+Node: Shell Pattern Matching14987
+Node: Links17076
+Node: Symbolic Links17511
+Node: Hard Links21638
+Node: Time24113
+Node: Age Ranges24701
+Node: Comparing Timestamps26099
+Node: Size27391
+Node: Type29189
+Node: Owner30045
+Node: Permissions30872
+Node: Contents33257
+Node: Directories34430
+Node: Filesystems39080
+Node: Combining Primaries With Operators40431
+Node: Actions41951
+Node: Print File Name42516
+Node: Print File Information43130
+Node: Escapes45862
+Node: Format Directives46591
+Node: Name Directives47734
+Node: Ownership Directives48718
+Node: Size Directives49272
+Node: Location Directives50038
+Node: Time Directives51159
+Node: Time Formats52062
+Node: Time Components52498
+Node: Date Components53004
+Node: Combined Time Formats53827
+Node: Formatting Flags54544
+Node: Run Commands55156
+Node: Single File55514
+Node: Multiple Files56935
+Node: Unsafe File Name Handling60789
+Node: Safe File Name Handling62352
+Node: Unusual Characters in File Names63890
+Node: Limiting Command Size66927
+Node: Interspersing File Names69042
+Node: Querying70167
+Node: Delete Files71537
+Node: Adding Tests71941
+Node: Common Tasks74592
+Node: Viewing And Editing75009
+Node: Archiving76015
+Node: Cleaning Up77647
+Node: Strange File Names79436
+Node: Fixing Permissions81086
+Node: Classifying Files81650
+Node: Databases82368
+Node: Database Locations83091
+Node: Database Formats84099
+Node: New Database Format84886
+Node: Sample Database86554
+Node: Old Database Format87202
+Node: Newline Handling89262
+Node: File Permissions90702
+Node: Mode Structure91271
+Node: Symbolic Modes93404
+Node: Setting Permissions94406
+Node: Copying Permissions96951
+Node: Changing Special Permissions97761
+Node: Conditional Executability99605
+Node: Multiple Changes100231
+Node: Umask and Protection101887
+Node: Numeric Modes102985
+Node: Reference104800
+Node: Invoking find105109
+Node: Warning Messages107290
+Node: Invoking locate109056
+Node: Invoking updatedb113948
+Node: Invoking xargs116479
+Node: Security Considerations119717
+Node: Levels of Risk121252
+Ref: Levels of Risk-Footnote-1124046
+Node: Security Considerations for find124225
+Ref: Security Considerations for find-Footnote-1126449
+Node: Changing the Current Working Directory126522
+Node: O_NOFOLLOW128396
+Ref: O_NOFOLLOW-Footnote-1130036
+Node: Systems without O_NOFOLLOW130138
+Node: Working with automounters131006
+Node: Problems with dead NFS servers132066
+Node: Race Conditions with -exec133163
+Node: Race Conditions with -print and -print0136028
+Node: Security Considerations for xargs136949
+Node: Security Considerations for locate139025
+Node: Security Summary139721
+Node: Error Messages140444
+Node: Error Messages From find141496
+Node: Error Messages From xargs146372
+Node: Error Messages From locate147822
+Node: Error Messages From updatedb149048
+Node: Primary Index149462
 
 End Tag Table

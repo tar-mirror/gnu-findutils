@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.*/
 
 /* GNU find was written by Eric Decker <cire@cisco.com>,
@@ -210,7 +210,7 @@ optionh_stat(const char *name, struct stat *p)
     }
   else
     {
-      /* Not a file on the command line; do not derefernce the link.
+      /* Not a file on the command line; do not dereference the link.
        */
       return lstat(name, p);
     }
@@ -284,7 +284,7 @@ set_follow_state(enum SymlinkOption opt)
 
   options.symlink_handling = opt;
   
-  /* For DBEUG_STAT, the choice is made at runtime within debug_stat()
+  /* For DEBUG_STAT, the choice is made at runtime within debug_stat()
    * by checking the contents of the symlink_handling variable.
    */
 #if defined(DEBUG_STAT)
@@ -385,7 +385,7 @@ int
 main (int argc, char **argv)
 {
   int i;
-  PFB parse_function;		/* Pointer to the function which parses. */
+  PARSE_FUNC parse_function; /* Pointer to the function which parses. */
   struct predicate *cur_pred;
   char *predicate_name;		/* Name of predicate being parsed. */
   int end_of_leading_options = 0; /* First arg after any -H/-L etc. */
@@ -552,7 +552,7 @@ main (int argc, char **argv)
     }
 
 #ifdef	DEBUG
-  fprintf (stderr, _("Predicate List:\n"));
+  fprintf (stderr, "Predicate List:\n");
   print_list (stderr, predicates);
 #endif /* DEBUG */
 
@@ -569,7 +569,7 @@ main (int argc, char **argv)
     }
   
 #ifdef	DEBUG
-  fprintf (stderr, _("Eval Tree:\n"));
+  fprintf (stderr, "Eval Tree:\n");
   print_tree (stderr, eval_tree, 0);
 #endif /* DEBUG */
 
@@ -582,9 +582,9 @@ main (int argc, char **argv)
   mark_type (eval_tree);
 
 #ifdef DEBUG
-  fprintf (stderr, _("Optimized Eval Tree:\n"));
+  fprintf (stderr, "Optimized Eval Tree:\n");
   print_tree (stderr, eval_tree, 0);
-  fprintf (stderr, _("Optimized command line:\n"));
+  fprintf (stderr, "Optimized command line:\n");
   print_optlist(stderr, eval_tree);
   fprintf(stderr, "\n");
 #endif /* DEBUG */
@@ -653,14 +653,14 @@ main (int argc, char **argv)
 static char *
 specific_dirname(const char *dir)
 {
-  char dirname[1024];
+  char dirbuf[1024];
 
   if (0 == strcmp(".", dir))
     {
       /* OK, what's '.'? */
-      if (NULL != getcwd(dirname, sizeof(dirname)))
+      if (NULL != getcwd(dirbuf, sizeof(dirbuf)))
 	{
-	  return strdup(dirname);
+	  return strdup(dirbuf);
 	}
       else
 	{
@@ -846,7 +846,7 @@ dirchange_is_fatal(const char *specific_what,
  */
 static boolean
 wd_sanity_check(const char *thing_to_stat,
-		const char *program_name,
+		const char *progname,
 		const char *what,
 		dev_t old_dev,
 		ino_t old_ino,
@@ -895,7 +895,7 @@ wd_sanity_check(const char *thing_to_stat,
 		   _("%s%s changed during execution of %s (old device number %ld, new device number %ld, filesystem type is %s) [ref %ld]"),
 		   specific_what,
 		   parent ? "/.." : "",
-		   program_name,
+		   progname,
 		   (long) old_dev,
 		   (long) newinfo->st_dev,
 		   fstype,
@@ -932,7 +932,7 @@ wd_sanity_check(const char *thing_to_stat,
 	     _("%s%s changed during execution of %s (old inode number %ld, new inode number %ld, filesystem type is %s) [ref %ld]"),
 	     specific_what, 
 	     parent ? "/.." : "",
-	     program_name,
+	     progname,
 	     (long) old_ino,
 	     (long) newinfo->st_ino,
 	     fstype,
@@ -956,7 +956,7 @@ enum SafeChdirStatus
   };
 
 /* Safely perform a change in directory.  We do this by calling
- * lstat() on the subdirectory, using chdir() tro move into it, and
+ * lstat() on the subdirectory, using chdir() to move into it, and
  * then lstat()ing ".".  We compare the results of the two stat calls
  * to see if they are consistent.  If not, we sound the alarm.
  *
@@ -966,12 +966,14 @@ static enum SafeChdirStatus
 safely_chdir_lstat(const char *dest,
 		   enum TraversalDirection direction,
 		   struct stat *statbuf_dest,
-		   enum ChdirSymlinkHandling symlink_handling)
+		   enum ChdirSymlinkHandling symlink_follow_option,
+		   boolean *did_stat)
 {
   struct stat statbuf_arrived;
   int rv, dotfd=-1;
   int saved_errno;		/* specific_dirname() changes errno. */
   boolean rv_set = false;
+  boolean statflag = false;
   int tries = 0;
   enum WdSanityCheckFatality isfatal = RETRY_IF_SANITY_CHECK_FAILS;
   
@@ -990,8 +992,10 @@ safely_chdir_lstat(const char *dest,
       /* Stat the directory we're going to. */
       if (0 == options.xstat(dest, statbuf_dest))
 	{
+	  statflag = true;
+	  
 #ifdef S_ISLNK
-	  /* symlink_handling might be set to SymlinkFollowOk, which
+	  /* symlink_follow_option might be set to SymlinkFollowOk, which
 	   * would allow us to chdir() into a symbolic link.  This is
 	   * only useful for the case where the directory we're
 	   * chdir()ing into is the basename of a command line
@@ -1004,10 +1008,10 @@ safely_chdir_lstat(const char *dest,
 	  if (!following_links() && S_ISLNK(statbuf_dest->st_mode))
 	    {
 	      /* We're not supposed to be following links, but this is 
-	       * a link.  Check symlink_handling to see if we should 
+	       * a link.  Check symlink_follow_option to see if we should 
 	       * make a special exception.
 	       */
-	      if (symlink_handling == SymlinkFollowOk)
+	      if (symlink_follow_option == SymlinkFollowOk)
 		{
 		  /* We need to re-stat() the file so that the 
 		   * sanity check can pass. 
@@ -1019,6 +1023,7 @@ safely_chdir_lstat(const char *dest,
 		      saved_errno = errno;
 		      goto fail;
 		    }
+		  statflag = true;
 		}
 	      else
 		{
@@ -1148,7 +1153,7 @@ safely_chdir_lstat(const char *dest,
    */
   saved_errno = 0;
   
-  /* We use the same exit path for successs or failure. 
+  /* We use the same exit path for success or failure. 
    * which has occurred is recorded in RV. 
    */
  fail:
@@ -1163,6 +1168,8 @@ safely_chdir_lstat(const char *dest,
       close(dotfd);
       dotfd = -1;
     }
+  
+  *did_stat = statflag;
   assert(rv_set);
   return rv;
 }
@@ -1178,12 +1185,15 @@ static enum SafeChdirStatus
 safely_chdir_nofollow(const char *dest,
 		      enum TraversalDirection direction,
 		      struct stat *statbuf_dest,
-		      enum ChdirSymlinkHandling symlink_handling)
+		      enum ChdirSymlinkHandling symlink_follow_option,
+		      boolean *did_stat)
 {
   int extraflags, fd;
   extraflags = 0;
+
+  *did_stat = false;
   
-  switch (symlink_handling)
+  switch (symlink_follow_option)
     {
     case SymlinkFollowOk:
       extraflags = 0;
@@ -1244,7 +1254,8 @@ static enum SafeChdirStatus
 safely_chdir(const char *dest,
 	     enum TraversalDirection direction,
 	     struct stat *statbuf_dest,
-	     enum ChdirSymlinkHandling symlink_handling)
+	     enum ChdirSymlinkHandling symlink_follow_option,
+	     boolean *did_stat)
 {
   /* We're about to leave a directory.  If there are any -execdir
    * argument lists which have been built but have not yet been
@@ -1255,9 +1266,9 @@ safely_chdir(const char *dest,
 
 #if defined(O_NOFOLLOW)
   if (options.open_nofollow_available)
-    return safely_chdir_nofollow(dest, direction, statbuf_dest, symlink_handling);
+    return safely_chdir_nofollow(dest, direction, statbuf_dest, symlink_follow_option, did_stat);
 #endif
-  return safely_chdir_lstat(dest, direction, statbuf_dest, symlink_handling);
+  return safely_chdir_lstat(dest, direction, statbuf_dest, symlink_follow_option, did_stat);
 }
 
 
@@ -1306,17 +1317,18 @@ chdir_back (void)
     }
 }
 
-/* Descend PATHNAME, which is a command-line argument.  
-   Actions like -execdir assume that we are in the 
-   parent directory of the file we're examining, 
-   and on entry to this function our working directory
-   is whetever it was when find was invoked.  Therefore
-   If PATHNAME is "." we just leave things as they are. 
-   Otherwise, we figure out what the parent directory is, 
-   and move to that.
-*/
+/* Move to the parent of a given directory and then call a function,
+ * restoring the cwd.  Don't bother changing directory if the
+ * specified directory is a child of "." or is the root directory.
+ */
 static void
-process_top_path (char *pathname, mode_t mode)
+at_top (char *pathname,
+	mode_t mode,
+	struct stat *pstat,
+	void (*action)(char *pathname,
+		       char *basename,
+		       int mode,
+		       struct stat *pstat))
 {
   int dirchange;
   char *parent_dir = dir_name(pathname);
@@ -1336,7 +1348,8 @@ process_top_path (char *pathname, mode_t mode)
       enum TraversalDirection direction;
       enum SafeChdirStatus chdir_status;
       struct stat st;
-
+      boolean did_stat = false;
+      
       dirchange = 1;
       if (0 == strcmp(base, ".."))
 	direction = TraversingUp;
@@ -1353,7 +1366,7 @@ process_top_path (char *pathname, mode_t mode)
        * Hence we need the ability to override the policy set by
        * following_links().
        */
-      chdir_status = safely_chdir(parent_dir, direction, &st, SymlinkFollowOk);
+      chdir_status = safely_chdir(parent_dir, direction, &st, SymlinkFollowOk, &did_stat);
       if (SafeChdirOK != chdir_status)
 	{
 	  const char *what = (SafeChdirFailWouldBeUnableToReturn == chdir_status) ? "." : parent_dir;
@@ -1372,13 +1385,50 @@ process_top_path (char *pathname, mode_t mode)
   free (parent_dir);
   parent_dir = NULL;
   
-  process_path (pathname, base, false, ".", mode);
-  complete_pending_execdirs(eval_tree);
+  action(pathname, base, mode, pstat);
   
   if (dirchange)
     {
       chdir_back();
     }
+}
+
+
+static void do_process_top_dir(char *pathname,
+			       char *base,
+			       int mode,
+			       struct stat *pstat)
+{
+  process_path (pathname, base, false, ".", mode);
+  complete_pending_execdirs(eval_tree);
+}
+
+static void do_process_predicate(char *pathname,
+				 char *base,
+				 int mode,
+				 struct stat *pstat)
+{
+  state.rel_pathname = base;
+  apply_predicate (pathname, pstat, eval_tree);
+}
+
+
+
+
+/* Descend PATHNAME, which is a command-line argument.  
+
+   Actions like -execdir assume that we are in the 
+   parent directory of the file we're examining, 
+   and on entry to this function our working directory
+   is whatever it was when find was invoked.  Therefore
+   If PATHNAME is "." we just leave things as they are. 
+   Otherwise, we figure out what the parent directory is, 
+   and move to that.
+*/
+static void
+process_top_path (char *pathname, mode_t mode)
+{
+  at_top(pathname, mode, NULL, do_process_top_dir);
 }
 
 
@@ -1601,8 +1651,14 @@ process_path (char *pathname, char *name, boolean leaf, char *parent,
       if (!digest_mode(mode, pathname, name, &stat_buf, leaf))
 	return 0;
 
-      state.rel_pathname = name;
-      apply_predicate (pathname, &stat_buf, eval_tree);
+      if (0 == dir_curr)
+	{
+	  at_top(pathname, mode, &stat_buf, do_process_predicate);
+	}
+      else
+	{
+	  do_process_predicate(pathname, name, mode, &stat_buf);
+	}
     }
 
   dir_curr--;
@@ -1632,7 +1688,7 @@ complete_pending_execdirs(struct predicate *p)
 	  struct exec_val *execp = &p->args.exec_vec;
 	  
 	  /* This one was terminated by '+' and so might have some
-	   * left... Run it if neccessary.  
+	   * left... Run it if necessary.
 	   */
 	  if (execp->state.todo)
 	    {
@@ -1671,7 +1727,7 @@ complete_pending_execs(struct predicate *p)
       struct exec_val *execp = &p->args.exec_vec;
       
       /* This one was terminated by '+' and so might have some
-       * left... Run it if neccessary.  Set state.exit_status if
+       * left... Run it if necessary.  Set state.exit_status if
        * there are any problems.
        */
       if (execp->state.todo)
@@ -1703,18 +1759,34 @@ complete_pending_execs(struct predicate *p)
 static void
 process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *parent)
 {
-  char *name_space;		/* Names of files in PATHNAME. */
   int subdirs_left;		/* Number of unexamined subdirs in PATHNAME. */
   int idx;			/* Which entry are we on? */
   struct stat stat_buf;
-  struct savedir_dirinfo *dirinfo;
+
+#undef USE_OLD_SAVEDIR 
   
+#if USE_OLD_SAVEDIR
+  char *name_space;		/* Names of files in PATHNAME. */
+  struct savedir_extrainfo *extra;
+#else
+  struct savedir_dirinfo *dirinfo;
+#endif  
   subdirs_left = statp->st_nlink - 2; /* Account for name and ".". */
 
   errno = 0;
-  name_space = savedirinfo (name, &dirinfo);
+#if USE_OLD_SAVEDIR
+  name_space = savedirinfo (name, &extra);
+#else
+  dirinfo = xsavedir(name, 0);
+#endif  
   
-  if (name_space == NULL)
+  if (
+#if USE_OLD_SAVEDIR
+      name_space
+#else
+      dirinfo
+#endif
+      == NULL)
     {
       assert(errno != 0);
       error (0, errno, "%s", pathname);
@@ -1728,7 +1800,8 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
       unsigned cur_path_size;	/* Bytes allocated for `cur_path'. */
       register unsigned file_len; /* Length of each path to process. */
       register unsigned pathname_len; /* PATHLEN plus trailing '/'. */
-
+      boolean did_stat = false;
+      
       if (pathname[pathlen - 1] == '/')
 	pathname_len = pathlen + 1; /* For '\0'; already have '/'. */
       else
@@ -1745,7 +1818,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
       
       if (strcmp (name, "."))
 	{
-	  enum SafeChdirStatus status = safely_chdir (name, TraversingDown, &stat_buf, SymlinkHandleDefault);
+	  enum SafeChdirStatus status = safely_chdir (name, TraversingDown, &stat_buf, SymlinkHandleDefault, &did_stat);
 	  switch (status)
 	    {
 	    case SafeChdirOK:
@@ -1754,9 +1827,23 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	       * way back up as well, so modify our record 
 	       * of what we think we should see later.
 	       * If there was no change, the assignments are a no-op.
+	       *
+	       * However, before performing the assignment, we need to
+	       * check that we have the stat information.   If O_NOFOLLOW
+	       * is available, safely_chdir() will not have needed to use 
+	       * stat(), and so stat_buf will just contain random data.
 	       */
+	      if (!did_stat)
+		{
+		  /* If there is a link we need to follow it.  Hence 
+		   * the direct call to stat() not through (options.xstat)
+		   */
+		  if (0 != stat(".", &stat_buf))
+		    break;	/* skip the assignment. */
+		}
 	      dir_ids[dir_curr].dev = stat_buf.st_dev;
 	      dir_ids[dir_curr].ino = stat_buf.st_ino;
+	      
 	      break;
       
 	    case SafeChdirFailWouldBeUnableToReturn:
@@ -1775,14 +1862,22 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	    }
 	}
 
-
+#if USE_OLD_SAVEDIR
       for (idx=0, namep = name_space; *namep; namep += file_len - pathname_len + 1, ++idx)
+#else
+      for (idx=0; idx < dirinfo->size; ++idx)
+#endif
 	{
 	  /* savedirinfo() may return dirinfo=NULL if extended information 
 	   * is not available. 
 	   */
-	  mode_t mode = dirinfo ? dirinfo[idx].type_info : 0;
-
+#if USE_OLD_SAVEDIR
+	  mode_t mode = extra ? extra[idx].type_info : 0;
+#else
+	  mode_t mode = (dirinfo->entries[idx].flags & SavedirHaveFileType) ? 
+	    dirinfo->entries[idx].type_info : 0;
+	  namep = dirinfo->entries[idx].name;
+#endif
 	  /* Append this directory entry's name to the path being searched. */
 	  file_len = pathname_len + strlen (namep);
 	  if (file_len > cur_path_size)
@@ -1854,6 +1949,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	{
 	  enum SafeChdirStatus status;
 	  struct dir_id did;
+	  boolean did_stat = false;
 	  
 	  /* We could go back and do the next command-line arg
 	     instead, maybe using longjmp.  */
@@ -1868,7 +1964,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      dir = parent;
 	    }
 	  
-	  status = safely_chdir (dir, TraversingUp, &stat_buf, SymlinkHandleDefault);
+	  status = safely_chdir (dir, TraversingUp, &stat_buf, SymlinkHandleDefault, &did_stat);
 	  switch (status)
 	    {
 	    case SafeChdirOK:
@@ -1901,8 +1997,12 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 
       if (cur_path)
 	free (cur_path);
+#ifdef USE_OLD_SAVEDIR
       free (name_space);
-      free (dirinfo);
+      free (extra);
+#else
+      free_dirinfo(dirinfo);
+#endif
     }
 }
 

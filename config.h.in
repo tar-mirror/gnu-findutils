@@ -48,9 +48,6 @@
 # define FILE_SYSTEM_PREFIX_LEN(Filename) 0
 #endif
 
-/* Define if gettimeofday clobbers localtime's static buffer. */
-#undef GETTIMEOFDAY_CLOBBERS_LOCALTIME_BUFFER
-
 /* Define to 1 if you have the `alarm' function. */
 #undef HAVE_ALARM
 
@@ -70,6 +67,14 @@
 
 /* Define to 1 if you have the `canonicalize_file_name' function. */
 #undef HAVE_CANONICALIZE_FILE_NAME
+
+/* Define to 1 if you have the MacOS X function CFLocaleCopyCurrent in the
+   CoreFoundation framework. */
+#undef HAVE_CFLOCALECOPYCURRENT
+
+/* Define to 1 if you have the MacOS X function CFPreferencesCopyAppValue in
+   the CoreFoundation framework. */
+#undef HAVE_CFPREFERENCESCOPYAPPVALUE
 
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
@@ -548,7 +553,7 @@
 /* the number of pending output bytes on stream `fp' */
 #undef PENDING_OUTPUT_N_BYTES
 
-/* Define if compiler has function prototypes */
+/* Define to 1 if the C compiler supports function prototypes. */
 #undef PROTOTYPES
 
 /* If using the C implementation of alloca, define if you know the
@@ -615,6 +620,9 @@
 #ifndef __EXTENSIONS__
 # undef __EXTENSIONS__
 #endif
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
 
 /* Define to rpl_ if the getcwd replacement function should be used. */
 #undef __GETCWD_PREFIX
@@ -622,6 +630,9 @@
 /* Define to rpl_ if the getopt replacement functions and variables should be
    used. */
 #undef __GETOPT_PREFIX
+
+/* Define like PROTOTYPES; this can be used by system headers. */
+#undef __PROTOTYPES
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

@@ -1,5 +1,6 @@
 /* locate -- search databases for filenames that match patterns
-   Copyright (C) 1994, 96, 98, 99, 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1998, 1999, 2000, 2003,
+                 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.
 */
 
@@ -32,22 +33,32 @@
    128-255 	bigram codes (the 128 most common, as determined by `updatedb')
    32-127  	single character (printable) ASCII remainder
 
-   Uses a novel two-tiered string search technique:
+   Earlier versions of GNU locate used to use a novel two-tiered
+   string search technique, which was described in Usenix ;login:, Vol
+   8, No 1, February/March, 1983, p. 8.
 
-   First, match a metacharacter-free subpattern and a partial pathname
-   BACKWARDS to avoid full expansion of the pathname list.
-   The time savings is 40-50% over forward matching, which cannot efficiently
-   handle overlapped search patterns and compressed path remainders.
+   However, latterly code changes to provide additional functionality
+   became dificult to make with the existing reading scheme, and so 
+   we no longer perform the matching as efficiently as we used to (that is, 
+   we no longer use the same algorithm).
 
-   Then, match the actual shell glob-style regular expression (if in this form)
-   against the candidate pathnames using the slower shell filename
-   matching routines.
+   The old algorithm was:
 
-   Described more fully in Usenix ;login:, Vol 8, No 1,
-   February/March, 1983, p. 8.
+      First, match a metacharacter-free subpattern and a partial
+      pathname BACKWARDS to avoid full expansion of the pathname list.
+      The time savings is 40-50% over forward matching, which cannot
+      efficiently handle overlapped search patterns and compressed
+      path remainders.
+      
+      Then, match the actual shell glob pattern (if in this form)
+      against the candidate pathnames using the slower shell filename
+      matching routines.
+
 
    Written by James A. Woods <jwoods@adobe.com>.
-   Modified by David MacKenzie <djm@gnu.org>.  */
+   Modified by David MacKenzie <djm@gnu.org>.  
+   Additional work by James Youngman and Bas van Gompel.
+*/
 
 #include <config.h>
 #include <stdio.h>
@@ -58,6 +69,12 @@
 #include <fnmatch.h>
 #include <getopt.h>
 #include <xstrtol.h>
+
+#ifdef HAVE_UNISTD_H
+/* We need <unistd.h> for isatty(). */
+#include <unistd.h>
+#endif
+
 
 #define NDEBUG
 #include <assert.h>
@@ -113,6 +130,9 @@ extern int errno;
 #include "closeout.h"
 #include "nextelem.h"
 #include "regex.h"
+#include "quote.h"
+#include "quotearg.h"
+#include "printquoted.h"
 
 
 /* Note that this evaluates C many times.  */
@@ -135,22 +155,37 @@ static const char warn_name_units[] = N_("days");
 
 #define WARN_SECONDS ((SECONDS_PER_UNIT) * (WARN_NUMBER_UNITS))
 
+enum visit_result
+  {
+    VISIT_CONTINUE = 1,  /* please call the next visitor */
+    VISIT_ACCEPTED = 2,  /* accepted, call no futher callbacks for this file */
+    VISIT_REJECTED = 4,  /* rejected, process next file. */
+    VISIT_ABORT    = 8   /* rejected, process no more files. */
+  };
+
+enum ExistenceCheckType 
+  {
+    ACCEPT_EITHER,		/* Corresponds to lack of -E/-e option */
+    ACCEPT_EXISTING,		/* Corresponds to option -e */
+    ACCEPT_NON_EXISTING		/* Corresponds to option -E */
+  };
+
 /* Check for existence of files before printing them out? */
-static int check_existence = 0;
+enum ExistenceCheckType check_existence = ACCEPT_EITHER;
 
 static int follow_symlinks = 1;
 
 /* What to separate the results with. */
 static int separator = '\n';
 
-
-
+static struct quoting_options * quote_opts = NULL;
+static bool stdout_is_a_tty;
+static bool print_quoted_filename;
 
 /* Read in a 16-bit int, high byte first (network byte order).  */
 
 static short
-get_short (fp)
-     FILE *fp;
+get_short (FILE *fp)
 {
 
   register short x;
@@ -231,13 +266,12 @@ lc_strcpy(char *dest, const char *src)
   *dest = 0;
 }
 
-enum visit_result
-  {
-    VISIT_CONTINUE = 1,  /* please call the next visitor */
-    VISIT_ACCEPTED = 2,  /* accepted, call no futher callbacks for this file */
-    VISIT_REJECTED = 4,  /* rejected, process next file. */
-    VISIT_ABORT    = 8   /* rejected, process no more files. */
-  };
+struct locate_limits
+{
+  uintmax_t limit;
+  uintmax_t items_accepted;
+};
+static struct locate_limits limits;
 
 
 struct locate_stats
@@ -252,11 +286,20 @@ struct locate_stats
 static struct locate_stats statistics;
 
 
+struct stringbuf
+{
+  char *buffer;
+  size_t buffersize;
+  size_t *soffs;
+  size_t *preqlen;
+};
+static struct stringbuf casebuf;
+
+
 struct casefolder
 {
   const char *pattern;
-  char *buffer;
-  size_t buffersize;
+  struct stringbuf *pbuf;
 };
 
 struct regular_expression
@@ -265,9 +308,24 @@ struct regular_expression
 };
 
 
+struct process_data
+{
+  int c;			/* An input byte.  */
+  int count; /* The length of the prefix shared with the previous database entry.  */
+  int len;
+  char *original_filename;	/* The current input database entry. */
+  size_t pathsize;		/* Amount allocated for it.  */
+  char *munged_filename;	/* path or base_name(path) */
+  FILE *fp;			/* The pathname database.  */
+  char *dbfile;			/* Its name, or "<stdin>" */
+  /* for the old database format,
+     the first and second characters of the most common bigrams.  */
+  char bigram1[128];
+  char bigram2[128];
+};
 
-typedef int (*visitfunc)(const char *munged_filename,
-			 const char *original_filename,
+
+typedef int (*visitfunc)(struct process_data *procdata,
 			 void *context);
 
 struct visitor
@@ -280,24 +338,93 @@ struct visitor
 
 static struct visitor *inspectors = NULL;
 static struct visitor *lastinspector = NULL;
+static struct visitor *past_pat_inspector = NULL;
 
+/* 0 or 1 pattern(s) */
 static int
-process_filename(const char *munged_filename, const char *original_filename)
+process_simple(struct process_data *procdata)
 {
   int result = VISIT_CONTINUE;
   const struct visitor *p = inspectors;
   
-  while ( (VISIT_CONTINUE == result) && (NULL != p) )
+  while ( ((VISIT_CONTINUE | VISIT_ACCEPTED) & result) && (NULL != p) )
     {
-      result = (p->inspector)(munged_filename, original_filename, p->context);
+      result = (p->inspector)(procdata, p->context);
       p = p->next;
     }
 
+    return result;
+}
+
+/* Accept if any pattern matches. */
+static int
+process_or (struct process_data *procdata)
+{
+  int result = VISIT_CONTINUE;
+  const struct visitor *p = inspectors;
+  
+  while ( ((VISIT_CONTINUE | VISIT_REJECTED) & result) && (past_pat_inspector != p) )
+    {
+      result = (p->inspector)(procdata, p->context);
+      p = p->next;
+    }
+
+  if (result == VISIT_CONTINUE)
+    result = VISIT_REJECTED;
+  if (result & (VISIT_ABORT | VISIT_REJECTED))
+    return result;
+
+  p = past_pat_inspector;
+  result = VISIT_CONTINUE;
+
+  while ( (VISIT_CONTINUE == result) && (NULL != p) )
+    {
+      result = (p->inspector)(procdata, p->context);
+      p = p->next;
+    }
+  
   if (VISIT_CONTINUE == result)
     return VISIT_ACCEPTED;
   else
     return result;
 }
+
+/* Accept if all pattern match. */
+static int
+process_and (struct process_data *procdata)
+{
+  int result = VISIT_CONTINUE;
+  const struct visitor *p = inspectors;
+  
+  while ( ((VISIT_CONTINUE | VISIT_ACCEPTED) & result) && (past_pat_inspector != p) )
+    {
+      result = (p->inspector)(procdata, p->context);
+      p = p->next;
+    }
+
+  if (result == VISIT_CONTINUE)
+    result = VISIT_REJECTED;
+  if (result & (VISIT_ABORT | VISIT_REJECTED))
+    return result;
+
+  p = past_pat_inspector;
+  result = VISIT_CONTINUE;
+
+  while ( (VISIT_CONTINUE == result) && (NULL != p) )
+    {
+      result = (p->inspector)(procdata, p->context);
+      p = p->next;
+    }
+  
+  if (VISIT_CONTINUE == result)
+    return VISIT_ACCEPTED;
+  else
+    return result;
+}
+
+typedef int (*processfunc)(struct process_data *procdata);
+
+static processfunc mainprocessor = NULL;
 
 static void
 add_visitor(visitfunc fn, void *context)
@@ -321,29 +448,201 @@ add_visitor(visitfunc fn, void *context)
 
 
 static int
-visit_justprint(const char *munged_filename, const char *original_filename, void *context)
+visit_justprint_quoted(struct process_data *procdata, void *context)
 {
   (void) context;
-  (void) munged_filename;
-  fputs(original_filename, stdout);
+  print_quoted (stdout, quote_opts, stdout_is_a_tty,
+		"%s", 
+		procdata->original_filename);
   putchar(separator);
   return VISIT_CONTINUE;
 }
 
 static int
-visit_exists_follow(const char *munged_filename,
-		    const char *original_filename, void *context)
+visit_justprint_unquoted(struct process_data *procdata, void *context)
+{
+  (void) context;
+  fputs(procdata->original_filename, stdout);
+  putchar(separator);
+  return VISIT_CONTINUE;
+}
+
+static int
+visit_old_format(struct process_data *procdata, void *context)
+{
+  register char *s;
+  (void) context;
+
+  /* Get the offset in the path where this path info starts.  */
+  if (procdata->c == LOCATEDB_OLD_ESCAPE)
+    procdata->count += getw (procdata->fp) - LOCATEDB_OLD_OFFSET;
+  else
+    procdata->count += procdata->c - LOCATEDB_OLD_OFFSET;
+
+  /* Overlay the old path with the remainder of the new.  */
+  for (s = procdata->original_filename + procdata->count;
+       (procdata->c = getc (procdata->fp)) > LOCATEDB_OLD_ESCAPE;)
+    if (procdata->c < 0200)
+      *s++ = procdata->c;		/* An ordinary character.  */
+    else
+      {
+	/* Bigram markers have the high bit set. */
+	procdata->c &= 0177;
+	*s++ = procdata->bigram1[procdata->c];
+	*s++ = procdata->bigram2[procdata->c];
+      }
+  *s-- = '\0';
+
+  procdata->munged_filename = procdata->original_filename;
+  
+  return VISIT_CONTINUE;
+}
+
+
+static int
+visit_locate02_format(struct process_data *procdata, void *context)
+{
+  register char *s;
+  int nread;
+  (void) context;
+
+  if (procdata->c == LOCATEDB_ESCAPE)
+    procdata->count += (short)get_short (procdata->fp);
+  else if (procdata->c > 127)
+    procdata->count += procdata->c - 256;
+  else
+    procdata->count += procdata->c;
+
+  if (procdata->count > procdata->len || procdata->count < 0)
+    {
+      /* This should not happen generally , but since we're
+       * reading in data which is outside our control, we
+       * cannot prevent it.
+       */
+      error(1, 0, _("locate database `%s' is corrupt or invalid"), procdata->dbfile);
+    }
+ 
+  /* Overlay the old path with the remainder of the new.  */
+  nread = locate_read_str (&procdata->original_filename, &procdata->pathsize,
+			   procdata->fp, 0, procdata->count);
+  if (nread < 0)
+    return VISIT_ABORT;
+  procdata->c = getc (procdata->fp);
+  procdata->len = procdata->count + nread;
+  s = procdata->original_filename + procdata->len - 1; /* Move to the last char in path.  */
+  assert (s[0] != '\0');
+  assert (s[1] == '\0'); /* Our terminator.  */
+  assert (s[2] == '\0'); /* Added by locate_read_str.  */
+
+  procdata->munged_filename = procdata->original_filename;
+  
+  return VISIT_CONTINUE;
+}
+
+static int
+visit_basename(struct process_data *procdata, void *context)
+{
+  (void) context;
+  procdata->munged_filename = base_name(procdata->original_filename);
+
+  return VISIT_CONTINUE;
+}
+
+
+static int
+visit_casefold(struct process_data *procdata, void *context)
+{
+  struct stringbuf *b = context;
+
+  if (*b->preqlen+1 > b->buffersize)
+    {
+      b->buffer = xrealloc(b->buffer, *b->preqlen+1); /* XXX: consider using extendbuf(). */
+      b->buffersize = *b->preqlen+1;
+    }
+  lc_strcpy(b->buffer, procdata->munged_filename);
+
+  return VISIT_CONTINUE;
+}
+  
+/* visit_existing_follow implements -L -e */
+static int
+visit_existing_follow(struct process_data *procdata, void *context)
 {
   struct stat st;
   (void) context;
-  (void) munged_filename;
 
   /* munged_filename has been converted in some way (to lower case,
    * or is just the base name of the file), and original_filename has not.  
    * Hence only original_filename is still actually the name of the file 
    * whose existence we would need to check.
    */
-  if (stat(original_filename, &st) != 0)
+  if (stat(procdata->original_filename, &st) != 0)
+    {
+      return VISIT_REJECTED;
+    }
+  else
+    {
+      return VISIT_CONTINUE;
+    }
+}
+
+/* visit_non_existing_follow implements -L -E */
+static int
+visit_non_existing_follow(struct process_data *procdata, void *context)
+{
+  struct stat st;
+  (void) context;
+
+  /* munged_filename has been converted in some way (to lower case,
+   * or is just the base name of the file), and original_filename has not.  
+   * Hence only original_filename is still actually the name of the file 
+   * whose existence we would need to check.
+   */
+  if (stat(procdata->original_filename, &st) == 0)
+    {
+      return VISIT_REJECTED;
+    }
+  else
+    {
+      return VISIT_CONTINUE;
+    }
+}
+
+/* visit_existing_nofollow implements -P -e */
+static int
+visit_existing_nofollow(struct process_data *procdata, void *context)
+{
+  struct stat st;
+  (void) context;
+
+  /* munged_filename has been converted in some way (to lower case,
+   * or is just the base name of the file), and original_filename has not.  
+   * Hence only original_filename is still actually the name of the file 
+   * whose existence we would need to check.
+   */
+  if (lstat(procdata->original_filename, &st) != 0)
+    {
+      return VISIT_REJECTED;
+    }
+  else
+    {
+      return VISIT_CONTINUE;
+    }
+}
+
+/* visit_non_existing_nofollow implements -P -E */
+static int
+visit_non_existing_nofollow(struct process_data *procdata, void *context)
+{
+  struct stat st;
+  (void) context;
+
+  /* munged_filename has been converted in some way (to lower case,
+   * or is just the base name of the file), and original_filename has not.  
+   * Hence only original_filename is still actually the name of the file 
+   * whose existence we would need to check.
+   */
+  if (lstat(procdata->original_filename, &st) == 0)
     {
       return VISIT_REJECTED;
     }
@@ -354,113 +653,77 @@ visit_exists_follow(const char *munged_filename,
 }
 
 static int
-visit_exists_nofollow(const char *munged_filename,
-		      const char *original_filename, void *context)
-{
-  struct stat st;
-  (void) context;
-  (void) munged_filename;
-
-  /* munged_filename has been converted in some way (to lower case,
-   * or is just the base name of the file), and original_filename has not.  
-   * Hence only original_filename is still actually the name of the file 
-   * whose existence we would need to check.
-   */
-  if (lstat(original_filename, &st) != 0)
-    {
-      return VISIT_REJECTED;
-    }
-  else
-    {
-      return VISIT_CONTINUE;
-    }
-}
-
-static int
-visit_substring_match_nocasefold(const char *munged_filename, const char *original_filename, void *context)
+visit_substring_match_nocasefold(struct process_data *procdata, void *context)
 {
   const char *pattern = context;
-  (void) original_filename;
 
-  if (NULL != strstr(munged_filename, pattern))
-    return VISIT_CONTINUE;
+  if (NULL != strstr(procdata->munged_filename, pattern))
+    return VISIT_ACCEPTED;
   else
     return VISIT_REJECTED;
 }
 
 static int
-visit_substring_match_casefold(const char *munged_filename, const char *original_filename, void *context)
+visit_substring_match_casefold(struct process_data *procdata, void *context)
 {
-  struct casefolder * p = context;
-  size_t len = strlen(munged_filename);
+  const struct casefolder * p = context;
+  const struct stringbuf * b = p->pbuf;
+  (void) procdata;
 
-  (void) original_filename;
-  if (len+1 > p->buffersize)
-    {
-      p->buffer = xrealloc(p->buffer, len+1); /* XXX: consider using extendbuf(). */
-      p->buffersize = len+1;
-    }
-  lc_strcpy(p->buffer, munged_filename);
-  
-  
-  if (NULL != strstr(p->buffer, p->pattern))
-    return VISIT_CONTINUE;
+  if (NULL != strstr(b->buffer, p->pattern))
+    return VISIT_ACCEPTED;
   else
     return VISIT_REJECTED;
 }
 
 
 static int
-visit_globmatch_nofold(const char *munged_filename, const char *original_filename, void *context)
+visit_globmatch_nofold(struct process_data *procdata, void *context)
 {
   const char *glob = context;
-  (void) original_filename;
-  if (fnmatch(glob, munged_filename, 0) != 0)
+  if (fnmatch(glob, procdata->munged_filename, 0) != 0)
     return VISIT_REJECTED;
   else
-    return VISIT_CONTINUE;
+    return VISIT_ACCEPTED;
 }
 
 
 static int
-visit_globmatch_casefold(const char *munged_filename, const char *original_filename, void *context)
+visit_globmatch_casefold(struct process_data *procdata, void *context)
 {
   const char *glob = context;
-  (void) original_filename;
-  if (fnmatch(glob, munged_filename, FNM_CASEFOLD) != 0)
+  if (fnmatch(glob, procdata->munged_filename, FNM_CASEFOLD) != 0)
     return VISIT_REJECTED;
   else
-    return VISIT_CONTINUE;
+    return VISIT_ACCEPTED;
 }
 
 
 static int
-visit_regex(const char *munged_filename, const char *original_filename, void *context)
+visit_regex(struct process_data *procdata, void *context)
 {
   struct regular_expression *p = context;
-  (void) original_filename;
   
-  if (0 == regexec(&p->re, munged_filename, 0u, NULL, 0))
-    return VISIT_CONTINUE;	/* match */
+  if (0 == regexec(&p->re, procdata->munged_filename, 0u, NULL, 0))
+    return VISIT_ACCEPTED;	/* match */
   else
     return VISIT_REJECTED;	/* no match */
 }
 
 
 static int
-visit_stats(const char *munged_filename, const char *original_filename, void *context)
+visit_stats(struct process_data *procdata, void *context)
 {
   struct locate_stats *p = context;
-  size_t len = strlen(original_filename);
+  size_t len = strlen(procdata->original_filename);
   const char *s;
   int highbit, whitespace, newline;
-  (void) munged_filename;
   
   ++(p->total_filename_count);
   p->total_filename_length += len;
   
   highbit = whitespace = newline = 0;
-  for (s=original_filename; *s; ++s)
+  for (s=procdata->original_filename; *s; ++s)
     {
       if ( (int)(*s) & 128 )
 	highbit = 1;
@@ -488,7 +751,7 @@ visit_stats(const char *munged_filename, const char *original_filename, void *co
 /* Emit the statistics.
  */
 static void
-print_stats(size_t database_file_size)
+print_stats(int argc, size_t database_file_size)
 {
   char hbuf[LONGEST_HUMAN_READABLE + 1];
   
@@ -513,60 +776,135 @@ print_stats(size_t database_file_size)
 	 human_readable (statistics.highbit_filename_count,
 			 hbuf, human_ceiling, 1, 1));
   
-  printf(_("Compression ratio %4.2f%%\n"),
-	 100.0 * ((double)statistics.total_filename_length
-		  - (double) database_file_size)
-	 / (double) statistics.total_filename_length);
+  if (!argc)
+    printf(_("Compression ratio %4.2f%%\n"),
+	   100.0 * ((double)statistics.total_filename_length
+		    - (double) database_file_size)
+	   / (double) statistics.total_filename_length);
   printf("\n");
 }
 
 
-/* Print the entries in DBFILE that match shell globbing pattern PATHPART.
+/* Print the entries in DBFILE that match shell globbing patterns in ARGV.
    Return the number of entries printed.  */
 
 static unsigned long
-new_locate (char *pathpart,
-	    char *dbfile,
-	    int ignore_case,
-	    int enable_print,
-	    int basename_only,
-	    int use_limit,
-	    uintmax_t limit,
-	    int stats,
-	    int regex)
+locate (int argc,
+	char **argv,
+	char *dbfile,
+	int ignore_case,
+	int enable_print,
+	int basename_only,
+	int use_limit,
+	struct locate_limits *plimit,
+	int stats,
+	int op_and,
+	int regex)
 {
-  FILE *fp;			/* The pathname database.  */
-  int c;			/* An input byte.  */
+  char *pathpart; 		/* A pattern to consider. */
+  int argn;			/* Index to current pattern in argv. */
+  int need_fold;	/* Set when folding and any pattern is non-glob. */
   int nread;		     /* number of bytes read from an entry. */
-  char *path;		       /* The current input database entry. */
-  const char *testpath;
-  size_t pathsize;		/* Amount allocated for it.  */
-  int count = 0; /* The length of the prefix shared with the previous database entry.  */
+  struct process_data procdata;	/* Storage for data shared with visitors. */
   
   int old_format = 0; /* true if reading a bigram-encoded database.  */
+  static bool did_stdin = false; /* Set to prevent rereading stdin. */
+  struct visitor* pvis; /* temp for determining past_pat_inspector. */
   
-  /* for the old database format,
-     the first and second characters of the most common bigrams.  */
-  char bigram1[128], bigram2[128];
-
-  /* number of items accepted (i.e. printed) */
-  unsigned long int items_accepted = 0uL;
-
   /* To check the age of the database.  */
   struct stat st;
   time_t now;
 
-  /* Set up the inspection regime */
-  inspectors = NULL;
-  lastinspector = NULL;
 
-  if (stats)
+  procdata.len = procdata.count = 0;
+  if (!strcmp (dbfile, "-"))
     {
-      assert(!use_limit);
-      add_visitor(visit_stats, &statistics);
+      if (did_stdin)
+	{
+	  error (0, 0, _("warning: the locate database can only be read from stdin once."));
+	  return 0;
+	}
+      
+	    
+      procdata.dbfile = "<stdin>";
+      procdata.fp = stdin;
+      did_stdin = true;
     }
   else
     {
+      if (stat (dbfile, &st) || (procdata.fp = fopen (dbfile, "r")) == NULL)
+	{
+	  error (0, errno, "%s", dbfile);
+	  return 0;
+	}
+      time(&now);
+      if (now - st.st_mtime > WARN_SECONDS)
+	{
+	  /* For example:
+	     warning: database `fred' is more than 8 days old */
+	  error (0, 0, _("warning: database `%s' is more than %d %s old"),
+		 dbfile, WARN_NUMBER_UNITS, _(warn_name_units));
+	}
+      procdata.dbfile = dbfile;
+    }
+
+  procdata.pathsize = 1026;	/* Increased as necessary by locate_read_str.  */
+  procdata.original_filename = xmalloc (procdata.pathsize);
+
+  nread = fread (procdata.original_filename, 1, sizeof (LOCATEDB_MAGIC),
+		 procdata.fp);
+  if (nread != sizeof (LOCATEDB_MAGIC)
+      || memcmp (procdata.original_filename, LOCATEDB_MAGIC,
+		 sizeof (LOCATEDB_MAGIC)))
+    {
+      int i;
+      /* Read the list of the most common bigrams in the database.  */
+      nread = fread (procdata.original_filename + sizeof (LOCATEDB_MAGIC), 1,
+	  256 - sizeof (LOCATEDB_MAGIC), procdata.fp);
+      for (i = 0; i < 128; i++)
+	{
+	  procdata.bigram1[i] = procdata.original_filename[i << 1];
+	  procdata.bigram2[i] = procdata.original_filename[(i << 1) + 1];
+	}
+      old_format = 1;
+    }
+
+  /* Set up the inspection regime */
+  inspectors = NULL;
+  lastinspector = NULL;
+  past_pat_inspector = NULL;
+
+  if (old_format)
+    add_visitor(visit_old_format, NULL);
+  else
+    add_visitor(visit_locate02_format, NULL);
+
+  if (basename_only)
+    add_visitor(visit_basename, NULL);
+  
+  /* See if we need fold. */
+  if (ignore_case && !regex)
+    for ( argn = 0; argn < argc; argn++ )
+      {
+        pathpart = argv[argn];
+        if (!contains_metacharacter(pathpart))
+	  {
+	    need_fold = 1;
+	    break;
+	  }
+      }
+
+  if (need_fold)
+    {
+      add_visitor(visit_casefold, &casebuf);
+      casebuf.preqlen = &procdata.pathsize;
+      casebuf.soffs = &procdata.count;
+    }
+  
+  /* Add an inspector for each pattern we're looking for. */
+  for ( argn = 0; argn < argc; argn++ )
+    {
+      pathpart = argv[argn];
       if (regex)
 	{
 	  struct regular_expression *p = xmalloc(sizeof(*p));
@@ -601,144 +939,86 @@ new_locate (char *pathpart,
 	    {
 	      struct casefolder * cf = xmalloc(sizeof(*cf));
 	      cf->pattern = pathpart;
-	      cf->buffer = NULL;
-	      cf->buffersize = 0;
+	      cf->pbuf = &casebuf;
 	      add_visitor(visit_substring_match_casefold, cf);
+	      /* If we ignore case, convert it to lower now so we don't have to
+	       * do it every time
+	       */
+	      lc_strcpy(pathpart, pathpart);
 	    }
 	  else
 	    {
 	      add_visitor(visit_substring_match_nocasefold, pathpart);
 	    }
 	}
+    }
 
-      /* We add visit_exists_*() as late as possible to reduce the
-       * number of stat() calls.
-       */
-      if (check_existence)
-	{
-	  visitfunc f;
-	  if (follow_symlinks)
-	    f = visit_exists_follow;
-	  else
-	    f = visit_exists_nofollow;
+  pvis = lastinspector;
+
+  /* We add visit_existing_*() as late as possible to reduce the
+   * number of stat() calls.
+   */
+  switch (check_existence)
+    {
+      case ACCEPT_EXISTING:
+	if (follow_symlinks)	/* -L, default */
+	  add_visitor(visit_existing_follow, NULL);
+	else			/* -P */
+	  add_visitor(visit_existing_nofollow, NULL);
+	break;
 	  
-	  add_visitor(f, NULL);
-	}
-      
+      case ACCEPT_NON_EXISTING:
+	if (follow_symlinks)	/* -L, default */
+	  add_visitor(visit_non_existing_follow, NULL);
+	else			/* -P */
+	  add_visitor(visit_non_existing_nofollow, NULL);
+	break;
 
-      if (enable_print)
-	add_visitor(visit_justprint, NULL);
+      case ACCEPT_EITHER:	/* Default, neither -E nor -e */
+	/* do nothing; no extra processing. */
+	break;
+    }
+      
+  if (stats)
+    add_visitor(visit_stats, &statistics);
+
+  if (enable_print)
+    {
+      if (print_quoted_filename)
+	add_visitor(visit_justprint_quoted,   NULL);
+      else
+	add_visitor(visit_justprint_unquoted, NULL);
     }
   
 
-  if (stat (dbfile, &st) || (fp = fopen (dbfile, "r")) == NULL)
+  if (argc > 1)
     {
-      error (0, errno, "%s", dbfile);
-      return 0;
+      past_pat_inspector = pvis->next;
+      if (op_and)
+        mainprocessor = process_and;
+      else
+        mainprocessor = process_or;
     }
-  time(&now);
-  if (now - st.st_mtime > WARN_SECONDS)
-    {
-      /* For example:
-	 warning: database `fred' is more than 8 days old */
-      error (0, 0, _("warning: database `%s' is more than %d %s old"),
-	     dbfile, WARN_NUMBER_UNITS, _(warn_name_units));
-    }
-
-  pathsize = 1026;		/* Increased as necessary by locate_read_str.  */
-  path = xmalloc (pathsize);
-
-  nread = fread (path, 1, sizeof (LOCATEDB_MAGIC), fp);
-  if (nread != sizeof (LOCATEDB_MAGIC)
-      || memcmp (path, LOCATEDB_MAGIC, sizeof (LOCATEDB_MAGIC)))
-    {
-      int i;
-      /* Read the list of the most common bigrams in the database.  */
-      fseek (fp, 0, 0);
-      for (i = 0; i < 128; i++)
-	{
-	  bigram1[i] = getc (fp);
-	  bigram2[i] = getc (fp);
-	}
-      old_format = 1;
-    }
+  else
+    mainprocessor = process_simple;
 
   if (stats)
     {
 	printf(_("Database %s is in the %s format.\n"),
-	       dbfile,
+	       procdata.dbfile,
 	       old_format ? _("old") : "LOCATE02");
     }
   
-  /* If we ignore case, convert it to lower first so we don't have to
-   * do it every time
-   */
-  if (!stats && ignore_case)
+  procdata.c = getc (procdata.fp);
+  while ( (procdata.c != EOF) && (!use_limit || (plimit->limit > 0)) )
     {
-      lc_strcpy(pathpart, pathpart);
-    }
-  
-  items_accepted = 0;
 
-  c = getc (fp);
-  while ( (c != EOF) && (!use_limit || (limit > 0)) )
-    {
-      register char *s;		/* Scan the path we read in.  */
-
-      if (old_format)
+      /* If we are searching for filename patterns, the inspector list 
+       * will contain an entry for each pattern for which we are searching.
+       */
+      if ((VISIT_ACCEPTED | VISIT_CONTINUE) & (mainprocessor)(&procdata))
 	{
-	  /* Get the offset in the path where this path info starts.  */
-	  if (c == LOCATEDB_OLD_ESCAPE)
-	    count += getw (fp) - LOCATEDB_OLD_OFFSET;
-	  else
-	    count += c - LOCATEDB_OLD_OFFSET;
-
-	  /* Overlay the old path with the remainder of the new.  */
-	  for (s = path + count; (c = getc (fp)) > LOCATEDB_OLD_ESCAPE;)
-	    if (c < 0200)
-	      *s++ = c;		/* An ordinary character.  */
-	    else
-	      {
-		/* Bigram markers have the high bit set. */
-		c &= 0177;
-		*s++ = bigram1[c];
-		*s++ = bigram2[c];
-	      }
-	  *s-- = '\0';
-	}
-      else
-	{
-	  if (c == LOCATEDB_ESCAPE)
-	    count += (short)get_short (fp);
-	  else if (c > 127)
-	    count += c - 256;
-	  else
-	    count += c;
-
-	  if (count > strlen(path))
-	    {
-	      /* This should not happen generally , but since we're
-	       * reading in data which is outside our control, we
-	       * cannot prevent it.
-	       */
-	      error(1, 0, _("locate database `%s' is corrupt or invalid"), dbfile);
-	    }
-	  
-	  /* Overlay the old path with the remainder of the new.  */
-	  nread = locate_read_str (&path, &pathsize, fp, 0, count); 
-	  if (nread < 0)
-	    break;
-	  c = getc (fp);
-	  s = path + count + nread - 1; /* Move to the last char in path.  */
-	  assert (s[0] != '\0');
-	  assert (s[1] == '\0'); /* Our terminator.  */
-	  assert (s[2] == '\0'); /* Added by locate_read_str.  */
-	}
-
-      testpath = basename_only ? base_name(path) : path;
-      if (VISIT_ACCEPTED == process_filename(testpath, path))
-	{
-	  if ((++items_accepted >= limit) && use_limit)
+	  if ((++plimit->items_accepted >= plimit->limit) && use_limit)
 	    {
 	      break;
 	    }
@@ -748,21 +1028,21 @@ new_locate (char *pathpart,
       
   if (stats)
     {
-      print_stats(st.st_size);
+      print_stats(argc, st.st_size);
     }
   
-  if (ferror (fp))
+  if (ferror (procdata.fp))
     {
-      error (0, errno, "%s", dbfile);
+      error (0, errno, "%s", procdata.dbfile);
       return 0;
     }
-  if (fclose (fp) == EOF)
+  if (procdata.fp != stdin && fclose (procdata.fp) == EOF)
     {
       error (0, errno, "%s", dbfile);
       return 0;
     }
 
-  return items_accepted;
+  return plimit->items_accepted;
 }
 
 
@@ -774,15 +1054,15 @@ extern char *version_string;
 char *program_name;
 
 static void
-usage (stream)
-     FILE *stream;
+usage (FILE *stream)
 {
   fprintf (stream, _("\
-Usage: %s [-d path | --database=path] [-e | --existing]\n\
+Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n\
       [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n\
       [--limit=N | -l N] [-S | --statistics] [-0 | --null] [-c | --count]\n\
       [-P | -H | --nofollow] [-L | --follow] [-m | --mmap ] [ -s | --stdio ]\n\
-      [-r | --regex ] [--version] [--help] pattern...\n"),
+      [-A | --all] [-p | --print] [-r | --regex ] [--version] [--help]\n\
+      pattern...\n"),
 	   program_name);
   fputs (_("\nReport bugs to <bug-findutils@gnu.org>.\n"), stream);
 }
@@ -791,7 +1071,9 @@ static struct option const longopts[] =
 {
   {"database", required_argument, NULL, 'd'},
   {"existing", no_argument, NULL, 'e'},
+  {"non-existing", no_argument, NULL, 'E'},
   {"ignore-case", no_argument, NULL, 'i'},
+  {"all", no_argument, NULL, 'A'},
   {"help", no_argument, NULL, 'h'},
   {"version", no_argument, NULL, 'v'},
   {"null", no_argument, NULL, '0'},
@@ -799,6 +1081,7 @@ static struct option const longopts[] =
   {"wholename", no_argument, NULL, 'w'},
   {"wholepath", no_argument, NULL, 'w'}, /* Synonym. */
   {"basename", no_argument, NULL, 'b'},
+  {"print", no_argument, NULL, 'p'},
   {"stdio", no_argument, NULL, 's'},
   {"mmap",  no_argument, NULL, 'm'},
   {"limit",  required_argument, NULL, 'l'},
@@ -810,21 +1093,20 @@ static struct option const longopts[] =
 };
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   char *dbpath;
   unsigned long int found = 0uL;
   int optc;
   int ignore_case = 0;
-  int print = 1;
+  int print = 0;
   int just_count = 0;
   int basename_only = 0;
-  uintmax_t limit = 0;
   int use_limit = 0;
   int regex = 0;
   int stats = 0;
+  int op_and = 0;
+  char *e;
   
   program_name = argv[0];
 
@@ -835,17 +1117,28 @@ main (argc, argv)
   textdomain (PACKAGE);
   atexit (close_stdout);
 
+  limits.limit = 0;
+  limits.items_accepted = 0;
+
+  quote_opts = clone_quoting_options (NULL);
+  print_quoted_filename = true;
+  
   dbpath = getenv ("LOCATE_PATH");
   if (dbpath == NULL)
     dbpath = LOCATE_DB;
 
-  check_existence = 0;
+  check_existence = ACCEPT_EITHER;
 
-  while ((optc = getopt_long (argc, argv, "bcd:eil:rsm0SwHPL", longopts, (int *) 0)) != -1)
+  while ((optc = getopt_long (argc, argv, "Abcd:eEil:prsm0SwHPL", longopts, (int *) 0)) != -1)
     switch (optc)
       {
       case '0':
 	separator = 0;
+	print_quoted_filename = false; /* print filename 'raw'. */
+	break;
+
+      case 'A':
+	op_and = 1;
 	break;
 
       case 'b':
@@ -854,7 +1147,6 @@ main (argc, argv)
 
       case 'c':
 	just_count = 1;
-	print = 0;
 	break;
 
       case 'd':
@@ -862,7 +1154,11 @@ main (argc, argv)
 	break;
 
       case 'e':
-	check_existence = 1;
+	check_existence = ACCEPT_EXISTING;
+	break;
+
+      case 'E':
+	check_existence = ACCEPT_NON_EXISTING;
 	break;
 
       case 'i':
@@ -872,6 +1168,10 @@ main (argc, argv)
       case 'h':
 	usage (stdout);
 	return 0;
+
+      case 'p':
+	print = 1;
+	break;
 
       case 'v':
 	printf (_("GNU locate version %s\n"), version_string);
@@ -906,7 +1206,7 @@ main (argc, argv)
       case 'l':
 	{
 	  char *end = optarg;
-	  strtol_error err = xstrtoumax(optarg, &end, 10, &limit, NULL);
+	  strtol_error err = xstrtoumax(optarg, &end, 10, &limits.limit, NULL);
 	  if (LONGINT_OK != err)
 	    {
 	      STRTOL_FATAL_ERROR(optarg, _("argument to --limit"), err);
@@ -927,56 +1227,57 @@ main (argc, argv)
 	return 1;
       }
 
+  if (!just_count && !stats)
+    print = 1;
+
   if (stats)
     {
-      use_limit = 0;
-      print = 0;
+      if (optind == argc)
+ 	  use_limit = 0;
     }
   else
     {
-      if (optind == argc)
+      if (!just_count && optind == argc)
 	{
 	  usage (stderr);
 	  return 1;
 	}
     }
   
-  for (; stats || optind < argc; optind++)
+
+  if (1 == isatty(STDOUT_FILENO))
+    stdout_is_a_tty = true;
+  else
+    stdout_is_a_tty = false;
+
+  next_element (dbpath, 0);	/* Initialize.  */
+  while ((e = next_element ((char *) NULL, 0)) != NULL)
     {
-      char *e;
-      const char *needle;
-      next_element (dbpath, 0);	/* Initialize.  */
-      needle = stats ? NULL : argv[optind];
-      while ((e = next_element ((char *) NULL, 0)) != NULL)
+      statistics.compressed_bytes = 
+      statistics.total_filename_count = 
+      statistics.total_filename_length = 
+      statistics.whitespace_count = 
+      statistics.newline_count = 
+      statistics.highbit_filename_count = 0u;
+
+      if (0 == strlen(e) || 0 == strcmp(e, "."))
 	{
-	  statistics.compressed_bytes = 
-	    statistics.total_filename_count = 
-	    statistics.total_filename_length = 
-	    statistics.whitespace_count = 
-	    statistics.newline_count = 
-	    statistics.highbit_filename_count = 0u;
-
-	  if (0 == strlen(e) || 0 == strcmp(e, "."))
-	    {
-	      /* Use the default database name instead (note: we
-	       * don't use 'dbpath' since that might itself contain a 
-	       * colon-separated list.
-	       */
-	      e = LOCATE_DB;
-	    }
-	  
-	  found += new_locate (needle, e, ignore_case, print, basename_only, use_limit, limit, stats, regex);
+	  /* Use the default database name instead (note: we
+	   * don't use 'dbpath' since that might itself contain a 
+	   * colon-separated list.
+	   */
+	  e = LOCATE_DB;
 	}
-      if (stats)
-	break;
+	  
+      found = locate (argc - optind, &argv[optind], e, ignore_case, print, basename_only, use_limit, &limits, stats, op_and, regex);
     }
-
+  
   if (just_count)
     {
       printf("%ld\n", found);
     }
   
-  if (found || (use_limit && (limit==0)) || stats )
+  if (found || (use_limit && (limits.limit==0)) || stats )
     return 0;
   else
     return 1;

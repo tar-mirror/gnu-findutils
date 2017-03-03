@@ -1,4 +1,9 @@
-#serial 4
+#serial 6
+
+# Copyright (C) 2000, 2001, 2004, 2005 Free Software Foundation, Inc.
+# This file is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
 
 dnl From Jim Meyering
 dnl Using code from emacs, based on suggestions from Paul Eggert
@@ -10,6 +15,8 @@ dnl we have to grub around in the FILE struct.
 
 AC_DEFUN([gl_FUNC_FPENDING],
 [
+  AC_LIBSOURCES([__fpending.c, __fpending.h])
+
   AC_CHECK_HEADERS(stdio_ext.h)
   AC_REPLACE_FUNCS([__fpending])
   fp_headers='

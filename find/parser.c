@@ -1,5 +1,6 @@
 /* parser.c -- convert the command line args into an expression tree.
-   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2001, 2003, 
+                 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.
 */
 
@@ -23,10 +24,12 @@
 #include <pwd.h>
 #include <grp.h>
 #include <fnmatch.h>
-#include "../gnulib/lib/modechange.h"
+#include "modechange.h"
 #include "modetype.h"
-#include "../gnulib/lib/xstrtol.h"
-#include "../gnulib/lib/xalloc.h"
+#include "xstrtol.h"
+#include "xalloc.h"
+#include "quote.h"
+#include "quotearg.h"
 #include "buildcmd.h"
 #include "nextelem.h"
 
@@ -35,6 +38,12 @@
 #else
 #include <sys/file.h>
 #endif
+
+#ifdef HAVE_UNISTD_H
+/* We need <unistd.h> for isatty(). */
+#include <unistd.h>
+#endif
+
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -141,18 +150,19 @@ static boolean parse_xtype PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_quit PARAMS((char *argv[], int *arg_ptr));
 
 static boolean insert_regex PARAMS((char *argv[], int *arg_ptr, boolean ignore_case));
-static boolean insert_type PARAMS((char *argv[], int *arg_ptr, boolean (*which_pred )()));
-static boolean insert_fprintf PARAMS((FILE *fp, boolean (*func )(), char *argv[], int *arg_ptr));
+static boolean insert_type PARAMS((char *argv[], int *arg_ptr, PRED_FUNC which_pred));
+static boolean insert_fprintf PARAMS((FILE *fp, PRED_FUNC func, char *argv[], int *arg_ptr));
 static struct segment **make_segment PARAMS((struct segment **segment, char *format, int len, int kind));
-static boolean insert_exec_ok PARAMS((const char *action, boolean (*func )(), char *argv[], int *arg_ptr));
+static boolean insert_exec_ok PARAMS((const char *action, PRED_FUNC func, char *argv[], int *arg_ptr));
 static boolean get_num_days PARAMS((char *str, uintmax_t *num_days, enum comparison_type *comp_type));
-static boolean insert_time PARAMS((char *argv[], int *arg_ptr, PFB pred));
+static boolean insert_time PARAMS((char *argv[], int *arg_ptr, PRED_FUNC pred));
 static boolean get_num PARAMS((char *str, uintmax_t *num, enum comparison_type *comp_type));
-static boolean insert_num PARAMS((char *argv[], int *arg_ptr, PFB pred));
+static boolean insert_num PARAMS((char *argv[], int *arg_ptr, PRED_FUNC pred));
 static FILE *open_output_file PARAMS((char *path));
+static boolean stream_is_tty(FILE *fp);
 
 #ifdef DEBUG
-char *find_pred_name PARAMS((PFB pred_func));
+char *find_pred_name PARAMS((PRED_FUNC pred_func));
 #endif /* DEBUG */
 
 
@@ -171,7 +181,7 @@ struct parser_table
 {
   enum arg_type type;
   char *parser_name;
-  PFB parser_func;
+  PARSE_FUNC parser_func;
 };
 
 /* GNU find predicates that are not mentioned in POSIX.2 are marked `GNU'.
@@ -276,7 +286,7 @@ static const char *first_nonoption_arg = NULL;
    SEARCH_NAME.
    Return NULL if SEARCH_NAME is not a valid predicate name. */
 
-PFB
+PARSE_FUNC
 find_parser (char *search_name)
 {
   int i;
@@ -312,7 +322,7 @@ find_parser (char *search_name)
 		  if ((first_nonoption_arg != NULL)
 		      && options.warnings )
 		    {
-		      /* option which folows a non-option */
+		      /* option which follows a non-option */
 		      error (0, 0,
 			     _("warning: you have specified the %s "
 			       "option after a non-option argument %s, "
@@ -519,9 +529,7 @@ parse_daystart (char **argv, int *arg_ptr)
 }
 
 static boolean
-parse_delete (argv, arg_ptr)
-  char *argv[];
-  int *arg_ptr;
+parse_delete (  char *argv[], int *arg_ptr)
 {
   struct predicate *our_pred;
   (void) argv;
@@ -643,9 +651,12 @@ parse_fprint (char **argv, int *arg_ptr)
   struct predicate *our_pred;
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
-    return (false);
+    return false;
   our_pred = insert_primary (pred_fprint);
-  our_pred->args.stream = open_output_file (argv[*arg_ptr]);
+  our_pred->args.printf_vec.segment = NULL;
+  our_pred->args.printf_vec.stream = open_output_file (argv[*arg_ptr]);
+  our_pred->args.printf_vec.dest_is_tty = stream_is_tty(our_pred->args.printf_vec.stream);
+  our_pred->args.printf_vec.quote_opts = clone_quoting_options (NULL);
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
   our_pred->need_stat = our_pred->need_type = false;
@@ -745,9 +756,11 @@ tests (N can be +N or -N or N): -amin N -anewer FILE -atime N -cmin N\n\
       -wholename PATTERN -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n\
       -used N -user NAME -xtype [bcdpfls]\n"));
   puts (_("\
-actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n\
-      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -delete\n\
-      -quit\n"));
+actions: -delete -print0 -printf FORMAT -fprintf FILE FORMAT -print \n\
+      -fprint0 FILE -fprint FILE -ls -fls FILE -prune -quit\n\
+      -exec COMMAND ; -exec COMMAND {} + -ok COMMAND ;\n\
+      -execdir COMMAND ; -execdir COMMAND {} + -okdir COMMAND ;\n\
+"));
   puts (_("Report (and track progress on fixing) bugs via the findutils bug-reporting\n\
 page at http://savannah.gnu.org/ or, if you have no web access, by sending\n\
 email to <bug-findutils@gnu.org>."));
@@ -772,7 +785,7 @@ parse_ilname (char **argv, int *arg_ptr)
  * it really is the GNU version. 
  */
 static boolean 
-fnmatch_sanitycheck()
+fnmatch_sanitycheck(void)
 {
   /* fprintf(stderr, "Performing find sanity check..."); */
   if (0 != fnmatch("foo", "foo", 0)
@@ -789,6 +802,18 @@ fnmatch_sanitycheck()
 }
 
 
+static boolean 
+check_name_arg(const char *pred, const char *arg)
+{
+  if (strchr(arg, '/'))
+    {
+      error(0, 0,_("warning: Unix filenames usually don't contain slashes (though pathnames do).  That means that '%s %s' will probably evaluate to false all the time on this system.  You might find the '-wholename' test more useful, or perhaps '-samefile'.  Alternatively, if you are using GNU grep, you could use 'find ... -print0 | grep -FzZ %s'."),
+	    pred, arg, arg);
+    }
+  return true;			/* allow it anyway */
+}
+
+
 
 static boolean
 parse_iname (char **argv, int *arg_ptr)
@@ -797,6 +822,8 @@ parse_iname (char **argv, int *arg_ptr)
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
+  if (!check_name_arg("-iname", argv[*arg_ptr]))
+    return false;
 
   fnmatch_sanitycheck();
   
@@ -960,6 +987,10 @@ parse_name (char **argv, int *arg_ptr)
   
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
+  if (!check_name_arg("-name", argv[*arg_ptr]))
+    return false;
+  fnmatch_sanitycheck();
+  
   our_pred = insert_primary (pred_name);
   our_pred->need_stat = our_pred->need_type = false;
   our_pred->args.str = argv[*arg_ptr];
@@ -1196,7 +1227,8 @@ parse_perm (char **argv, int *arg_ptr)
 {
   mode_t perm_val;
   int mode_start = 0;
-  struct mode_change *change;
+  enum permissions_type kind = PERM_EXACT;
+  struct mode_change *change = NULL;
   struct predicate *our_pred;
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
@@ -1205,22 +1237,56 @@ parse_perm (char **argv, int *arg_ptr)
   switch (argv[*arg_ptr][0])
     {
     case '-':
-    case '+':
       mode_start = 1;
+      kind = PERM_AT_LEAST;
       break;
+      
+     case '+':
+       change = mode_compile (argv[*arg_ptr]);
+       if (NULL == change)
+	 {
+	   /* Most likely the caller is an old script that is still
+	    * using the obsolete GNU syntax '-perm +MODE'.  This old
+	    * syntax was withdrawn in favor of '-perm /MODE' because
+	    * it is incompatible with POSIX in some cases, but we
+	    * still support uses of it that are not incompatible with
+	    * POSIX.
+	    */
+	   mode_start = 1;
+	   kind = PERM_ANY;
+	 }
+       else
+	 {
+	   /* This is a POSIX-compatible usage */
+	   mode_start = 0;
+	   kind = PERM_EXACT;
+	 }
+       break;
+      
+    case '/':			/* GNU extension */
+       mode_start = 1;
+       kind = PERM_ANY;
+       break;
+       
     default:
-      /* empty */
+      /* For example, '-perm 0644', which is valid and matches 
+       * only files whose mode is exactly 0644.
+       *
+       * We do nothing here, because mode_start and kind are already
+       * correctly set.
+       */
       break;
     }
 
-  change = mode_compile (argv[*arg_ptr] + mode_start, MODE_MASK_PLUS);
-  if (change == MODE_INVALID)
-    error (1, 0, _("invalid mode `%s'"), argv[*arg_ptr]);
-  else if (change == MODE_MEMORY_EXHAUSTED)
-    error (1, 0, _("virtual memory exhausted"));
-  perm_val = mode_adjust (0, change);
-  mode_free (change);
-
+  if (NULL == change)
+    {
+      change = mode_compile (argv[*arg_ptr] + mode_start);
+      if (NULL == change)
+	error (1, 0, _("invalid mode `%s'"), argv[*arg_ptr]);
+    }
+  perm_val = mode_adjust (0, change, 0);
+  free (change);
+  
   our_pred = insert_primary (pred_perm);
 
   switch (argv[*arg_ptr][0])
@@ -1255,6 +1321,11 @@ parse_print (char **argv, int *arg_ptr)
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
   our_pred->need_stat = our_pred->need_type = false;
+  our_pred->args.printf_vec.segment = NULL;
+  our_pred->args.printf_vec.stream = stdout;
+  our_pred->args.printf_vec.dest_is_tty = stream_is_tty(stdout);
+  our_pred->args.printf_vec.quote_opts = clone_quoting_options (NULL);
+  
   return (true);
 }
 
@@ -1323,6 +1394,7 @@ insert_regex (char **argv, int *arg_ptr, boolean ignore_case)
   struct predicate *our_pred;
   struct re_pattern_buffer *re;
   const char *error_message;
+  int opt = RE_SYNTAX_POSIX_BASIC;
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
@@ -1334,15 +1406,12 @@ insert_regex (char **argv, int *arg_ptr, boolean ignore_case)
   re->allocated = 100;
   re->buffer = (unsigned char *) xmalloc (re->allocated);
   re->fastmap = NULL;
-  
+
   if (ignore_case)
-    {
-      re_syntax_options |= RE_ICASE;
-    }
-  else
-    {
-      re_syntax_options &= ~RE_ICASE;
-    }
+    opt |= RE_ICASE;
+ 
+  re_set_syntax(opt);
+  re->syntax = opt;
   re->translate = NULL;
   
   error_message = re_compile_pattern (argv[*arg_ptr], strlen (argv[*arg_ptr]),
@@ -1610,7 +1679,7 @@ parse_xtype (char **argv, int *arg_ptr)
 }
 
 static boolean
-insert_type (char **argv, int *arg_ptr, boolean (*which_pred) (/* ??? */))
+insert_type (char **argv, int *arg_ptr, PRED_FUNC which_pred)
 {
   mode_t type_cell;
   struct predicate *our_pred;
@@ -1676,12 +1745,32 @@ insert_type (char **argv, int *arg_ptr, boolean (*which_pred) (/* ??? */))
   return (true);
 }
 
+
+/* Return true if the file accessed via FP is a terminal.
+ */
+static boolean 
+stream_is_tty(FILE *fp)
+{
+  int fd = fileno(fp);
+  if (-1 == fd)
+    {
+      return false; /* not a valid stream */
+    }
+  else
+    {
+      return isatty(fd) ? true : false;
+    }
+  
+}
+
+
+
 /* If true, we've determined that the current fprintf predicate
    uses stat information. */
 static boolean fprintf_stat_needed;
 
 static boolean
-insert_fprintf (FILE *fp, boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
+insert_fprintf (FILE *fp, PRED_FUNC func, char **argv, int *arg_ptr)
 {
   char *format;			/* Beginning of unprocessed format string. */
   register char *scan;		/* Current address in scanning `format'. */
@@ -1696,6 +1785,8 @@ insert_fprintf (FILE *fp, boolean (*func) (/* ??? */), char **argv, int *arg_ptr
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
   our_pred->args.printf_vec.stream = fp;
+  our_pred->args.printf_vec.dest_is_tty = stream_is_tty(fp);
+  our_pred->args.printf_vec.quote_opts = clone_quoting_options (NULL);
   segmentp = &our_pred->args.printf_vec.segment;
   *segmentp = NULL;
 
@@ -1912,8 +2003,9 @@ check_path_safety(const char *action)
 /* handles both exec and ok predicate */
 static boolean
 new_insert_exec_ok (const char *action,
-		    boolean (*func) (/* ??? */),
-		    char **argv, int *arg_ptr)
+		    PRED_FUNC func,
+		    char **argv,
+		    int *arg_ptr)
 {
   int start, end;		/* Indexes in ARGV of start & end of cmd. */
   int i;			/* Index into cmd args */
@@ -2149,8 +2241,7 @@ old_insert_exec_ok (boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
 
 
 static boolean
-insert_exec_ok (const char *action,
-		boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
+insert_exec_ok (const char *action, PRED_FUNC func, char **argv, int *arg_ptr)
 {
 #if defined(NEW_EXEC)
   return new_insert_exec_ok(action, func, argv, arg_ptr);
@@ -2200,7 +2291,7 @@ get_num_days (char *str, uintmax_t *num_days, enum comparison_type *comp_type)
    Used by -atime, -ctime, and -mtime parsers. */
 
 static boolean
-insert_time (char **argv, int *arg_ptr, PFB pred)
+insert_time (char **argv, int *arg_ptr, PRED_FUNC pred)
 {
   struct predicate *our_pred;
   uintmax_t num_days;
@@ -2239,8 +2330,8 @@ insert_time (char **argv, int *arg_ptr, PFB pred)
   our_pred->args.info.l_val = t;
   (*arg_ptr)++;
 #ifdef	DEBUG
-  fprintf (stderr, _("inserting %s\n"), our_pred->p_name);
-  fprintf (stderr, _("    type: %s    %s  "),
+  fprintf (stderr, "inserting %s\n", our_pred->p_name);
+  fprintf (stderr, "    type: %s    %s  ",
 	  (c_type == COMP_GT) ? "gt" :
 	  ((c_type == COMP_LT) ? "lt" : ((c_type == COMP_EQ) ? "eq" : "?")),
 	  (c_type == COMP_GT) ? " >" :
@@ -2250,8 +2341,7 @@ insert_time (char **argv, int *arg_ptr, PFB pred)
   if (c_type == COMP_EQ)
     {
       t = our_pred->args.info.l_val += DAYSECS;
-      fprintf (stderr,
-	       "                 <  %ju %s",
+      fprintf (stderr, "                 <  %ju %s",
 	      (uintmax_t) our_pred->args.info.l_val, ctime (&t));
       our_pred->args.info.l_val -= DAYSECS;
     }
@@ -2259,8 +2349,8 @@ insert_time (char **argv, int *arg_ptr, PFB pred)
   return (true);
 }
 
-/* Get a number with comparision information.
-   The sense of the comparision information is 'normal'; that is,
+/* Get a number with comparison information.
+   The sense of the comparison information is 'normal'; that is,
    '+' looks for a count > than the number and '-' less than.
    
    STR is the ASCII representation of the number.
@@ -2305,7 +2395,7 @@ get_num (char *str, uintmax_t *num, enum comparison_type *comp_type)
    Used by -inum and -links parsers. */
 
 static boolean
-insert_num (char **argv, int *arg_ptr, PFB pred)
+insert_num (char **argv, int *arg_ptr, PRED_FUNC pred)
 {
   struct predicate *our_pred;
   uintmax_t num;
@@ -2320,8 +2410,8 @@ insert_num (char **argv, int *arg_ptr, PFB pred)
   our_pred->args.info.l_val = num;
   (*arg_ptr)++;
 #ifdef	DEBUG
-  fprintf (stderr, _("inserting %s\n"), our_pred->p_name);
-  fprintf (stderr, _("    type: %s    %s  "),
+  fprintf (stderr, "inserting %s\n", our_pred->p_name);
+  fprintf (stderr, "    type: %s    %s  ",
 	  (c_type == COMP_GT) ? "gt" :
 	  ((c_type == COMP_LT) ? "lt" : ((c_type == COMP_EQ) ? "eq" : "?")),
 	  (c_type == COMP_GT) ? " >" :

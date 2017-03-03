@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.
 */
 #ifndef INC_DEFS_H
@@ -140,8 +140,10 @@ typedef int boolean;
 #define		false	0
 #endif
 
-/* Pointer to function returning boolean. */
-typedef boolean (*PFB)();
+struct predicate;
+
+/* Pointer to a predicate function. */
+typedef boolean (*PRED_FUNC)(char *pathname, struct stat *stat_buf, struct predicate *pred_ptr);
 
 /* The number of seconds in a day. */
 #define		DAYSECS	    86400
@@ -264,12 +266,14 @@ struct format_val
 {
   struct segment *segment;	/* Linked list of segments. */
   FILE *stream;			/* Output stream to print on. */
+  boolean dest_is_tty;		/* True if the destination is a terminal. */
+  struct quoting_options *quote_opts;
 };
 
 struct predicate
 {
   /* Pointer to the function that implements this predicate.  */
-  PFB pred_func;
+  PRED_FUNC pred_func;
 
   /* Only used for debugging, but defined unconditionally so individual
      modules can be compiled with -DDEBUG.  */
@@ -313,12 +317,12 @@ struct predicate
     struct perm_val perm;	/* perm */
     struct dir_id   fileid;	/* samefile */
     mode_t type;		/* type */
-    FILE *stream;		/* fprint fprint0 */
-    struct format_val printf_vec; /* printf fprintf */
+    FILE *stream;		/* ls fls fprint0 */
+    struct format_val printf_vec; /* printf fprintf fprint  */
   } args;
 
   /* The next predicate in the user input sequence,
-     which repesents the order in which the user supplied the
+     which represents the order in which the user supplied the
      predicates on the command line. */
   struct predicate *pred_next;
 
@@ -383,8 +387,11 @@ char *filesystem_type PARAMS((const struct stat *statp));
 char * get_mounted_filesystems (void);
 dev_t * get_mounted_devices PARAMS((size_t *));
 
+/* Pointer to a parser function. */
+typedef boolean (*PARSE_FUNC)(char *argv[], int *arg_ptr);
+
 /* parser.c */
-PFB find_parser PARAMS((char *search_name));
+PARSE_FUNC find_parser PARAMS((char *search_name));
 boolean parse_close PARAMS((char *argv[], int *arg_ptr));
 boolean parse_open PARAMS((char *argv[], int *arg_ptr));
 boolean parse_print PARAMS((char *argv[], int *arg_ptr));
@@ -449,7 +456,7 @@ int launch PARAMS((const struct buildcmd_control *ctl,
 		   struct buildcmd_state *buildstate));
 
 
-char *find_pred_name PARAMS((PFB pred_func));
+char *find_pred_name PARAMS((PRED_FUNC pred_func));
 
 
 
@@ -469,7 +476,7 @@ boolean mark_type PARAMS((struct predicate *tree));
 /* util.c */
 struct predicate *get_new_pred PARAMS((void));
 struct predicate *get_new_pred_chk_op PARAMS((void));
-struct predicate *insert_primary PARAMS((boolean (*pred_func )()));
+struct predicate *insert_primary PARAMS((PRED_FUNC));
 void usage PARAMS((char *msg));
 
 extern char *program_name;

@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.
 */
 
@@ -47,13 +47,23 @@ char *alloca ();
 #include <grp.h>
 #include <time.h>
 #include <errno.h>
-#include "../gnulib/lib/human.h"
-#include "../gnulib/lib/pathmax.h"
+#include "human.h"
+#include "xalloc.h"
+#include "pathmax.h"
+#include "error.h"
+#include "filemode.h"
+
+#include "listfile.h"
 
 #if HAVE_STRING_H || STDC_HEADERS
 #include <string.h>
 #else
 #include <strings.h>
+#endif
+
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h> /* for readlink() */
 #endif
 
 #if STDC_HEADERS
@@ -87,10 +97,6 @@ extern int errno;
 #endif
 #if defined(S_IFLNK) && !defined(S_ISLNK)
 #define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
-#endif
-
-#if defined(S_ISLNK)
-int readlink ();
 #endif
 
 /* Get or fake the disk device blocksize.
@@ -168,14 +174,13 @@ struct group *getgrgid ();
 #endif
 #undef HAVE_MAJOR
 
-char *xmalloc ();
-void error ();
-void mode_string ();
 
-char *get_link_name ();
-char *getgroup ();
-char *getuser ();
-void print_name_with_quoting ();
+char * get_link_name (char *name, char *relname);
+static void print_name_with_quoting (register char *p, FILE *stream);
+
+extern char * getgroup (gid_t gid);
+extern char * getuser (uid_t uid);
+
 
 /* NAME is the name to print.
    RELNAME is the path to access it from the current directory.
@@ -186,13 +191,12 @@ void print_name_with_quoting ();
    STREAM is the stdio stream to print on.  */
 
 void
-list_file (name, relname, statp, current_time, output_block_size, stream)
-     char *name;
-     char *relname;
-     struct stat *statp;
-     time_t current_time;
-     int output_block_size;
-     FILE *stream;
+list_file (char *name,
+	   char *relname,
+	   struct stat *statp,
+	   time_t current_time,
+	   int output_block_size,
+	   FILE *stream)
 {
   char modebuf[11];
   struct tm const *when_local;
@@ -314,10 +318,8 @@ list_file (name, relname, statp, current_time, output_block_size, stream)
   putc ('\n', stream);
 }
 
-void
-print_name_with_quoting (p, stream)
-     register char *p;
-     FILE *stream;
+static void
+print_name_with_quoting (register char *p, FILE *stream)
 {
   register unsigned char c;
 
@@ -368,9 +370,7 @@ print_name_with_quoting (p, stream)
 
 #ifdef S_ISLNK
 char *
-get_link_name (name, relname)
-     char *name;
-     char *relname;
+get_link_name (char *name, char *relname)
 {
   register char *linkname;
   register int linklen;

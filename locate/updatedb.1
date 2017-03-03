@@ -30,7 +30,7 @@ The file name database format changed starting with GNU
 .B find
 and
 .B locate
-version 4.0 to allow machines with diffent byte orderings to share
+version 4.0 to allow machines with different byte orderings to share
 the databases.  The new GNU
 .B locate
 can read both the old and new database formats.
@@ -57,6 +57,10 @@ Default is none.
 .TP
 .B \-\-prunepaths='\fIpath1 path2...\fP'
 Directories to not put in the database, which would otherwise be.
+Remove any trailing slashes from the path names, otherwise 
+.B updatedb
+won\'t recognise the paths you want to omit (because it uses them as
+regular expression patterns).
 The environment variable \fBPRUNEPATHS\fP also sets this value.
 Default is /tmp /usr/tmp /var/tmp /afs.
 .TP

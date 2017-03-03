@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.
 */
 
@@ -213,7 +213,7 @@ opt_expr (struct predicate **eval_treep)
   struct predicate *curr;
   struct predicate **prevp;	/* Address of `curr' node. */
   struct predicate **last_sidep; /* Last predicate with side effects. */
-  PFB pred_func;
+  PRED_FUNC pred_func;
   enum predicate_type p_type;
   boolean has_side_effects = false; /* Return value. */
   enum predicate_precedence prev_prec, /* precedence of last BI_OP in branch */
@@ -242,7 +242,7 @@ opt_expr (struct predicate **eval_treep)
   
 #ifdef DEBUG
   /* Normalized tree. */
-  fprintf (stderr, _("Normalized Eval Tree:\n"));
+  fprintf (stderr, "Normalized Eval Tree:\n");
   print_tree (stderr, *eval_treep, 0);
 #endif
 

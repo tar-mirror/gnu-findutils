@@ -214,6 +214,9 @@ ends with @samp{.c} and that are larger than 100 Kilobytes.
 find /usr/src -name '*.c' -size +100k -print
 @end example
 
+Notice that the wildcard must be enclosed in quotes in order to
+protect it from expansion by the shell.
+
 @code{locate} searches special file name databases for file names that
 match patterns.  The system administrator runs the @code{updatedb}
 program to create the databases.  @code{locate} is run like this:
@@ -351,6 +354,9 @@ source files in @file{/usr/local/doc}:
 find /usr/local/doc -name '*.texi'
 @end example
 @end deffn
+
+Notice that the wildcard must be enclosed in quotes in order to
+protect it from expansion by the shell.
 
 Patterns for @samp{-name} and @samp{-iname} will match a filename with
 a leading @samp{.}.  For example the command @samp{find /tmp -name
@@ -907,16 +913,16 @@ numeric or symbolic).
 If @var{mode} starts with @samp{-}, true if
 @emph{all} of the permissions set in @var{mode} are set for the file;
 permissions not set in @var{mode} are ignored.
-If @var{mode} starts with @samp{+}, true if
+If @var{mode} starts with @samp{/}, true if
 @emph{any} of the permissions set in @var{mode} are set for the file;
 permissions not set in @var{mode} are ignored.
+This is a GNU extension.
 
-
-If you don't use the @samp{+} or @samp{-} form with a symbolic mode
+If you don't use the @samp{/} or @samp{-} form with a symbolic mode
 string, you may have to specify a rather complex mode string.  For
 example @samp{-perm g=w} will only match files which have mode 0020
 (that is, ones for which group write permission is the only permission
-set).  It is more likely that you will want to use the @samp{+} or
+set).  It is more likely that you will want to use the @samp{/} or
 @samp{-} forms, for example @samp{-perm -g=w}, which matches any file
 with group write permission.
 
@@ -935,19 +941,19 @@ without regard to the presence of any extra permission bits (for
 example the executable bit).  This will match a file which has mode
 0777, for example.
 
-@item -perm +222
+@item -perm /222
 Match files which are writeable by somebody (their owner, or
 their group, or anybody else).
 
-@item -perm +022
+@item -perm /022
 Match files which are writeable by either their owner or their
 group.  The files don't have to be writeable by both the owner and
 group to be matched; either will do.
 
-@item -perm +g+w,o+w
+@item -perm /g+w,o+w
 As above.
 
-@item -perm +g=w,o=w
+@item -perm /g=w,o=w
 As above
 
 @item -perm -022
@@ -1279,7 +1285,10 @@ The date the file was last modified.
 
 @item
 The file's name.  @samp{-ls} quotes non-printable characters in the file
-names using C-like backslash escapes.
+names using C-like backslash escapes.  
+This may change soon, as the treatment of unprintable characters is
+harmonised for @samp{-ls}, @samp{-fls}, @samp{-print}, @samp{-fprint},
+@samp{-printf} and @samp{-fprintf}.
 @end enumerate
 @end deffn
 
@@ -1429,12 +1438,15 @@ zero on the number, use the '#' format flag, for example '%#m'.
 
 @table @code
 @item %k
-Amount of disk space occupied by the file, measured in 1K blocks
-(rounded up).  This can be less than the length of the file if 
-it is a sparse file (that is, it has ``holes'').  
+The amount of disk space used for this file in 1K blocks. Since disk space is
+allocated in multiples of the filesystem block size this is usually greater
+than %s/1024, but it can also be smaller if the file is a sparse file (that is,
+it has ``holes'').
 @item %b
-File's size in 512-byte blocks (rounded up).  This also can be less 
-than the length of the file, if the file is sparse.
+The amount of disk space used for this file in 512-byte blocks. Since disk
+space is allocated in multiples of the filesystem block size this is usually
+greater than %s/1024, but it can also be smaller if the file is a sparse file
+(that is, it has ``holes'').
 @item %s
 File's size in bytes.
 @end table
@@ -1759,6 +1771,7 @@ with the @samp{--eof} option.
 @menu
 * Unsafe File Name Handling::
 * Safe File Name Handling::
+* Unusual Characters in File Names::
 * Limiting Command Size::
 * Interspersing File Names::
 @end menu
@@ -1861,6 +1874,77 @@ can do this in just one step:
 xargs --null --arg-file=<(find / -name xyzzy -print0) munge
 @end example
 
+@node Unusual Characters in File Names
+@subsubsection Unusual Characters in File Names
+As discussed above, you often need to be careful about how the names
+of files are handled by @code{find} and other programs.  If the output
+of @code{find} is not going to another program but instead is being
+shown on a terminal, this can still be a problem.  For example, some
+character sequences can reprogram the function keys on some terminals.
+@xref{Security Considerations}, for a discussion of other security
+problems relating to @code{find}.
+
+Unusual characters are handled differently by various
+actions, as described below.
+
+@table @samp
+@item -print0
+@itemx -fprint0
+Always print the exact filename, unchanged, even if the output is
+going to a terminal.
+@item -ok
+@itemx -okdir
+Always print the exact filename, unchanged.  This will probably change
+in a future release.
+@item -ls
+@itemx -fls
+Unusual characters are always escaped.  White space, backslash, and
+double quote characters are printed using C-style escaping (for
+example @samp{\f}, @samp{\"}).  Other unusual characters are printed
+using an octal escape.  Other Printable characters (for @samp{-ls} and
+@samp{-fls} these are the characters between octal 041 and 0176) are
+printed as-is.
+@item -printf
+@itemx -fprintf
+If the output is not going to a terminal, it is printed as-is.
+Otherwise, the result depends on which directive is in use:
+
+@table @asis
+@item %D, %F, %H, %Y, %y 
+These expand to values which are not under control of files' ownwers,
+and so are printed as-is.
+@item  %a, %b, %c, %d, %g, %G, %i, %k, %m, %M, %n, %s, %t, %u, %U
+These have values which are under the control of files' ownwers but which
+cannot be used to send arbitrary data to the terminal, and so these
+are printed as-is.  
+@item %f, %h, %l, %p, %P 
+The output of these directives is quoted if the output is going to a
+terminal.
+
+This quoting is performed in the same way as for GNU @code{ls}.   
+This is not the same quoting mechanism as the one used for  @samp{-ls} and
+@samp{fls}.   If you are able to decide what format to use for the output 
+of @code{find} then it is normally better to use @samp{\0} as a terminator
+than to use newline, as file names can contain white space and newline
+characters.
+@end table 
+@item -print
+@itemx -fprint
+Quoting is handled in the same way as for the @samp{%p} directive
+of @samp{-printf} and @samp{-fprintf}.  If you are using @code{find} in
+a script or in a situation where the matched files might have
+arbitrary names, you should consider using @samp{-print0} instead of
+@samp{-print}.
+@end table
+
+
+The @code{locate} program quotes and escapes unusual characters in
+file names in the same way as @code{find}'s @samp{-print} action.
+
+The behaviours described above may change soon, as the treatment of
+unprintable characters is harmonised for @samp{-ls}, @samp{-fls},
+@samp{-print}, @samp{-fprint}, @samp{-printf} and @samp{-fprintf}.
+
 @node Limiting Command Size
 @subsubsection Limiting Command Size
 
@@ -1877,11 +1961,14 @@ If the standard input does not contain any nonblanks, do not run the
 command.  By default, the command is run once even if there is no input.
 
 @item --max-lines@r{[}=@var{max-lines}@r{]}
+@itemx -L@r{[}@var{max-lines}@r{]}
 @itemx -l@r{[}@var{max-lines}@r{]}
 Use at most @var{max-lines} nonblank input lines per command line;
 @var{max-lines} defaults to 1 if omitted.  Trailing blanks cause an
 input line to be logically continued on the next input line, for the
-purpose of counting the lines.  Implies @samp{-x}.
+purpose of counting the lines.  Implies @samp{-x}.   The preferred
+name for this option is @samp{-L} as this is specified by POSIX.  This
+option should be compatible with @samp{-I} but currently it is not.
 
 @item --max-args=@var{max-args}
 @itemx -n @var{max-args}
@@ -1902,7 +1989,7 @@ upper or lower limit is used instead.
 @itemx -P @var{max-procs}
 Run up to @var{max-procs} processes at a time; the default is 1.  If
 @var{max-procs} is 0, @code{xargs} will run as many processes as
-possible at a time.  Use the @samp{-n}, @samp{-s}, or @samp{-l} option
+possible at a time.  Use the @samp{-n}, @samp{-s}, or @samp{-L} option
 with @samp{-P}; otherwise chances are that the command will be run only
 once.
 @end table
@@ -1931,10 +2018,10 @@ find bills -type f | xargs -iXX sort -o XX.sorted XX
 @end example
 
 @noindent
-The equivalent command using @samp{find -exec} is:
+The equivalent command using @samp{find -execdir} is:
 
 @example
-find bills -type f -exec sort -o '@{@}.sorted' '@{@}' ';'
+find bills -type f -execdir sort -o '@{@}.sorted' '@{@}' ';'
 @end example
 @end table
 
@@ -1942,12 +2029,22 @@ find bills -type f -exec sort -o '@{@}.sorted' '@{@}' ';'
 @subsection Querying
 
 To ask the user whether to execute a command on a single file, you can
-use the @code{find} primary @samp{-ok} instead of @samp{-exec}:
+use the @code{find} primary @samp{-okdir} instead of @samp{-execdir},
+and the @code{find} primary @samp{-ok} instead of @samp{-exec}:
 
-@deffn Action -ok command ;
-Like @samp{-exec} (@pxref{Single File}), but ask the user first (on
+@deffn Action -okdir command ;
+Like @samp{-execdir} (@pxref{Single File}), but ask the user first (on
 the standard input); if the response does not start with @samp{y} or
 @samp{Y}, do not run the command, and return false.
+@end deffn
+
+@deffn Action -ok command ;
+This insecure variant of the @samp{-okdir} action is specified by
+POSIX.  The main difference is that the command is executed in the
+directory from which @code{find} was invoked, meaning that @samp{@{@}}
+is expanded to a relative path starting with the name of one of the
+starting directories, rather than just the basename of the matched
+file.
 @end deffn
 
 When processing multiple files with a single command, to query the user
@@ -1994,7 +2091,7 @@ running @code{file} on files that are not regular files or are not
 executable.
 
 @example
-find /usr/local -type f -perm +a=x | xargs file | 
+find /usr/local -type f -perm /a=x | xargs file | 
   grep 'not stripped' | cut -d: -f1
 @end example
 
@@ -2037,9 +2134,11 @@ scripts) in the file @file{sbins} and the unstripped ones in
 @file{ubins}.
 
 @example
-find /usr/local -type f -perm +a=x \
+find /usr/local -type f -perm /a=x \
   \( -execdir unstripped '@{@}' \; -fprint ubins -o -fprint sbins \)
 @end example
+
+
 
 @node Common Tasks, Databases, Actions, Top
 @chapter Common Tasks
@@ -2220,7 +2319,7 @@ the file name contains a character with the high bit set; the shell may
 strip it off.  A more reliable way is:
 
 @example
-find . -maxdepth 1 @var{tests} -ok rm '@{@}' \;
+find . -maxdepth 1 @var{tests} -okdir rm '@{@}' \;
 @end example
 
 @noindent
@@ -2239,18 +2338,18 @@ have found that its inode number is 12345.  This command prompts you for
 whether to remove it:
 
 @example
-find . -maxdepth 1 -inum 12345 -ok rm -f '@{@}' \;
+find . -maxdepth 1 -inum 12345 -okdir rm -f '@{@}' \;
 @end example
 
 If you don't want to be asked, perhaps because the file name may contain
 a strange character sequence that will mess up your screen when printed,
-then use @samp{-exec} instead of @samp{-ok}.
+then use @samp{-execdir} instead of @samp{-okdir}.
 
 If you want to rename the file instead, you can use @code{mv} instead of
 @code{rm}:
 
 @example
-find . -maxdepth 1 -inum 12345 -ok mv '@{@}' @var{new-file-name} \;
+find . -maxdepth 1 -inum 12345 -okdir mv '@{@}' @var{new-file-name} \;
 @end example
 
 @node Fixing Permissions
@@ -2640,6 +2739,11 @@ locate @r{[}@var{option}@dots{}@r{]} @var{pattern}@dots{}
 @end example
 
 @table @code
+@item --all
+@itemx -A
+Print only names which match all non-option arguments, not those matching
+one or more non-option arguments.
+
 @item --basename
 @itemx -b
 The specified pattern is matched against just the last component of
@@ -2652,7 +2756,8 @@ it must match part of the base name.
 @item --count
 @itemx -c
 Instead of printing the matched filenames, just print the total 
-number of matches we found.
+number of matches we found, unless @samp{--print} (@samp{-p}) is also
+present.
 
 
 @item --database=@var{path}
@@ -2664,6 +2769,9 @@ database file names.  You can also use the environment variable
 option overrides the environment variable if both are used.  Empty
 elements in @var{path} (that is, a leading or trailing colon, or two
 colons in a row) are taken to stand for the default database.
+A database can be supplied on stdin, using @samp{-} as an element
+of @samp{path}. If more than one element of @samp{path} is @samp{-},
+later instances are ignored (but a warning message is printed).
 
 @item --existing
 @itemx -e
@@ -2673,19 +2781,28 @@ down the program a lot, if there are many matches in the database.
 The way in which broken symbolic links are treated is affected by the
 @samp{-L}, @samp{-P} and @samp{-H} options.
 
+@item --non-existing
+@itemx -E
+Only print out such names which currently do not exist (instead of
+such names which existed when the database was created).  Note that
+this may slow down the program a lot, if there are many matches in the
+database.  The way in which broken symbolic links are treated is
+affected by the @samp{-L}, @samp{-P} and @samp{-H} options.
+
 @item --follow
 @itemx -L
-If testing for the existence of files (with the @samp{-e} option),
-omit broken symbolic links.  This is the default.
+If testing for the existence of files (with the @samp{-e} or @samp{-E}
+options), consider broken symbolic links to be non-existing.  This is
+the default.
 
 
 @item --nofollow
 @itemx -P
 @itemx -H
-If testing for the existence of files (with the @samp{-e} option),
-treat broken symbolic links count as if they were exiting files.  The
-@samp{-H} form of this option is provided purely for similarity with
-@code{find}; the use of @samp{-P} is recommended over @samp{-H}.
+If testing for the existence of files (with the @samp{-e} or @samp{-E}
+options), treat broken symbolic links as if they were existing files.
+The @samp{-H} form of this option is provided purely for similarity
+with @code{find}; the use of @samp{-P} is recommended over @samp{-H}.
 
 @item --ignore-case
 @itemx -i
@@ -2707,6 +2824,11 @@ compatibility with BSD's @code{locate}.
 Results are separated with the ASCII NUL character rather than the
 newline character.  To get the full benefit of the use of this option,
 use the new locate database format (that is the default anyway).
+
+@item --print
+@itemx -p
+Print search results when they normally would not, because of the presence
+of @samp{--statistics} (@samp{-S}) or @samp{--count} (@samp{-c}).
 
 @item --wholename
 @itemx -w
@@ -2735,7 +2857,7 @@ compatibility with BSD's @code{locate}.
 @item --statistics
 @itemx -S
 Print some summary information for each locate database.  No search is
-performed. 
+performed unless non-option arguments are given.
 
 @item --help
 Print a summary of the options to @code{locate} and exit.
@@ -2767,9 +2889,13 @@ The environment variable @code{NETPATHS} also sets this value.
 Default is none.
 
 @item --prunepaths='@var{path}@dots{}'
-Directories to omit from the database, which would otherwise be included.
-The environment variable @code{PRUNEPATHS} also sets this value.
-Default is @file{/tmp /usr/tmp /var/tmp /afs}.
+Directories to omit from the database, which would otherwise be
+included.  The environment variable @code{PRUNEPATHS} also sets this
+value.  Default is @file{/tmp /usr/tmp /var/tmp /afs}.  The paths are
+used as regular expressions (with @code{find ... -regex}, so you need
+to specify these paths in the same way that @code{find} will encounter
+them.  This means for example that the paths must not include trailing
+slashes.
 
 @item --prunefs='@var{path}@dots{}'
 File systems to omit from the database, which would otherwise be included.
@@ -3141,7 +3267,7 @@ that it has ended up in the subdirectory it expected.  If not, an
 error message is issued and @code{find} exits immediately.  This
 method prevents filesystem manipulation attacks from persuading
 @code{find} to search parts of the filesystem it did not intend.
-However, we heve to take special steps in order not to unneccessarily
+However, we heve to take special steps in order not to unnecessarily
 conclude that there is a problem with any ``automount'' mount points.
 
 @node Working with automounters

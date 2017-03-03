@@ -1,4 +1,11 @@
-#serial 11
+#serial 13
+
+# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005 Free Software
+# Foundation, Inc.
+#
+# This file is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
 
 dnl From Jim Meyering.
 dnl Determine whether lstat has the bug that it succeeds when given the
@@ -11,16 +18,7 @@ dnl
 
 AC_DEFUN([gl_FUNC_LSTAT],
 [
-  AC_FUNC_LSTAT
+  AC_REQUIRE([AC_FUNC_LSTAT])
   dnl Note: AC_FUNC_LSTAT does AC_LIBOBJ(lstat).
-  if test $ac_cv_func_lstat_empty_string_bug = yes; then
-    gl_PREREQ_LSTAT
-  fi
-])
-
-# Prerequisites of lib/lstat.c.
-AC_DEFUN([gl_PREREQ_LSTAT],
-[
-  AC_REQUIRE([AC_HEADER_STAT])
   :
 ])

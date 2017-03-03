@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.
 */
 
@@ -122,8 +122,7 @@ prefix_length (char *s1, char *s2)
 extern char *version_string;
 
 static void
-usage (stream)
-     FILE *stream;
+usage (FILE *stream)
 {
   fprintf (stream, _("\
 Usage: %s [--version | --help]\n\

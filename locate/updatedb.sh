@@ -14,7 +14,7 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
 # csh original by James Woods; sh conversion by David MacKenzie.
@@ -82,6 +82,24 @@ getuid() {
     id | cut -d'(' -f 1 | cut -d'=' -f2
 }
 
+# figure out if su supports the -s option
+select_shell() {
+    if su "$1" -s $SHELL false < /dev/null  ; then
+	# No.
+	echo ""
+    else
+	if su "$1" -s $SHELL true < /dev/null  ; then
+	    # Yes.
+	    echo "-s $SHELL"
+        else
+	    # su is unconditionally failing.  We won't be able to 
+	    # figure out what is wrong, so be conservative.
+	    echo ""
+	fi
+    fi
+}
+
+
 # You can set these in the environment, or use command-line options,
 # to override their defaults:
 
@@ -99,6 +117,16 @@ getuid() {
 
 # Directories to not put in the database, which would otherwise be.
 : ${PRUNEPATHS="/tmp /usr/tmp /var/tmp /afs /amd /sfs"}
+
+# Trailing slashes result in regex items that are never matched, which 
+# is not what the user will expect.   Therefore we now reject such 
+# constructs.
+for p in $PRUNEPATHS; do
+    case "$p" in
+	/*/)   echo "$0: $p: pruned paths should not contain trailing slashes" >&2
+	       exit 1
+    esac
+done
 
 # The same, in the form of a regex that find can use.
 test -z "$PRUNEREGEX" &&
@@ -166,7 +194,7 @@ cd "$changeto"
 if test -n "$SEARCHPATHS"; then
   if [ "$LOCALUSER" != "" ]; then
     # : A1
-    su $LOCALUSER -s $SHELL -c \
+    su $LOCALUSER `select_shell $LOCALUSER` -c \
     "$find $SEARCHPATHS $FINDOPTIONS \
      \\( $prunefs_exp \
      -type d -regex '$PRUNEREGEX' \\) -prune -o $print_option"
@@ -182,7 +210,7 @@ if test -n "$NETPATHS"; then
 myuid=`getuid` 
 if [ "$myuid" = 0 ]; then
     # : A3
-    su $NETUSER -s $SHELL -c \
+    su $NETUSER `select_shell $NETUSER` -c \
      "$find $NETPATHS $FINDOPTIONS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o $print_option" ||
     exit $?
   else
@@ -236,7 +264,7 @@ cd "$changeto"
 if test -n "$SEARCHPATHS"; then
   if [ "$LOCALUSER" != "" ]; then
     # : A5
-    su $LOCALUSER -s $SHELL -c \
+    su $LOCALUSER `select_shell $LOCALUSER` -c \
     "$find $SEARCHPATHS $FINDOPTIONS \
      \( $prunefs_exp \
      -type d -regex '$PRUNEREGEX' \) -prune -o $print_option" || exit $?
@@ -252,7 +280,7 @@ if test -n "$NETPATHS"; then
   myuid=`getuid`
   if [ "$myuid" = 0 ]; then
     # : A7
-    su $NETUSER -s $SHELL -c \
+    su $NETUSER `select_shell $NETUSER` -c \
      "$find $NETPATHS $FINDOPTIONS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o $print_option" ||
     exit $?
   else
