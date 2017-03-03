@@ -1,6 +1,6 @@
 This is
 /home/james/source/GNU/findutils/git/gnu/findutils/doc/find.info,
-produced by makeinfo version 4.8 from
+produced by makeinfo version 4.11 from
 /home/james/source/GNU/findutils/git/gnu/findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
@@ -51,7 +51,7 @@ Free Documentation License."
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.4.1, for `find' version 4.4.1.
+   This is edition 4.4.2, for `find' version 4.4.2.
 
 * Menu:
 
@@ -467,7 +467,7 @@ will match both `/' and leading dots in file names:
     `posix-extended'
           POSIX Extended Regular Expressions
 
-     *Note Regular Expressions:: for more information on the regular
+     *note Regular Expressions:: for more information on the regular
      expression dialects understood by GNU findutils.
 
 
@@ -638,8 +638,8 @@ need permission to search the directories in the linked-to file name to
 dereference the link.  This can mean that even if you specify the `-L'
 option, `find' may not be able to determine the properties of the file
 that the link points to (because you don't have sufficient permission).
-In this situation, `find' uses the properties of the link itself.
-This also occurs if a symbolic link exists but points to a file that is
+In this situation, `find' uses the properties of the link itself.  This
+also occurs if a symbolic link exists but points to a file that is
 missing.
 
    The options controlling the behaviour of `find' with respect to
@@ -1963,7 +1963,7 @@ Here is how to run a command on one file at a time.
 
  -- Action: -execdir command ;
      Execute COMMAND; true if zero status is returned.  `find' takes
-     all arguments after `-exec' to be part of the command until an
+     all arguments after `-execdir' to be part of the command until an
      argument consisting of `;' is reached.  It replaces the string
      `{}' by the current file name being processed everywhere it occurs
      in the command.  Both of these constructions need to be escaped
@@ -2329,9 +2329,8 @@ options modify those values.
      appropriate upper or lower limit is used instead.  You can use
      `--show-limits' option to understand the command-line limits
      applying to `xargs' and how this is affected by any other options.
-     The POSIX limits shown when you do this have already been
-     adjusted to take into account the size of your environment
-     variables.
+     The POSIX limits shown when you do this have already been adjusted
+     to take into account the size of your environment variables.
 
      The largest allowed value is system-dependent, and is calculated as
      the argument length limit for exec, less the size of your
@@ -2631,9 +2630,8 @@ share a prefix (initial string) with the previous entry.  Each database
 entry begins with an offset-differential count byte, which is the
 additional number of characters of prefix of the preceding entry to use
 beyond the number that the preceding entry is using of its predecessor.
-(The counts can be negative.)  Following the count is a
-null-terminated ASCII remainder--the part of the name that follows the
-shared prefix.
+(The counts can be negative.)  Following the count is a null-terminated
+ASCII remainder--the part of the name that follows the shared prefix.
 
    If the offset-differential count is larger than can be stored in a
 byte (+/-127), the byte has the value 0x80 and the count follows in a
@@ -3777,7 +3775,7 @@ effect (but note that the `-follow' option is equivalent to `-L').
    If `find' would follow a symbolic link, but cannot for any reason
 (for example, because it has insufficient permissions or the link is
 broken), it falls back on using the properties of the symbolic link
-itself.  *Note Symbolic Links:: for a more complete description of how
+itself.  *note Symbolic Links:: for a more complete description of how
 symbolic links are handled.
 
 
@@ -4055,7 +4053,7 @@ databases returning each match of PATTERN.
 
 `--regextype'
      This option changes the regular expression syntax and behaviour
-     used by the `--regex' option.  *Note Regular Expressions:: for more
+     used by the `--regex' option.  *note Regular Expressions:: for more
      information on the regular expression dialects understood by GNU
      findutils.
 
@@ -5186,10 +5184,10 @@ POSIXLY_CORRECT
      Setting this variable also turns off warning messages (that is,
      implies `-nowarn') by default, because POSIX requires that apart
      from the output for `-ok', all messages printed on stderr are
-     diagnositcs and must result in a non-zero exit status.
+     diagnostics and must result in a non-zero exit status.
 
      Arguments to `-perm' beginning with `+' are treated differently
-     when POSIXLY_CORRECT is set. See *Note -perm: Mode Bits.
+     when POSIXLY_CORRECT is set. See *note -perm: Mode Bits.
 
      When POSIXLY_CORRECT is set, the response to the prompt made by the
      `-ok' action is interpreted according to the system's message
@@ -6400,7 +6398,7 @@ reason, the `-print' and `-print0' actions are just as insecure as
 
    In fact, since the construction
 
-     find ...  -print | xargs ....
+     find ...  -print | xargs ...
 
    does not cope correctly with newlines or other "white space" in file
 names, and copes poorly with file names containing quotes, the `-print'
@@ -7308,54 +7306,54 @@ Expressions::, for more information on expressions.
 
 
 Tag Table:
-Node: Top1328
-Node: Introduction3146
-Node: Scope6074
-Node: Overview8020
-Node: find Expressions9891
-Node: Finding Files11723
-Node: Name12188
-Node: Base Name Patterns12816
-Ref: Base Name Patterns-Footnote-113914
-Node: Full Name Patterns14126
-Node: Fast Full Name Search17630
-Node: Shell Pattern Matching20677
-Node: Links22767
-Node: Symbolic Links23202
-Node: Hard Links27706
-Node: Time30260
-Node: Age Ranges31237
-Node: Comparing Timestamps32926
-Node: Size35791
-Node: Type37635
-Node: Owner39303
-Node: Mode Bits40128
-Node: Contents45324
-Node: Directories46495
-Node: Filesystems51773
-Node: Combining Primaries With Operators53124
-Node: Actions54742
-Node: Print File Name55304
-Node: Print File Information56321
-Node: Escapes59330
-Node: Format Directives60081
-Node: Name Directives61544
-Node: Ownership Directives62530
-Node: Size Directives63538
-Node: Location Directives64909
-Node: Time Directives66028
-Node: Time Formats66931
-Node: Time Components67367
-Node: Date Components68333
-Node: Combined Time Formats69156
-Node: Formatting Flags70041
-Node: Run Commands70653
-Node: Single File71011
-Node: Multiple Files73506
-Node: Unsafe File Name Handling78170
-Node: Safe File Name Handling79883
-Node: Unusual Characters in File Names81459
-Node: Limiting Command Size84624
+Node: Top1329
+Node: Introduction3147
+Node: Scope6075
+Node: Overview8021
+Node: find Expressions9892
+Node: Finding Files11724
+Node: Name12189
+Node: Base Name Patterns12817
+Ref: Base Name Patterns-Footnote-113915
+Node: Full Name Patterns14127
+Node: Fast Full Name Search17631
+Node: Shell Pattern Matching20678
+Node: Links22768
+Node: Symbolic Links23203
+Node: Hard Links27708
+Node: Time30262
+Node: Age Ranges31239
+Node: Comparing Timestamps32928
+Node: Size35793
+Node: Type37637
+Node: Owner39305
+Node: Mode Bits40130
+Node: Contents45326
+Node: Directories46497
+Node: Filesystems51775
+Node: Combining Primaries With Operators53126
+Node: Actions54744
+Node: Print File Name55306
+Node: Print File Information56323
+Node: Escapes59332
+Node: Format Directives60083
+Node: Name Directives61546
+Node: Ownership Directives62532
+Node: Size Directives63540
+Node: Location Directives64911
+Node: Time Directives66030
+Node: Time Formats66933
+Node: Time Components67369
+Node: Date Components68335
+Node: Combined Time Formats69158
+Node: Formatting Flags70043
+Node: Run Commands70655
+Node: Single File71013
+Node: Multiple Files73511
+Node: Unsafe File Name Handling78175
+Node: Safe File Name Handling79888
+Node: Unusual Characters in File Names81464
+Node: Limiting Command Size84629
 Node: Interspersing File Names87372
 Node: Querying89823
 Ref: Querying-Footnote-192063
@@ -7439,15 +7437,15 @@ Node: Systems without O_NOFOLLOW240633
 Ref: Systems without O_NOFOLLOW-Footnote-1242778
 Node: Race Conditions with -exec242840
 Node: Race Conditions with -print and -print0245753
-Node: Security Considerations for xargs246675
-Node: Security Considerations for locate249179
-Node: Security Summary251561
-Node: Error Messages252320
-Node: Error Messages From find253349
-Node: Error Messages From xargs258474
-Node: Error Messages From locate260234
-Node: Error Messages From updatedb261466
-Node: GNU Free Documentation License261869
-Node: Primary Index284308
+Node: Security Considerations for xargs246674
+Node: Security Considerations for locate249178
+Node: Security Summary251560
+Node: Error Messages252319
+Node: Error Messages From find253348
+Node: Error Messages From xargs258473
+Node: Error Messages From locate260233
+Node: Error Messages From updatedb261465
+Node: GNU Free Documentation License261868
+Node: Primary Index284307
 
 End Tag Table

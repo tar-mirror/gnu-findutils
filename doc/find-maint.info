@@ -11,7 +11,7 @@ END-INFO-DIR-ENTRY
    This manual explains how GNU findutils is maintained, how changes
 should be made and tested, and what resources exist to help developers.
 
-   This is edition 4.4.1, for findutils version 4.4.1.
+   This is edition 4.4.2, for findutils version 4.4.2.
 
    Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 
@@ -31,7 +31,7 @@ Maintaining GNU Findutils
 This manual explains how GNU findutils is maintained, how changes should
 be made and tested, and what resources exist to help developers.
 
-   This is edition 4.4.1, for findutils version 4.4.1.
+   This is edition 4.4.2, for findutils version 4.4.2.
 
    Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 

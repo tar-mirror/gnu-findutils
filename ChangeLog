@@ -1,3 +1,54 @@
+2009-05-16  James Youngman  <jay@gnu.org>
+
+	Apply typo fix from <petrosyan@gmail.com> (tiny change).
+	* doc/find.texi (Single File): Fix a typo (-exec should be
+	-execdir).
+
+2009-05-12  Eric Blake  <ebb9@byu.net>
+
+	xargs: avoid compiler warning
+	* xargs/xargs.c (get_char_oct_or_hex_escape): Pass correct type to
+	ctype macro.
+
+2009-05-12  James Youngman  <jay@gnu.org>
+
+	* po/sl.po: Updated Slovenian translation.
+	* NEWS: Mention this change.
+
+	#26537: find -prune now makes sure it has valid stat() information.
+	* NEWS: Added Savannah bug number for Colin's bugfix.
+
+2009-05-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* find/parser.c (parse_prune): -prune needs stat information if
+	-depth is not in use.
+	* find/pred.c (pred_prune): Assert that stat information is
+	available if needed.
+	* find/testsuite/find.posix/prune-stat.exp: New test.
+	* find/testsuite/find.posix/prune-stat.xo: New test.
+	* find/testsuite/Makefile.am (EXTRA_DIST_EXP, EXTRA_DIST_XO): Added
+	prune-stat.exp, prune-stat.xo.
+	* NEWS: Mention this bugfix.
+
+2009-04-25  James Youngman  <jay@gnu.org>
+
+	* AUTHORS: Add Andreas Metzler.
+
+2009-04-25  Andreas Metzler  <gnu@downhill.at.eu.org> (tiny change)
+
+	Correct a typo "diagnositcs".
+	* doc/find.texi (Environment Variables): Correct a typo.
+
+2009-04-24  A. Costa  <agcosta@gis.net> (tiny change)
+
+	Correct a typo "diagnositcs".
+	* find/find.1 (POSIXLY_CORRECT): Correct a typo.
+
+2009-04-24  James Youngman  <jay@gnu.org>
+
+	* configure.ac (AC_INIT): Move on from relase 4.4.1 to 4.4.2-git.
+	* NEWS: Likewise.
+
 2009-04-21  James Youngman  <jay@gnu.org>
 
 	Prepare for the release of findutils 4.4.1.
@@ -203,8 +254,8 @@
 
 2008-03-21  James Youngman  <jay@gnu.org>
 
-        * find/testsuite/find.gnu/xtype-symlink.exp: Removed unnecessary
-        test code which created a insecure tempfile.
+	* find/testsuite/find.gnu/xtype-symlink.exp: Removed unnecessary
+	test code which created a insecure tempfile.
 
 	* NEWS: Update version number to 4.4.1-CVS now that the CVS rep no
 	longer matches the last release.
@@ -7740,8 +7791,8 @@ Wed Mar 21 09:30:18 1990  David J. MacKenzie  (djm at pogo.ai.mit.edu)
 	-----
 
 	Copyright (C) 1987, 1990, 1991, 1992, 1993, 1994, 1996, 1997,
-	1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007 Free Software
-	Foundation, Inc.
+	1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008,
+	2009 Free Software Foundation, Inc.
 
 	Copying and distribution of this file, with or without
 	modification, are permitted provided the copyright notice
