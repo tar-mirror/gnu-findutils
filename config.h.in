@@ -1,35 +1,5 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
-/* Define this to an absolute name of <fcntl.h>. */
-#undef ABSOLUTE_FCNTL_H
-
-/* Define this to an absolute name of <inttypes.h>. */
-#undef ABSOLUTE_INTTYPES_H
-
-/* Define this to an absolute name of <stdint.h>. */
-#undef ABSOLUTE_STDINT_H
-
-/* Define this to an absolute name of <stdlib.h>. */
-#undef ABSOLUTE_STDLIB_H
-
-/* Define this to an absolute name of <string.h>. */
-#undef ABSOLUTE_STRING_H
-
-/* Define this to an absolute name of <sys/stat.h>. */
-#undef ABSOLUTE_SYS_STAT_H
-
-/* Define this to an absolute name of <time.h>. */
-#undef ABSOLUTE_TIME_H
-
-/* Define this to an absolute name of <unistd.h>. */
-#undef ABSOLUTE_UNISTD_H
-
-/* Define this to an absolute name of <wchar.h>. */
-#undef ABSOLUTE_WCHAR_H
-
-/* Define this to an absolute name of <wctype.h>. */
-#undef ABSOLUTE_WCTYPE_H
-
 /* Define to the number of bits in type 'ptrdiff_t'. */
 #undef BITSIZEOF_PTRDIFF_T
 
@@ -88,13 +58,15 @@
 /* Define to 1 if // is a file system root distinct from /. */
 #undef DOUBLE_SLASH_IS_DISTINCT_ROOT
 
-/* Define if there is a member named d_ino in the struct describing directory
-   headers. */
+/* Define if struct dirent has a member d_ino that actually works. */
 #undef D_INO_IN_DIRENT
 
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
 #undef ENABLE_NLS
+
+/* Define if gnulib's fchdir() replacement is used. */
+#undef FCHDIR_REPLACEMENT
 
 /* Define on systems for which file names may have a so-called `drive letter'
    prefix, define this to compute the length of that prefix, including the
@@ -121,6 +93,9 @@
    MSVC and with C++ compilers. */
 #undef FLEXIBLE_ARRAY_MEMBER
 
+/* Define to make the limit macros in <stdint.h> visible. */
+#undef GL_TRIGGER_STDC_LIMIT_MACROS
+
 /* Define to 1 when using the gnulib module canonicalize. */
 #undef GNULIB_CANONICALIZE
 
@@ -132,6 +107,12 @@
 
 /* Define to 1 when using the gnulib module fopen-safer. */
 #undef GNULIB_FOPEN_SAFER
+
+/* Define to indicate the 'malloc' module. */
+#undef GNULIB_MALLOC_GNU
+
+/* Define to indicate the 'realloc' module. */
+#undef GNULIB_REALLOC_GNU
 
 /* Define to 1 if you have the `alarm' function. */
 #undef HAVE_ALARM
@@ -173,6 +154,10 @@
    */
 #undef HAVE_DECL_DIRFD
 
+/* Define to 1 if you have the declaration of `fpurge', and to 0 if you don't.
+   */
+#undef HAVE_DECL_FPURGE
+
 /* Define to 1 if you have the declaration of `getcwd', and to 0 if you don't.
    */
 #undef HAVE_DECL_GETCWD
@@ -205,10 +190,6 @@
    don't. */
 #undef HAVE_DECL_ISBLANK
 
-/* Define to 1 if you have the declaration of `lchown', and to 0 if you don't.
-   */
-#undef HAVE_DECL_LCHOWN
-
 /* Define to 1 if you have the declaration of `memrchr', and to 0 if you
    don't. */
 #undef HAVE_DECL_MEMRCHR
@@ -220,6 +201,10 @@
 /* Define to 1 if you have the declaration of `strdup', and to 0 if you don't.
    */
 #undef HAVE_DECL_STRDUP
+
+/* Define to 1 if you have the declaration of `strerror', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRERROR
 
 /* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
    don't. */
@@ -271,6 +256,9 @@
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
 
+/* Define to 1 if you have the `dup2' function. */
+#undef HAVE_DUP2
+
 /* Define to 1 if you have the `endgrent' function. */
 #undef HAVE_ENDGRENT
 
@@ -300,6 +288,12 @@
 
 /* Define to 1 if you have the `forcefindlib' function. */
 #undef HAVE_FORCEFINDLIB
+
+/* Define to 1 if you have the `fpurge' function. */
+#undef HAVE_FPURGE
+
+/* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
+#undef HAVE_FSEEKO
 
 /* Define to 1 if you have the <fs_info.h> header file. */
 #undef HAVE_FS_INFO_H
@@ -337,22 +331,25 @@
 /* Define to 1 if you have the `hasmntopt' function. */
 #undef HAVE_HASMNTOPT
 
-/* Define if you have the iconv() function. */
+/* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
+
+/* Define if your compiler supports the #include_next directive. */
+#undef HAVE_INCLUDE_NEXT
 
 /* Define to 1 if the compiler supports one of the keywords 'inline',
    '__inline__', '__inline' and effectively inlines functions marked as such.
    */
 #undef HAVE_INLINE
 
-/* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
-#undef HAVE_INTMAX_T
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
 /* Define to 1 if you have the <io.h> header file. */
 #undef HAVE_IO_H
+
+/* Define to 1 if you have the `isblank' function. */
+#undef HAVE_ISBLANK
 
 /* Define to 1 if you have the `iswcntrl' function. */
 #undef HAVE_ISWCNTRL
@@ -381,8 +378,8 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
-/* Define if you have the 'long long' type. */
-#undef HAVE_LONG_LONG
+/* Define to 1 if you support file names longer than 14 characters. */
+#undef HAVE_LONG_FILE_NAMES
 
 /* Define to 1 if the system has the type `long long int'. */
 #undef HAVE_LONG_LONG_INT
@@ -393,6 +390,9 @@
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
+
+/* Define if the 'malloc' function is POSIX compliant. */
+#undef HAVE_MALLOC_POSIX
 
 /* Define to 1 if you have the `mblen' function. */
 #undef HAVE_MBLEN
@@ -448,6 +448,9 @@
    */
 #undef HAVE_PARTLY_WORKING_GETCWD
 
+/* Define to 1 if you have the `pathconf' function. */
+#undef HAVE_PATHCONF
+
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
 
@@ -457,6 +460,9 @@
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
 #undef HAVE_REALLOC
+
+/* Define if the 'realloc' function is POSIX compliant. */
+#undef HAVE_REALLOC_POSIX
 
 /* Define to 1 if you have the `resolvepath' function. */
 #undef HAVE_RESOLVEPATH
@@ -490,6 +496,9 @@
 
 /* Define to 1 if you have the <stdio_ext.h> header file. */
 #undef HAVE_STDIO_EXT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -691,6 +700,12 @@
 /* Define to 1 if you have the `__fpending' function. */
 #undef HAVE___FPENDING
 
+/* Define to 1 if you have the `__fpurge' function. */
+#undef HAVE___FPURGE
+
+/* Define to 1 if you have the `__freading' function. */
+#undef HAVE___FREADING
+
 #if FILE_SYSTEM_BACKSLASH_IS_FILE_NAME_SEPARATOR
 # define ISSLASH(C) ((C) == '/' || (C) == '\\')
 #else
@@ -700,6 +715,9 @@
 /* Define if you want to use the leaf optimisation (this can still be turned
    off with -noleaf) */
 #undef LEAF_OPTIMISATION
+
+/* Define to 1 if lseek does not detect pipes. */
+#undef LSEEK_PIPE_BROKEN
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
@@ -712,6 +730,9 @@
 /* Define to 1 if `major', `minor', and `makedev' are declared in
    <sysmacros.h>. */
 #undef MAJOR_IN_SYSMACROS
+
+/* If malloc(0) is != NULL, define this to 1. Otherwise define this to 0. */
+#undef MALLOC_0_IS_NONNULL
 
 /* Define if there is no specific function for reading the list of mounted
    file systems. fread will be used to read /etc/mnttab. (SVR2) */
@@ -793,6 +814,9 @@
    'ptrdiff_t'. */
 #undef PTRDIFF_T_SUFFIX
 
+/* Define this to 1 if strerror is broken. */
+#undef REPLACE_STRERROR
+
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'sig_atomic_t'. */
 #undef SIG_ATOMIC_T_SUFFIX
@@ -835,13 +859,6 @@
    'wint_t'. */
 #undef WINT_T_SUFFIX
 
-/* Define to 1 if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-# undef _ALL_SOURCE
-#endif
-
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
 
@@ -849,6 +866,9 @@
 #ifndef _GNU_SOURCE
 # undef _GNU_SOURCE
 #endif
+
+/* Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2). */
+#undef _LARGEFILE_SOURCE
 
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES
@@ -866,16 +886,27 @@
 /* Define if you want regoff_t to be at least as wide POSIX requires. */
 #undef _REGEX_LARGE_OFFSETS
 
-/* Enable extensions on Solaris.  */
-#ifndef __EXTENSIONS__
-# undef __EXTENSIONS__
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
 #endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
 # undef _POSIX_PTHREAD_SEMANTICS
 #endif
+/* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
 # undef _TANDEM_SOURCE
 #endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
+
 
 /* Define to rpl_ if the getopt replacement functions and variables should be
    used. */
@@ -887,6 +918,13 @@
 /* Define like PROTOTYPES; this can be used by system headers. */
 #undef __PROTOTYPES
 
+/* Ensure that <stdint.h> defines the limit macros, since gnulib's
+   <inttypes.h> relies on them.  */
+#if defined __cplusplus && !defined __STDC_LIMIT_MACROS && GL_TRIGGER_STDC_LIMIT_MACROS
+# define __STDC_LIMIT_MACROS 1
+#endif
+
+
 /* Define to `unsigned long' if <sys/types.h> does not define. */
 #undef dev_t
 
@@ -895,9 +933,6 @@
 
 /* Define to a replacement function name for fnmatch(). */
 #undef fnmatch
-
-/* Define to a replacement function name for getline(). */
-#undef getline
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
@@ -910,10 +945,6 @@
 
 /* Define to `unsigned long' if <sys/types.h> does not define. */
 #undef ino_t
-
-/* Define to signed long or signed long long if <stdint.h> and <inttypes.h>
-   don't define. */
-#undef intmax_t
 
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
@@ -972,6 +1003,9 @@
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
 
+/* Define to a replacement function name for realpath(). */
+#undef realpath
+
 /* Define to rpl_regcomp if the replacement should be used. */
 #undef regcomp
 
@@ -984,9 +1018,18 @@
 /* Define to rpl_regfree if the replacement should be used. */
 #undef regfree
 
-/* Define to equivalent of C99 restrict keyword, or to nothing if this is not
-   supported. Do not define if restrict is supported directly. */
+/* Define to the equivalent of the C99 'restrict' keyword, or to
+   nothing if this is not supported.  Do not define if restrict is
+   supported directly.  */
 #undef restrict
+/* Work around a bug in Sun C++: it does not support _Restrict, even
+   though the corresponding Sun C compiler does, which causes
+   "#define restrict _Restrict" in the previous line.  Perhaps some future
+   version of Sun C++ will work with _Restrict; if so, it'll probably
+   define __RESTRICT, just as Sun C does.  */
+#if defined __SUNPRO_CC && !defined __RESTRICT
+# define _Restrict
+#endif
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t

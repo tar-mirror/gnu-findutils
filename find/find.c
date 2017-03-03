@@ -1,22 +1,20 @@
 /* find -- search for files in a directory hierarchy
    Copyright (C) 1990, 91, 92, 93, 94, 2000, 
-                 2003, 2004, 2005 Free Software Foundation, Inc.
+                 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-   USA.*/
-
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 /* GNU find was written by Eric Decker <cire@cisco.com>,
    with enhancements by David MacKenzie <djm@gnu.org>,
    Jay Plett <jay@silence.princeton.nj.us>,
@@ -50,7 +48,7 @@
 #include "../gnulib/lib/xalloc.h"
 #include "../gnulib/lib/human.h"
 #include "../gnulib/lib/canonicalize.h"
-#include "closeout.h"
+#include "closein.h"
 #include <modetype.h>
 #include "savedirinfo.h"
 #include "buildcmd.h"
@@ -418,9 +416,9 @@ main (int argc, char **argv)
 #endif
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-  atexit (close_stdout);
+  atexit (close_stdin);
 
-  
+
   if (isatty(0))
     {
       options.warnings = true;
@@ -1000,7 +998,8 @@ enum SafeChdirStatus
     SafeChdirFailStat,
     SafeChdirFailWouldBeUnableToReturn,
     SafeChdirFailChdirFailed,
-    SafeChdirFailNonexistent
+    SafeChdirFailNonexistent,
+    SafeChdirFailDestUnreadable
   };
 
 /* Safely perform a change in directory.  We do this by calling
@@ -1266,7 +1265,7 @@ safely_chdir_nofollow(const char *dest,
 	case ENOENT:
 	  return SafeChdirFailNonexistent;
 	default:
-	  return SafeChdirFailChdirFailed;
+	  return SafeChdirFailDestUnreadable;
 	}
     }
   
@@ -1314,9 +1313,29 @@ safely_chdir(const char *dest,
 
 #if defined(O_NOFOLLOW)
   if (options.open_nofollow_available)
-    return safely_chdir_nofollow(dest, direction, statbuf_dest, symlink_follow_option, did_stat);
+    {
+      enum SafeChdirStatus result;
+      result = safely_chdir_nofollow(dest, direction, statbuf_dest,
+				     symlink_follow_option, did_stat);
+      if (SafeChdirFailDestUnreadable != result)
+	{
+	  return result;
+	}
+      else
+	{
+	  /* Savannah bug #15384: fall through to use safely_chdir_lstat
+	   * if the directory is not readable. 
+	   */
+	  /* Do nothing. */
+	}
+    }
 #endif
-  return safely_chdir_lstat(dest, direction, statbuf_dest, symlink_follow_option, did_stat);
+  /* Even if O_NOFOLLOW is available, we may need to use the alternative 
+   * method, since parent of the start point may be executable but not 
+   * readable. 
+   */
+  return safely_chdir_lstat(dest, direction, statbuf_dest,
+			    symlink_follow_option, did_stat);
 }
 
 
@@ -1379,13 +1398,13 @@ at_top (char *pathname,
 		       struct stat *pstat))
 {
   int dirchange;
-  char *parent_dir = dir_name(pathname);
-  char *base = base_name(pathname);
-  
+  char *parent_dir = dir_name (pathname);
+  char *base = last_component (pathname);
+
   state.curdepth = 0;
   state.path_length = strlen (pathname);
 
-  if (0 == strcmp(pathname, parent_dir)
+  if (0 == *base
       || 0 == strcmp(parent_dir, "."))
     {
       dirchange = 0;
@@ -1894,6 +1913,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      break;
 	      
 	    case SafeChdirFailNonexistent:
+	    case SafeChdirFailDestUnreadable:
 	    case SafeChdirFailStat:
 	    case SafeChdirFailNotDir:
 	    case SafeChdirFailChdirFailed:
@@ -2016,6 +2036,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      return;
 	      
 	    case SafeChdirFailNonexistent:
+	    case SafeChdirFailDestUnreadable:
 	    case SafeChdirFailStat:
 	    case SafeChdirFailSymlink:
 	    case SafeChdirFailNotDir:

@@ -3,8 +3,11 @@ AUTOMAKE_OPTIONS = std-options
 LOCATE_DB = $(localstatedir)/locatedb
 localedir = $(datadir)/locale
 
-AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = frcode code bigram
-bin_PROGRAMS = locate 
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = \
+	frcode$(EXEEXT) \
+	code$(EXEEXT) \
+	bigram$(EXEEXT)
+bin_PROGRAMS = locate
 libexec_PROGRAMS = frcode code bigram
 bin_SCRIPTS = updatedb
 man_MANS = locate.1 updatedb.1 locatedb.5
@@ -41,4 +44,4 @@ updatedb: updatedb.sh
 install-data-hook:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(localstatedir)
 
-SUBDIRS = testsuite
+SUBDIRS = . testsuite

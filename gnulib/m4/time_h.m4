@@ -20,9 +20,7 @@ AC_DEFUN([gl_HEADER_TIME_H_BODY],
 [
   AC_REQUIRE([AC_C_RESTRICT])
   AC_REQUIRE([gl_HEADER_TIME_H_DEFAULTS])
-  gl_ABSOLUTE_HEADER([time.h])
-  ABSOLUTE_TIME_H=\"$gl_cv_absolute_time_h\"
-  AC_SUBST([ABSOLUTE_TIME_H])
+  gl_CHECK_NEXT_HEADERS([time.h])
   AC_REQUIRE([gl_CHECK_TYPE_STRUCT_TIMESPEC])
 ])
 
@@ -67,7 +65,7 @@ AC_DEFUN([gl_CHECK_TYPE_STRUCT_TIMESPEC],
 	    [[static struct timespec x; x.tv_sec = x.tv_nsec;]])],
 	 [gl_cv_sys_struct_timespec_in_sys_time_h=yes],
 	 [gl_cv_sys_struct_timespec_in_sys_time_h=no])])
-    if test $gl_cv_sys_struct_timespec_in_time_h = yes; then
+    if test $gl_cv_sys_struct_timespec_in_sys_time_h = yes; then
       SYS_TIME_H_DEFINES_STRUCT_TIMESPEC=1
     fi
   fi

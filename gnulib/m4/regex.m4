@@ -1,4 +1,4 @@
-#serial 45
+#serial 48
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
 # 2006, 2007 Free Software Foundation, Inc.
@@ -18,9 +18,12 @@ AC_DEFUN([gl_REGEX],
 
   AC_ARG_WITH([included-regex],
     [AC_HELP_STRING([--without-included-regex],
-		    [don't compile regex; this is the default on
+		    [don't compile regex; this is the default on 32-bit
 		     systems with recent-enough versions of the GNU C
-		     Library (use with caution on other systems)])])
+		     Library (use with caution on other systems).
+		     On systems with 64-bit ptrdiff_t and 32-bit int,
+		     --with-included-regex is the default, in case
+		     regex functions operate on very long strings (>2GB)])])
 
   case $with_included_regex in #(
   yes|no) ac_use_included_regex=$with_included_regex
@@ -134,6 +137,17 @@ AC_DEFUN([gl_REGEX],
 	    if (re_search (&regex, "WXY", 3, 0, 3, &regs) < 0)
 	      return 1;
 
+	    /* Catch a bug reported by Vin Shelton in
+	       http://lists.gnu.org/archive/html/bug-coreutils/2007-06/msg00089.html
+	       */
+	    re_set_syntax (RE_SYNTAX_POSIX_BASIC
+			   & ~RE_CONTEXT_INVALID_DUP
+			   & ~RE_NO_EMPTY_RANGES);
+	    memset (&regex, 0, sizeof regex);
+	    s = re_compile_pattern ("[[:alnum:]_-]\\\\+$", 16, &regex);
+	    if (s)
+	      return 1;
+
 	    /* REG_STARTEND was added to glibc on 2004-01-15.
 	       Reject older versions.  */
 	    if (! REG_STARTEND)
@@ -201,8 +215,8 @@ AC_DEFUN([gl_REGEX],
 # Prerequisites of lib/regex.c and lib/regex_internal.c.
 AC_DEFUN([gl_PREREQ_REGEX],
 [
-  AC_REQUIRE([AC_GNU_SOURCE])
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
   AC_REQUIRE([AC_C_RESTRICT])
-  AC_CHECK_FUNCS_ONCE([iswctype mbrtowc wcrtomb wcscoll])
+  AC_CHECK_FUNCS_ONCE([isblank iswctype mbrtowc wcrtomb wcscoll])
   AC_CHECK_DECLS([isblank], [], [], [#include <ctype.h>])
 ])

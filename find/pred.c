@@ -1,21 +1,19 @@
 /* pred.c -- execute the expression tree.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2003, 
-                 2004, 2005 Free Software Foundation, Inc.
+                 2004, 2005, 2007 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-   USA.
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "defs.h"
@@ -656,7 +654,11 @@ pred_fprintf (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 	  break;
 	case 'f':		/* base name of path */
 	  /* sanitised */
-	  print_quoted (fp, qopts, ttyflag, segment->text, base_name (pathname));
+	  {
+	    char *base = base_name (pathname);
+	    print_quoted (fp, qopts, ttyflag, segment->text, base);
+	    free (base);
+	  }
 	  break;
 	case 'F':		/* filesystem type */
 	  /* trusted */
@@ -961,20 +963,39 @@ pred_ilname (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
   return insert_lname (pathname, stat_buf, pred_ptr, true);
 }
 
-boolean
-pred_iname (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
+/* Common code between -name, -iname.  PATHNAME is being visited, STR
+   is name to compare basename against, and FLAGS are passed to
+   fnmatch.  Recall that 'find / -name /' is one of the few times where a '/' 
+   in the -name must actually find something. */ 
+static boolean
+pred_name_common (const char *pathname, const char *str, int flags)
 {
-  const char *base;
-
-  (void) stat_buf;
+  char *p;
+  boolean b;
+  /* We used to use last_component() here, but that would not allow us
+   * to modify the input string, which is const.  We could optimise by
+   * duplicating the string only if we need to modify it, and I'll do
+   * that if there is a measurable performance difference on a machine
+   * built after 1990...
+   */
+  char *base = base_name (pathname);
+  /* remove trailing slashes, but leave  "/" or "//foo" unchanged. */
+  strip_trailing_slashes(base);
 
   /* FNM_PERIOD is not used here because POSIX requires that it not be.
    * See http://standards.ieee.org/reading/ieee/interp/1003-2-92_int/pasc-1003.2-126.html
    */
-  base = base_name (pathname);
-  if (fnmatch (pred_ptr->args.str, base, FNM_CASEFOLD) == 0)
-    return (true);
-  return (false);
+  b = fnmatch (str, base, flags) == 0;
+  free (base);
+  return b;
+}
+
+
+boolean
+pred_iname (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
+{
+  (void) stat_buf;
+  return pred_name_common (pathname, pred_ptr->args.str, FNM_CASEFOLD);
 }
 
 boolean
@@ -1086,17 +1107,8 @@ pred_mtime (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 boolean
 pred_name (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
-  const char *base;
-
   (void) stat_buf;
-  base = base_name (pathname);
-
-  /* FNM_PERIOD is not used here because POSIX requires that it not be.
-   * See http://standards.ieee.org/reading/ieee/interp/1003-2-92_int/pasc-1003.2-126.html
-   */
-  if (fnmatch (pred_ptr->args.str, base, 0) == 0)
-    return (true);
-  return (false);
+  return pred_name_common (pathname, pred_ptr->args.str, 0);
 }
 
 boolean
@@ -1937,5 +1949,3 @@ pred_sanity_check(const struct predicate *predicates)
 	}
     }
 }
-
-

@@ -1,5 +1,5 @@
 # Configure fcntl.h.
-dnl Copyright (C) 2006 Free Software Foundation, Inc.
+dnl Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -8,6 +8,7 @@ dnl Written by Paul Eggert.
 
 AC_DEFUN([gl_FCNTL_H],
 [
+  AC_REQUIRE([gl_FCNTL_H_DEFAULTS])
   AC_CACHE_CHECK([for working fcntl.h], gl_cv_header_working_fcntl_h,
     [AC_RUN_IFELSE(
        [AC_LANG_PROGRAM(
@@ -73,9 +74,21 @@ AC_DEFUN([gl_FCNTL_H],
   AC_DEFINE_UNQUOTED([HAVE_WORKING_O_NOFOLLOW], [$ac_val],
     [Define to 1 if O_NOFOLLOW works.])
 
-  gl_ABSOLUTE_HEADER([fcntl.h])
-  ABSOLUTE_FCNTL_H=\"$gl_cv_absolute_fcntl_h\"
-  AC_SUBST([ABSOLUTE_FCNTL_H])
+  gl_CHECK_NEXT_HEADERS([fcntl.h])
   FCNTL_H='fcntl.h'
   AC_SUBST([FCNTL_H])
+])
+
+AC_DEFUN([gl_FCNTL_MODULE_INDICATOR],
+[
+  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
+  AC_REQUIRE([gl_FCNTL_H_DEFAULTS])
+  GNULIB_[]m4_translit([$1],[abcdefghijklmnopqrstuvwxyz./-],[ABCDEFGHIJKLMNOPQRSTUVWXYZ___])=1
+])
+
+AC_DEFUN([gl_FCNTL_H_DEFAULTS],
+[
+  GNULIB_OPEN=0;  AC_SUBST([GNULIB_OPEN])
+  dnl Assume proper GNU behavior unless another module says otherwise.
+  REPLACE_OPEN=0; AC_SUBST([REPLACE_OPEN])
 ])

@@ -1,4 +1,4 @@
-# Check for fnmatch.
+# Check for fnmatch - serial 2.
 
 # Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software
 # Foundation, Inc.
@@ -83,7 +83,7 @@ AC_DEFUN([_AC_LIBOBJ_FNMATCH],
 [AC_REQUIRE([AC_FUNC_ALLOCA])dnl
 AC_REQUIRE([AC_TYPE_MBSTATE_T])dnl
 AC_CHECK_DECLS([isblank], [], [], [#include <ctype.h>])
-AC_CHECK_FUNCS_ONCE([btowc iswctype mbsrtowcs mempcpy wmemchr wmemcpy wmempcpy])
+AC_CHECK_FUNCS_ONCE([btowc isblank iswctype mbsrtowcs mempcpy wmemchr wmemcpy wmempcpy])
 AC_CHECK_HEADERS_ONCE([wctype.h])
 AC_LIBOBJ([fnmatch])
 FNMATCH_H=fnmatch.h
@@ -110,7 +110,7 @@ AC_DEFUN([gl_FUNC_FNMATCH_POSIX],
 AC_DEFUN([gl_FUNC_FNMATCH_GNU],
 [
   dnl Persuade glibc <fnmatch.h> to declare FNM_CASEFOLD etc.
-  AC_REQUIRE([AC_GNU_SOURCE])
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
 
   FNMATCH_H=
   _AC_FUNC_FNMATCH_IF([GNU], [ac_cv_func_fnmatch_gnu],

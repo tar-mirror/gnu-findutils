@@ -27,6 +27,9 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([AC_PROG_RANLIB])
   AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
+  AC_REQUIRE([AC_FUNC_FSEEKO])
+  AC_REQUIRE([AC_FUNC_FSEEKO])
+  AC_REQUIRE([AC_FUNC_FSEEKO])
 ])
 
 # This macro should be invoked from ./configure.in, in the section
@@ -45,22 +48,32 @@ AC_DEFUN([gl_INIT],
   gl_ARGMATCH
   AC_FUNC_CANONICALIZE_FILE_NAME
   gl_MODULE_INDICATOR([canonicalize])
+  gl_CANONICALIZE_LGPL
   gl_FUNC_CHDIR_LONG
   gl_FUNC_CHOWN
   gl_UNISTD_MODULE_INDICATOR([chown])
   gl_CLOSE_STREAM
   gl_MODULE_INDICATOR([close-stream])
+  gl_CLOSEIN
   gl_CLOSEOUT
-  gl_CYCLE_CHECK
   gl_CHECK_TYPE_STRUCT_DIRENT_D_INO
   gl_FUNC_DIRFD
   gl_DIRNAME
   gl_DOUBLE_SLASH_ROOT
+  gl_FUNC_DUP2
+  gl_UNISTD_MODULE_INDICATOR([dup2])
   gl_ERROR
+  m4_ifdef([AM_XGETTEXT_OPTION],
+    [AM_XGETTEXT_OPTION([--flag=error:3:c-format])
+     AM_XGETTEXT_OPTION([--flag=error_at_line:5:c-format])])
   gl_EXITFAIL
+  gl_FUNC_FCHDIR
+  gl_UNISTD_MODULE_INDICATOR([fchdir])
   gl_FCNTL_H
   gl_FCNTL_SAFER
   gl_MODULE_INDICATOR([fcntl-safer])
+  gl_FUNC_FFLUSH
+  gl_STDIO_MODULE_INDICATOR([fflush])
   gl_FILEBLOCKS
   gl_FILEMODE
   gl_FILE_NAME_CONCAT
@@ -70,21 +83,39 @@ AC_DEFUN([gl_INIT],
   gl_FOPEN_SAFER
   gl_MODULE_INDICATOR([fopen-safer])
   gl_FUNC_FPENDING
+  gl_FUNC_FPURGE
+  gl_FUNC_FREADING
+  gl_FUNC_FSEEKO
+  gl_STDIO_MODULE_INDICATOR([fseeko])
+  gl_FUNC_FTELLO
+  gl_STDIO_MODULE_INDICATOR([ftello])
   gl_FUNC_GETCWD
   gl_UNISTD_MODULE_INDICATOR([getcwd])
   gl_FUNC_GETDELIM
+  gl_STDIO_MODULE_INDICATOR([getdelim])
   gl_FUNC_GETLINE
+  gl_STDIO_MODULE_INDICATOR([getline])
   gl_GETOPT
   dnl you must add AM_GNU_GETTEXT([external]) or similar to configure.ac.
-  AM_GNU_GETTEXT_VERSION([0.15])
+  AM_GNU_GETTEXT_VERSION([0.17])
+  AC_SUBST([LIBINTL])
+  AC_SUBST([LTLIBINTL])
+  gl_HASH
   gl_HUMAN
   gl_IDCACHE
   gl_INLINE
   gl_INTTYPES_H
   gl_FUNC_LCHOWN
+  gl_UNISTD_MODULE_INDICATOR([lchown])
   gl_LOCALCHARSET
+  gl_FUNC_LSEEK
+  gl_UNISTD_MODULE_INDICATOR([lseek])
   gl_FUNC_LSTAT
   AC_FUNC_MALLOC
+  AC_DEFINE([GNULIB_MALLOC_GNU], 1, [Define to indicate the 'malloc' module.])
+  gl_FUNC_MALLOC_POSIX
+  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
+  gl_MALLOCA
   gl_FUNC_MEMCMP
   gl_FUNC_MEMPCPY
   gl_STRING_MODULE_INDICATOR([mempcpy])
@@ -101,8 +132,12 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_READLINK
   gl_UNISTD_MODULE_INDICATOR([readlink])
   AC_FUNC_REALLOC
+  AC_DEFINE([GNULIB_REALLOC_GNU], 1, [Define to indicate the 'realloc' module.])
+  gl_FUNC_REALLOC_POSIX
+  gl_STDLIB_MODULE_INDICATOR([realloc-posix])
   gl_REGEX
   gl_FUNC_RPMATCH
+  gl_SAME
   gl_SAVE_CWD
   gl_SAVEDIR
   gt_TYPE_SSIZE_T
@@ -110,11 +145,14 @@ AC_DEFUN([gl_INIT],
   gl_STDINT_H
   gt_TYPE_WCHAR_T
   gt_TYPE_WINT_T
+  gl_STDIO_H
   gl_STDLIB_H
   gl_FUNC_STPCPY
   gl_STRING_MODULE_INDICATOR([stpcpy])
   gl_FUNC_STRDUP
   gl_STRING_MODULE_INDICATOR([strdup])
+  gl_FUNC_STRERROR
+  gl_STRING_MODULE_INDICATOR([strerror])
   gl_FUNC_GNU_STRFTIME
   gl_HEADER_STRING_H
   gl_FUNC_STRNDUP
@@ -139,7 +177,6 @@ AC_DEFUN([gl_INIT],
   gl_WCTYPE_H
   gl_XALLOC
   gl_XGETCWD
-  gl_XREADLINK
   gl_XSTRNDUP
   gl_XSTRTOL
   gl_YESNO
@@ -168,32 +205,48 @@ AC_DEFUN([gl_INIT],
 
 # Like AC_LIBOBJ, except that the module name goes
 # into gl_LIBOBJS instead of into LIBOBJS.
-AC_DEFUN([gl_LIBOBJ],
-  [gl_LIBOBJS="$gl_LIBOBJS $1.$ac_objext"])
+AC_DEFUN([gl_LIBOBJ], [
+  AS_LITERAL_IF([$1], [gl_LIBSOURCES([$1.c])])dnl
+  gl_LIBOBJS="$gl_LIBOBJS $1.$ac_objext"
+])
 
 # Like AC_REPLACE_FUNCS, except that the module name goes
 # into gl_LIBOBJS instead of into LIBOBJS.
-AC_DEFUN([gl_REPLACE_FUNCS],
-  [AC_CHECK_FUNCS([$1], , [gl_LIBOBJ($ac_func)])])
+AC_DEFUN([gl_REPLACE_FUNCS], [
+  m4_foreach_w([gl_NAME], [$1], [AC_LIBSOURCES(gl_NAME[.c])])dnl
+  AC_CHECK_FUNCS([$1], , [gl_LIBOBJ($ac_func)])
+])
 
-# Like AC_LIBSOURCES, except that it does nothing.
-# We rely on EXTRA_lib..._SOURCES instead.
-AC_DEFUN([gl_LIBSOURCES],
-  [])
+# Like AC_LIBSOURCES, except the directory where the source file is
+# expected is derived from the gnulib-tool parametrization,
+# and alloca is special cased (for the alloca-opt module).
+# We could also entirely rely on EXTRA_lib..._SOURCES.
+AC_DEFUN([gl_LIBSOURCES], [
+  m4_foreach([_gl_NAME], [$1], [
+    m4_if(_gl_NAME, [alloca.c], [], [
+      m4_syscmd([test -r gnulib/lib/]_gl_NAME[ || test ! -d gnulib/lib])dnl
+      m4_if(m4_sysval, [0], [],
+        [AC_FATAL([missing gnulib/lib/]_gl_NAME)])
+    ])
+  ])
+])
 
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
   build-aux/config.rpath
   build-aux/link-warning.h
-  lib/__fpending.c
-  lib/__fpending.h
+  doc/fdl.texi
   lib/alloca.c
-  lib/alloca_.h
+  lib/alloca.in.h
+  lib/areadlink-with-size.c
+  lib/areadlink.h
   lib/argmatch.c
   lib/argmatch.h
   lib/at-func.c
   lib/basename.c
+  lib/binary-io.h
+  lib/canonicalize-lgpl.c
   lib/canonicalize.c
   lib/canonicalize.h
   lib/chdir-long.c
@@ -201,61 +254,84 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/chown.c
   lib/close-stream.c
   lib/close-stream.h
+  lib/closein.c
+  lib/closein.h
   lib/closeout.c
   lib/closeout.h
   lib/config.charset
   lib/creat-safer.c
-  lib/cycle-check.c
-  lib/cycle-check.h
-  lib/dev-ino.h
+  lib/dirent.in.h
   lib/dirfd.c
   lib/dirfd.h
   lib/dirname.c
   lib/dirname.h
   lib/dup-safer.c
+  lib/dup2.c
   lib/error.c
   lib/error.h
   lib/exitfail.c
   lib/exitfail.h
+  lib/fchdir.c
   lib/fchmodat.c
   lib/fchown-stub.c
   lib/fchownat.c
   lib/fcntl--.h
   lib/fcntl-safer.h
-  lib/fcntl_.h
+  lib/fcntl.in.h
   lib/fd-safer.c
+  lib/fflush.c
+  lib/file-set.c
+  lib/file-set.h
   lib/fileblocks.c
   lib/filemode.c
   lib/filemode.h
   lib/filenamecat.c
   lib/filenamecat.h
   lib/fnmatch.c
-  lib/fnmatch_.h
+  lib/fnmatch.in.h
   lib/fnmatch_loop.c
   lib/fopen-safer.c
+  lib/fpending.c
+  lib/fpending.h
+  lib/fpurge.c
+  lib/fpurge.h
+  lib/freadahead.c
+  lib/freadahead.h
+  lib/freading.c
+  lib/freading.h
+  lib/fseeko.c
   lib/fstatat.c
+  lib/ftello.c
   lib/getcwd.c
   lib/getdelim.c
-  lib/getdelim.h
   lib/getline.c
-  lib/getline.h
   lib/getopt.c
+  lib/getopt.in.h
   lib/getopt1.c
-  lib/getopt_.h
   lib/getopt_int.h
   lib/gettext.h
+  lib/hash-pjw.c
+  lib/hash-pjw.h
+  lib/hash-triple.c
+  lib/hash-triple.h
+  lib/hash.c
+  lib/hash.h
   lib/human.c
   lib/human.h
   lib/idcache.c
+  lib/idcache.h
   lib/intprops.h
-  lib/inttypes_.h
+  lib/inttypes.in.h
   lib/lchown.c
-  lib/lchown.h
   lib/localcharset.c
   lib/localcharset.h
+  lib/lseek.c
   lib/lstat.c
   lib/lstat.h
   lib/malloc.c
+  lib/malloca.c
+  lib/malloca.h
+  lib/malloca.valgrind
   lib/memcmp.c
   lib/mempcpy.c
   lib/memrchr.c
@@ -274,6 +350,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/openat.h
   lib/pathmax.h
   lib/pipe-safer.c
+  lib/progname.c
+  lib/progname.h
   lib/quote.c
   lib/quote.h
   lib/quotearg.c
@@ -290,22 +368,25 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/regexec.c
   lib/rpmatch.c
   lib/same-inode.h
+  lib/same.c
+  lib/same.h
   lib/save-cwd.c
   lib/save-cwd.h
   lib/savedir.c
   lib/savedir.h
   lib/stat-macros.h
-  lib/stat_.h
-  lib/stdbool_.h
-  lib/stdint_.h
+  lib/stdbool.in.h
+  lib/stdint.in.h
   lib/stdio--.h
   lib/stdio-safer.h
-  lib/stdlib_.h
+  lib/stdio.in.h
+  lib/stdlib.in.h
   lib/stpcpy.c
   lib/strdup.c
+  lib/strerror.c
   lib/strftime.c
   lib/strftime.h
-  lib/string_.h
+  lib/string.in.h
   lib/stripslash.c
   lib/strndup.c
   lib/strnlen.c
@@ -315,23 +396,23 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strtoul.c
   lib/strtoull.c
   lib/strtoumax.c
-  lib/time_.h
+  lib/sys_stat.in.h
+  lib/time.in.h
   lib/time_r.c
   lib/unistd--.h
   lib/unistd-safer.h
-  lib/unistd_.h
+  lib/unistd.in.h
   lib/verify.h
-  lib/wchar_.h
-  lib/wctype_.h
+  lib/wchar.in.h
+  lib/wctype.in.h
   lib/xalloc-die.c
   lib/xalloc.h
   lib/xgetcwd.c
   lib/xgetcwd.h
   lib/xmalloc.c
-  lib/xreadlink.c
-  lib/xreadlink.h
   lib/xstrndup.c
   lib/xstrndup.h
+  lib/xstrtol-error.c
   lib/xstrtol.c
   lib/xstrtol.h
   lib/xstrtoul.c
@@ -341,30 +422,39 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/absolute-header.m4
   m4/alloca.m4
   m4/argmatch.m4
+  m4/canonicalize-lgpl.m4
   m4/canonicalize.m4
   m4/chdir-long.m4
   m4/chown.m4
   m4/close-stream.m4
+  m4/closein.m4
   m4/closeout.m4
   m4/codeset.m4
-  m4/cycle-check.m4
   m4/d-ino.m4
   m4/dirfd.m4
   m4/dirname.m4
   m4/dos.m4
   m4/double-slash-root.m4
+  m4/dup2.m4
+  m4/eealloc.m4
   m4/error.m4
   m4/exitfail.m4
   m4/extensions.m4
+  m4/fchdir.m4
   m4/fcntl-safer.m4
   m4/fcntl_h.m4
+  m4/fflush.m4
   m4/fileblocks.m4
   m4/filemode.m4
   m4/filenamecat.m4
   m4/flexmember.m4
   m4/fnmatch.m4
   m4/fpending.m4
+  m4/fpurge.m4
+  m4/freading.m4
+  m4/fseeko.m4
   m4/fstypename.m4
+  m4/ftello.m4
   m4/getcwd-abort-bug.m4
   m4/getcwd-path-max.m4
   m4/getcwd.m4
@@ -375,13 +465,16 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/glibc2.m4
   m4/glibc21.m4
   m4/gnulib-common.m4
+  m4/hash.m4
   m4/human.m4
   m4/iconv.m4
   m4/idcache.m4
+  m4/include_next.m4
   m4/inline.m4
   m4/intdiv0.m4
   m4/intl.m4
   m4/intldir.m4
+  m4/intlmacosx.m4
   m4/intmax.m4
   m4/inttypes-pri.m4
   m4/inttypes.m4
@@ -393,10 +486,12 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lib-prefix.m4
   m4/localcharset.m4
   m4/lock.m4
-  m4/longdouble.m4
   m4/longlong.m4
   m4/ls-mntd-fs.m4
+  m4/lseek.m4
   m4/lstat.m4
+  m4/malloc.m4
+  m4/malloca.m4
   m4/mbrtowc.m4
   m4/mbstate_t.m4
   m4/memcmp.m4
@@ -416,8 +511,10 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/quote.m4
   m4/quotearg.m4
   m4/readlink.m4
+  m4/realloc.m4
   m4/regex.m4
   m4/rpmatch.m4
+  m4/same.m4
   m4/save-cwd.m4
   m4/savedir.m4
   m4/size_max.m4
@@ -427,9 +524,11 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/stdint.m4
   m4/stdint_h.m4
   m4/stdio-safer.m4
+  m4/stdio_h.m4
   m4/stdlib_h.m4
   m4/stpcpy.m4
   m4/strdup.m4
+  m4/strerror.m4
   m4/strftime.m4
   m4/string_h.m4
   m4/strndup.m4
@@ -445,7 +544,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/time_r.m4
   m4/tm_gmtoff.m4
   m4/uintmax_t.m4
-  m4/ulonglong.m4
   m4/unistd-safer.m4
   m4/unistd_h.m4
   m4/visibility.m4
@@ -455,21 +553,56 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/wint_t.m4
   m4/xalloc.m4
   m4/xgetcwd.m4
-  m4/xreadlink.m4
   m4/xsize.m4
   m4/xstrndup.m4
   m4/xstrtol.m4
   m4/yesno.m4
+  tests/test-alloca-opt.c
+  tests/test-argmatch.c
+  tests/test-binary-io.c
+  tests/test-binary-io.sh
+  tests/test-canonicalize-lgpl.c
+  tests/test-canonicalize-lgpl.sh
+  tests/test-canonicalize.c
+  tests/test-canonicalize.sh
+  tests/test-closein.c
+  tests/test-closein.sh
   tests/test-dirname.c
   tests/test-fcntl.c
+  tests/test-fflush.c
+  tests/test-filenamecat.c
+  tests/test-fpending.c
+  tests/test-fpending.sh
+  tests/test-fpurge.c
+  tests/test-freadahead.c
+  tests/test-freadahead.sh
+  tests/test-freading.c
+  tests/test-fseeko.c
+  tests/test-fseeko.sh
+  tests/test-ftello.c
+  tests/test-ftello.sh
+  tests/test-getdelim.c
+  tests/test-getline.c
   tests/test-inttypes.c
+  tests/test-lseek.c
+  tests/test-lseek.sh
+  tests/test-malloca.c
   tests/test-stdbool.c
   tests/test-stdint.c
+  tests/test-stdio.c
   tests/test-stdlib.c
+  tests/test-strerror.c
   tests/test-string.c
   tests/test-sys_stat.c
   tests/test-time.c
   tests/test-unistd.c
   tests/test-wchar.c
   tests/test-wctype.c
+  tests/test-xstrtol.c
+  tests/test-xstrtol.sh
+  tests/test-xstrtoul.c
+  tests/test-xstrtoumax.c
+  tests/test-xstrtoumax.sh
+  tests/test-yesno.c
+  tests/test-yesno.sh
 ])

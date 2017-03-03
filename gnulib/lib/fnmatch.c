@@ -3,7 +3,7 @@
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -85,7 +85,7 @@ extern int fnmatch (const char *pattern, const char *string, int flags);
 #if defined _LIBC || !defined __GNU_LIBRARY__ || !HAVE_FNMATCH_GNU
 
 
-# if ! (defined isblank || HAVE_DECL_ISBLANK)
+# if ! (defined isblank || (HAVE_ISBLANK && HAVE_DECL_ISBLANK))
 #  define isblank(c) ((c) == ' ' || (c) == '\t')
 # endif
 

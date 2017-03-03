@@ -1,26 +1,24 @@
 /* xargs -- build and execute command lines from standard input
    Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-   USA.
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* Written by Mike Rendell <michael@cs.mun.ca>
-   and David MacKenzie <djm@gnu.org>.  
-   Modifications by 
-   	James Youngman
+   and David MacKenzie <djm@gnu.org>.
+   Modifications by
+	James Youngman
 	Dmitry V. Levin
 */
 
@@ -167,7 +165,7 @@ typedef int boolean;
 #endif
 
 #include <xalloc.h>
-#include "closeout.h"
+#include "closein.h"
 #include "gnulib-version.h"
 
 void error PARAMS ((int status, int errnum, char *message,...));
@@ -379,6 +377,7 @@ get_input_delimiter(const char *s)
 	  error(1, 0,
 		_("Invalid input delimiter specification %s: the delimiter must be either a single character or an escape sequence starting with \\."),
 		s);
+	  abort ();
 	}
     }
 }
@@ -406,7 +405,6 @@ main (int argc, char **argv)
   char *default_cmd = "/bin/echo";
   int (*read_args) PARAMS ((void)) = read_line;
   void (*act_on_init_result)(void) = noop;
-  int env_too_big = 0;
   enum BC_INIT_STATUS bcstatus;
 
   program_name = argv[0];
@@ -417,9 +415,9 @@ main (int argc, char **argv)
 #endif
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-  atexit (close_stdout);
+  atexit (close_stdin);
   atexit (wait_for_proc_all);
-  
+
   bcstatus = bc_init_controlinfo(&bc_ctl);
   /* The bc_init_controlinfo call may have determined that the 
    * environment is too big.  In that case, we will fail with 
@@ -444,7 +442,9 @@ main (int argc, char **argv)
 #if defined(ARG_MAX)
       assert(bc_ctl.arg_max <= (ARG_MAX-2048));
 #endif
+#ifdef LINE_MAX
       assert(bc_ctl.arg_max >= LINE_MAX);
+#endif
       
       bc_ctl.exec_callback = xargs_do_exec;
       
@@ -635,24 +635,24 @@ main (int argc, char **argv)
    */
   assert(sizeof(size_t) <= sizeof(unsigned long));
 #endif
-  
+
   if (show_limits)
     {
       fprintf(stderr,
- 	      _("Your environment variables take up %lu bytes\n"),
- 	      (unsigned long)bc_size_of_environment());
+	      _("Your environment variables take up %lu bytes\n"),
+	      (unsigned long)bc_size_of_environment());
       fprintf(stderr,
- 	      _("POSIX lower and upper limits on argument length: %lu, %lu\n"),
- 	      (unsigned long)bc_ctl.posix_arg_size_min,
- 	      (unsigned long)bc_ctl.posix_arg_size_max);
+	      _("POSIX lower and upper limits on argument length: %lu, %lu\n"),
+	      (unsigned long)bc_ctl.posix_arg_size_min,
+	      (unsigned long)bc_ctl.posix_arg_size_max);
       fprintf(stderr,
- 	      _("Maximum length of command we could actually use: %ld\n"),
- 	      (unsigned long)(bc_ctl.posix_arg_size_max -
- 			      bc_size_of_environment()));
+	      _("Maximum length of command we could actually use: %ld\n"),
+	      (unsigned long)(bc_ctl.posix_arg_size_max -
+			      bc_size_of_environment()));
       fprintf(stderr,
-  	      _("Size of command buffer we are actually using: %lu\n"),
-  	      (unsigned long)bc_ctl.arg_max);
-      
+	      _("Size of command buffer we are actually using: %lu\n"),
+	      (unsigned long)bc_ctl.arg_max);
+
       if (isatty(STDIN_FILENO))
 	{
 	  fprintf(stderr,

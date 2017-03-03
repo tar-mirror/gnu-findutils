@@ -31,6 +31,7 @@ find.gnu/iwholename.xo \
 find.gnu/lname.xo \
 find.gnu/name-opt.xo \
 find.gnu/name-period.xo \
+find.gnu/name-slash.xo \
 find.gnu/path.xo \
 find.gnu/perm.xo \
 find.gnu/perm-slash.xo \
@@ -38,6 +39,7 @@ find.gnu/posix-dflt.xo \
 find.gnu/posix-h.xo \
 find.gnu/posix-l.xo \
 find.gnu/printfHdfl.xo \
+find.gnu/printf-slash.xo \
 find.gnu/printf-symlink.xo \
 find.gnu/printf-h.xo \
 find.gnu/printf.xo \
@@ -61,6 +63,8 @@ find.posix/sv-bug-12181.xo \
 find.posix/depth1.xo \
 find.posix/sizes.xo \
 find.posix/name.xo \
+find.posix/nameslash.xo \
+find.posix/parent.xo \
 find.posix/perm-vanilla.xo \
 find.posix/prune.xo \
 find.posix/posixnot.xo \
@@ -96,6 +100,7 @@ find.gnu/iwholename.exp \
 find.gnu/lname.exp \
 find.gnu/name-opt.exp \
 find.gnu/name-period.exp \
+find.gnu/name-slash.exp \
 find.gnu/path.exp \
 find.gnu/print0.exp \
 find.gnu/perm.exp \
@@ -106,6 +111,7 @@ find.gnu/posix-l.exp \
 find.gnu/printfHdfl.exp \
 find.gnu/printf.exp \
 find.gnu/printf.exp \
+find.gnu/printf-slash.exp \
 find.gnu/printf-symlink.exp \
 find.gnu/printf-h.exp \
 find.gnu/prune-default-print.exp \
@@ -127,8 +133,10 @@ find.posix/links.exp \
 find.posix/sv-bug-11175.exp \
 find.posix/sv-bug-12181.exp \
 find.posix/depth1.exp \
-find.posix/sizes.exp \
 find.posix/name.exp \
+find.posix/nameslash.exp \
+find.posix/sizes.exp \
+find.posix/parent.exp \
 find.posix/perm-vanilla.exp \
 find.posix/posixnot.exp \
 find.posix/prune.exp \

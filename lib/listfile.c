@@ -1,45 +1,26 @@
 /* listfile.c -- display a long listing of a file
-   Copyright (C) 1991, 1993, 2000, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 2000, 2003, 2004, 2007 Free Software
+   Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-   USA.
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
 
-#ifndef __GNUC__
-# if HAVE_ALLOCA_H
-#  include <alloca.h>
-# else
-#  ifdef _AIX
- #  pragma alloca
-#  else
-#   ifdef _WIN32
-#    include <malloc.h>
-#    include <io.h>
-#   else
-#    ifndef alloca
-char *alloca ();
-#    endif
-#   endif
-#  endif
-# endif
-#endif
-
+#include <alloca.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -52,6 +33,7 @@ char *alloca ();
 #include "pathmax.h"
 #include "error.h"
 #include "filemode.h"
+#include "idcache.h"
 
 #include "listfile.h"
 
@@ -62,8 +44,8 @@ char *alloca ();
 #endif
 
 
-/* The presence of unistd.h is assumed by gnulib these days, so we 
- * might as well assume it too. 
+/* The presence of unistd.h is assumed by gnulib these days, so we
+ * might as well assume it too.
  */
 #include <unistd.h> /* for readlink() */
 
@@ -180,9 +162,6 @@ struct group *getgrgid ();
 char * get_link_name (char *name, char *relname);
 static void print_name_with_quoting (register char *p, FILE *stream);
 
-extern char * getgroup (gid_t gid);
-extern char * getuser (uid_t uid);
-
 
 /* NAME is the name to print.
    RELNAME is the path to access it from the current directory.
@@ -200,7 +179,7 @@ list_file (char *name,
 	   int output_block_size,
 	   FILE *stream)
 {
-  char modebuf[11];
+  char modebuf[12];
   struct tm const *when_local;
   char const *user_name;
   char const *group_name;
@@ -212,7 +191,6 @@ list_file (char *name,
 #else
   strmode (statp->st_mode, modebuf);
 #endif
-  modebuf[10] = '\0';
 
   fprintf (stream, "%6s ",
 	   human_readable ((uintmax_t) statp->st_ino, hbuf,
@@ -225,9 +203,9 @@ list_file (char *name,
 			   ST_NBLOCKSIZE, output_block_size));
 
 
-  /* The space between the mode and the number of links is the POSIX
-     "optional alternate access method flag".  */
-  fprintf (stream, "%s %3lu ", modebuf, (unsigned long) statp->st_nlink);
+  /* modebuf includes the space between the mode and the number of links,
+     as the POSIX "optional alternate access method flag".  */
+  fprintf (stream, "%s%3lu ", modebuf, (unsigned long) statp->st_nlink);
 
   user_name = getuser (statp->st_uid);
   if (user_name)
@@ -251,7 +229,7 @@ list_file (char *name,
 #endif
   else
     fprintf (stream, "%8s ",
-	     human_readable ((uintmax_t) statp->st_size, hbuf, 
+	     human_readable ((uintmax_t) statp->st_size, hbuf,
 			     human_ceiling,
 			     1,
 			     output_block_size < 0 ? output_block_size : 1));

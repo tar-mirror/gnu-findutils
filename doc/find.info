@@ -1,5 +1,5 @@
-This is ../../findutils/doc/find.info, produced by makeinfo version 4.8
-from ../../findutils/doc/find.texi.
+This is ../../findutils/doc/find.info, produced by makeinfo version
+4.11 from ../../findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
 START-INFO-DIR-ENTRY
@@ -17,30 +17,39 @@ END-INFO-DIR-ENTRY
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various operations on them.
 
-   Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005 Free
-Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005, 2006,
+2007 Free Software Foundation, Inc.
 
-   Permission is granted to make and distribute verbatim copies of this
-manual provided the copyright notice and this permission notice are
-preserved on all copies.
-
-   Permission is granted to copy and distribute modified versions of
-this manual under the conditions for verbatim copying, provided that the
-entire resulting derived work is distributed under the terms of a
-permission notice identical to this one.
-
-   Permission is granted to copy and distribute translations of this
-manual into another language, under the above conditions for modified
-versions, except that this permission notice may be stated in a
-translation approved by the Foundation.
+   Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled "GNU
+Free Documentation License."
 
 
 File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
+GNU Findutils
+*************
+
+This file documents the GNU utilities for finding files that match
+certain criteria and performing various operations on them.
+
+   Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005, 2006,
+2007 Free Software Foundation, Inc.
+
+   Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled "GNU
+Free Documentation License."
+
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.31, for `find' version 4.2.31.
+   This is edition 4.2.32, for `find' version 4.2.32.
 
 * Menu:
 
@@ -54,6 +63,7 @@ certain criteria and performing various actions on them.
 * Worked Examples::             Examples demonstrating more complex points.
 * Security Considerations::     Security issues relating to findutils.
 * Error Messages::              Explanations of some messages you might see.
+* GNU Free Documentation License::  Copying and sharing this manual.
 * Primary Index::               The components of `find' expressions.
 
 
@@ -415,7 +425,7 @@ File: find.info,  Node: Full Name Patterns,  Next: Fast Full Name Search,  Prev:
     `posix-extended'
           POSIX Extended Regular Expressions
 
-     *Note Regular Expressions:: for more information on the regular
+     *note Regular Expressions:: for more information on the regular
      expression dialects understood by GNU findutils.
 
 
@@ -1119,12 +1129,14 @@ slice of a directory tree.
 
  -- Action: -quit
      Exit immediately (with return value zero if no errors have
-     occurred).  No child processes will be left running, but no more
-     files specified on the command line will be processed.  For
-     example, `find /tmp/foo /tmp/bar -print -quit' will print only
-     `/tmp/foo'.  Any command lines which have been built by `-exec ...
-     \+' or `-execdir ... \+' are invoked before the program is
-     executed.
+     occurred).  This is different to `-prune' because `-prune' only
+     applies to the contents of pruned directories, whilt `-quit'
+     simply makes `find' stop immediately.  No child processes will be
+     left running, but no more files specified on the command line will
+     be processed.  For example, `find /tmp/foo /tmp/bar -print -quit'
+     will print only `/tmp/foo'.  Any command lines which have been
+     built by `-exec ... \+' or `-execdir ... \+' are invoked before
+     the program is exited.
 
  -- Option: -noleaf
      Do not optimize by assuming that directories contain 2 fewer
@@ -1524,7 +1536,7 @@ File: find.info,  Node: Size Directives,  Next: Location Directives,  Prev: Owne
 `%b'
      The amount of disk space used for this file in 512-byte blocks.
      Since disk space is allocated in multiples of the filesystem block
-     size this is usually greater than %s/1024, but it can also be
+     size this is usually greater than %s/512, but it can also be
      smaller if the file is a sparse file (that is, it has "holes").
 
 `%s'
@@ -2375,9 +2387,8 @@ share a prefix (initial string) with the previous entry.  Each database
 entry begins with an offset-differential count byte, which is the
 additional number of characters of prefix of the preceding entry to use
 beyond the number that the preceding entry is using of its predecessor.
-(The counts can be negative.)  Following the count is a
-null-terminated ASCII remainder--the part of the name that follows the
-shared prefix.
+(The counts can be negative.)  Following the count is a null-terminated
+ASCII remainder--the part of the name that follows the shared prefix.
 
    If the offset-differential count is larger than can be stored in a
 byte (+/-127), the byte has the value 0x80 and the count follows in a
@@ -2436,10 +2447,10 @@ The old database format is used by Unix `locate' and `find' programs
 and earlier releases of the GNU ones.  `updatedb' produces this format
 if given the `--old-format' option.
 
-   All versions of GNU `locate' prior to 4.2.31 fail to correctly
-handle very long file names, possibly leading to security problems
-relating to a heap buffer overrun.  *Note Security Considerations for
-locate::, for a detailed explanation.
+   Old versions of GNU `locate' fail to correctly handle very long file
+names, possibly leading to security problems relating to a heap buffer
+overrun.  *Note Security Considerations for locate::, for a detailed
+explanation.
 
    `updatedb' runs programs called `bigram' and `code' to produce
 old-format databases.  The old format differs from the new one in the
@@ -3002,7 +3013,7 @@ that symbolic links are handled.
    If `find' would follow a symbolic link, but cannot for any reason
 (for example, because it has insufficient permissions or the link is
 broken), it falls back on using the properties of the symbolic link
-itself.  *Note Symbolic Links:: for a more complete description of how
+itself.  *note Symbolic Links:: for a more complete description of how
 symbolic links are handled.
 
    *Note Primary Index::, for a summary of all of the tests, actions,
@@ -3055,6 +3066,11 @@ options are triggered by:
 
    - Specifying an option (for example `-mindepth') after a non-option
      (for example `-type' or `-print') on the command line.
+
+   - Use of the `-name' or `-iname' option with a slash character in
+     the pattern.  Since the name predicates only compare against the
+     basename of the visited files, the only file that can match a
+     slash is the root directory itself.
 
    The default behaviour above is designed to work in that way so that
 existing shell scripts don't generate spurious errors, but people will
@@ -3198,7 +3214,7 @@ databases returning each match of PATTERN.
 
 `--regextype'
      This option changes the regular expression syntax and behaviour
-     used by the `--regex' option.  *Note Regular Expressions:: for more
+     used by the `--regex' option.  *note Regular Expressions:: for more
      information on the regular expression dialects understood by GNU
      findutils.
 
@@ -3299,7 +3315,8 @@ the environment.
      characters which have the eighth bit set, such as many of the
      characters from the ISO-8859-1 character set).  Versions of
      `locate' prior to 4.2.31 fail to correctly handle long filenames
-     in old-format databases.
+     in old-format databases.  Versions 4.3.0 to 4.3.6 were also
+     affected.
 
 `--help'
      Print a summary of the command line usage and exit.
@@ -5374,7 +5391,7 @@ reason, the `-print' and `-print0' actions are just as insecure as
 
    In fact, since the construction
 
-     find ...  -print | xargs ....
+     find ...  -print | xargs ...
 
    does not cope correctly with newlines or other "white space" in file
 names, and copes poorly with file names containing quotes, the `-print'
@@ -5442,13 +5459,12 @@ problems in the case of `locate'.
 9.4.2 Long File Name Bugs with Old-Format Databases
 ---------------------------------------------------
 
-All versions of `locate' prior to 4.2.31 have a bug in the way that
-old-format databases are read.  They read file names into a
-fixed-length 1026 byte buffer, allocated on the heap.  This buffer is
-not extended if file names are too long to fit into the buffer.  No
-range checking on the length of the filename is performed.  This could
-in theory lead to a privilege escalation attack.  Findutils versions
-4.3.0 to 4.3.6 are also affected.
+All versions of `locate' prior to 4.2.31, and also versions 4.3.0 to
+4.3.6, have a bug in the way that old-format databases are read.  They
+read file names into a fixed-length 1026 byte buffer, allocated on the
+heap.  This buffer is not extended if file names are too long to fit
+into the buffer.  No range checking on the length of the filename is
+performed.  This could in theory lead to a privilege escalation attack.
 
    On systems using the old database format and affected versions of
 `locate', carefully-chosen long file names could in theory allow
@@ -5494,7 +5510,7 @@ Informational use only
      trusted programs.
 
 
-File: find.info,  Node: Error Messages,  Next: Primary Index,  Prev: Security Considerations,  Up: Top
+File: find.info,  Node: Error Messages,  Next: GNU Free Documentation License,  Prev: Security Considerations,  Up: Top
 
 10 Error Messages
 *****************
@@ -5680,7 +5696,439 @@ having a problem understanding one of these, ask for help on
 <bug-findutils@gnu.org>.
 
 
-File: find.info,  Node: Primary Index,  Prev: Error Messages,  Up: Top
+File: find.info,  Node: GNU Free Documentation License,  Next: Primary Index,  Prev: Error Messages,  Up: Top
+
+Appendix A GNU Free Documentation License
+*****************************************
+
+                      Version 1.2, November 2002
+
+     Copyright (C) 2000,2001,2002 Free Software Foundation, Inc.
+     51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
+
+     Everyone is permitted to copy and distribute verbatim copies
+     of this license document, but changing it is not allowed.
+
+  0. PREAMBLE
+
+     The purpose of this License is to make a manual, textbook, or other
+     functional and useful document "free" in the sense of freedom: to
+     assure everyone the effective freedom to copy and redistribute it,
+     with or without modifying it, either commercially or
+     noncommercially.  Secondarily, this License preserves for the
+     author and publisher a way to get credit for their work, while not
+     being considered responsible for modifications made by others.
+
+     This License is a kind of "copyleft", which means that derivative
+     works of the document must themselves be free in the same sense.
+     It complements the GNU General Public License, which is a copyleft
+     license designed for free software.
+
+     We have designed this License in order to use it for manuals for
+     free software, because free software needs free documentation: a
+     free program should come with manuals providing the same freedoms
+     that the software does.  But this License is not limited to
+     software manuals; it can be used for any textual work, regardless
+     of subject matter or whether it is published as a printed book.
+     We recommend this License principally for works whose purpose is
+     instruction or reference.
+
+  1. APPLICABILITY AND DEFINITIONS
+
+     This License applies to any manual or other work, in any medium,
+     that contains a notice placed by the copyright holder saying it
+     can be distributed under the terms of this License.  Such a notice
+     grants a world-wide, royalty-free license, unlimited in duration,
+     to use that work under the conditions stated herein.  The
+     "Document", below, refers to any such manual or work.  Any member
+     of the public is a licensee, and is addressed as "you".  You
+     accept the license if you copy, modify or distribute the work in a
+     way requiring permission under copyright law.
+
+     A "Modified Version" of the Document means any work containing the
+     Document or a portion of it, either copied verbatim, or with
+     modifications and/or translated into another language.
+
+     A "Secondary Section" is a named appendix or a front-matter section
+     of the Document that deals exclusively with the relationship of the
+     publishers or authors of the Document to the Document's overall
+     subject (or to related matters) and contains nothing that could
+     fall directly within that overall subject.  (Thus, if the Document
+     is in part a textbook of mathematics, a Secondary Section may not
+     explain any mathematics.)  The relationship could be a matter of
+     historical connection with the subject or with related matters, or
+     of legal, commercial, philosophical, ethical or political position
+     regarding them.
+
+     The "Invariant Sections" are certain Secondary Sections whose
+     titles are designated, as being those of Invariant Sections, in
+     the notice that says that the Document is released under this
+     License.  If a section does not fit the above definition of
+     Secondary then it is not allowed to be designated as Invariant.
+     The Document may contain zero Invariant Sections.  If the Document
+     does not identify any Invariant Sections then there are none.
+
+     The "Cover Texts" are certain short passages of text that are
+     listed, as Front-Cover Texts or Back-Cover Texts, in the notice
+     that says that the Document is released under this License.  A
+     Front-Cover Text may be at most 5 words, and a Back-Cover Text may
+     be at most 25 words.
+
+     A "Transparent" copy of the Document means a machine-readable copy,
+     represented in a format whose specification is available to the
+     general public, that is suitable for revising the document
+     straightforwardly with generic text editors or (for images
+     composed of pixels) generic paint programs or (for drawings) some
+     widely available drawing editor, and that is suitable for input to
+     text formatters or for automatic translation to a variety of
+     formats suitable for input to text formatters.  A copy made in an
+     otherwise Transparent file format whose markup, or absence of
+     markup, has been arranged to thwart or discourage subsequent
+     modification by readers is not Transparent.  An image format is
+     not Transparent if used for any substantial amount of text.  A
+     copy that is not "Transparent" is called "Opaque".
+
+     Examples of suitable formats for Transparent copies include plain
+     ASCII without markup, Texinfo input format, LaTeX input format,
+     SGML or XML using a publicly available DTD, and
+     standard-conforming simple HTML, PostScript or PDF designed for
+     human modification.  Examples of transparent image formats include
+     PNG, XCF and JPG.  Opaque formats include proprietary formats that
+     can be read and edited only by proprietary word processors, SGML or
+     XML for which the DTD and/or processing tools are not generally
+     available, and the machine-generated HTML, PostScript or PDF
+     produced by some word processors for output purposes only.
+
+     The "Title Page" means, for a printed book, the title page itself,
+     plus such following pages as are needed to hold, legibly, the
+     material this License requires to appear in the title page.  For
+     works in formats which do not have any title page as such, "Title
+     Page" means the text near the most prominent appearance of the
+     work's title, preceding the beginning of the body of the text.
+
+     A section "Entitled XYZ" means a named subunit of the Document
+     whose title either is precisely XYZ or contains XYZ in parentheses
+     following text that translates XYZ in another language.  (Here XYZ
+     stands for a specific section name mentioned below, such as
+     "Acknowledgements", "Dedications", "Endorsements", or "History".)
+     To "Preserve the Title" of such a section when you modify the
+     Document means that it remains a section "Entitled XYZ" according
+     to this definition.
+
+     The Document may include Warranty Disclaimers next to the notice
+     which states that this License applies to the Document.  These
+     Warranty Disclaimers are considered to be included by reference in
+     this License, but only as regards disclaiming warranties: any other
+     implication that these Warranty Disclaimers may have is void and
+     has no effect on the meaning of this License.
+
+  2. VERBATIM COPYING
+
+     You may copy and distribute the Document in any medium, either
+     commercially or noncommercially, provided that this License, the
+     copyright notices, and the license notice saying this License
+     applies to the Document are reproduced in all copies, and that you
+     add no other conditions whatsoever to those of this License.  You
+     may not use technical measures to obstruct or control the reading
+     or further copying of the copies you make or distribute.  However,
+     you may accept compensation in exchange for copies.  If you
+     distribute a large enough number of copies you must also follow
+     the conditions in section 3.
+
+     You may also lend copies, under the same conditions stated above,
+     and you may publicly display copies.
+
+  3. COPYING IN QUANTITY
+
+     If you publish printed copies (or copies in media that commonly
+     have printed covers) of the Document, numbering more than 100, and
+     the Document's license notice requires Cover Texts, you must
+     enclose the copies in covers that carry, clearly and legibly, all
+     these Cover Texts: Front-Cover Texts on the front cover, and
+     Back-Cover Texts on the back cover.  Both covers must also clearly
+     and legibly identify you as the publisher of these copies.  The
+     front cover must present the full title with all words of the
+     title equally prominent and visible.  You may add other material
+     on the covers in addition.  Copying with changes limited to the
+     covers, as long as they preserve the title of the Document and
+     satisfy these conditions, can be treated as verbatim copying in
+     other respects.
+
+     If the required texts for either cover are too voluminous to fit
+     legibly, you should put the first ones listed (as many as fit
+     reasonably) on the actual cover, and continue the rest onto
+     adjacent pages.
+
+     If you publish or distribute Opaque copies of the Document
+     numbering more than 100, you must either include a
+     machine-readable Transparent copy along with each Opaque copy, or
+     state in or with each Opaque copy a computer-network location from
+     which the general network-using public has access to download
+     using public-standard network protocols a complete Transparent
+     copy of the Document, free of added material.  If you use the
+     latter option, you must take reasonably prudent steps, when you
+     begin distribution of Opaque copies in quantity, to ensure that
+     this Transparent copy will remain thus accessible at the stated
+     location until at least one year after the last time you
+     distribute an Opaque copy (directly or through your agents or
+     retailers) of that edition to the public.
+
+     It is requested, but not required, that you contact the authors of
+     the Document well before redistributing any large number of
+     copies, to give them a chance to provide you with an updated
+     version of the Document.
+
+  4. MODIFICATIONS
+
+     You may copy and distribute a Modified Version of the Document
+     under the conditions of sections 2 and 3 above, provided that you
+     release the Modified Version under precisely this License, with
+     the Modified Version filling the role of the Document, thus
+     licensing distribution and modification of the Modified Version to
+     whoever possesses a copy of it.  In addition, you must do these
+     things in the Modified Version:
+
+       A. Use in the Title Page (and on the covers, if any) a title
+          distinct from that of the Document, and from those of
+          previous versions (which should, if there were any, be listed
+          in the History section of the Document).  You may use the
+          same title as a previous version if the original publisher of
+          that version gives permission.
+
+       B. List on the Title Page, as authors, one or more persons or
+          entities responsible for authorship of the modifications in
+          the Modified Version, together with at least five of the
+          principal authors of the Document (all of its principal
+          authors, if it has fewer than five), unless they release you
+          from this requirement.
+
+       C. State on the Title page the name of the publisher of the
+          Modified Version, as the publisher.
+
+       D. Preserve all the copyright notices of the Document.
+
+       E. Add an appropriate copyright notice for your modifications
+          adjacent to the other copyright notices.
+
+       F. Include, immediately after the copyright notices, a license
+          notice giving the public permission to use the Modified
+          Version under the terms of this License, in the form shown in
+          the Addendum below.
+
+       G. Preserve in that license notice the full lists of Invariant
+          Sections and required Cover Texts given in the Document's
+          license notice.
+
+       H. Include an unaltered copy of this License.
+
+       I. Preserve the section Entitled "History", Preserve its Title,
+          and add to it an item stating at least the title, year, new
+          authors, and publisher of the Modified Version as given on
+          the Title Page.  If there is no section Entitled "History" in
+          the Document, create one stating the title, year, authors,
+          and publisher of the Document as given on its Title Page,
+          then add an item describing the Modified Version as stated in
+          the previous sentence.
+
+       J. Preserve the network location, if any, given in the Document
+          for public access to a Transparent copy of the Document, and
+          likewise the network locations given in the Document for
+          previous versions it was based on.  These may be placed in
+          the "History" section.  You may omit a network location for a
+          work that was published at least four years before the
+          Document itself, or if the original publisher of the version
+          it refers to gives permission.
+
+       K. For any section Entitled "Acknowledgements" or "Dedications",
+          Preserve the Title of the section, and preserve in the
+          section all the substance and tone of each of the contributor
+          acknowledgements and/or dedications given therein.
+
+       L. Preserve all the Invariant Sections of the Document,
+          unaltered in their text and in their titles.  Section numbers
+          or the equivalent are not considered part of the section
+          titles.
+
+       M. Delete any section Entitled "Endorsements".  Such a section
+          may not be included in the Modified Version.
+
+       N. Do not retitle any existing section to be Entitled
+          "Endorsements" or to conflict in title with any Invariant
+          Section.
+
+       O. Preserve any Warranty Disclaimers.
+
+     If the Modified Version includes new front-matter sections or
+     appendices that qualify as Secondary Sections and contain no
+     material copied from the Document, you may at your option
+     designate some or all of these sections as invariant.  To do this,
+     add their titles to the list of Invariant Sections in the Modified
+     Version's license notice.  These titles must be distinct from any
+     other section titles.
+
+     You may add a section Entitled "Endorsements", provided it contains
+     nothing but endorsements of your Modified Version by various
+     parties--for example, statements of peer review or that the text
+     has been approved by an organization as the authoritative
+     definition of a standard.
+
+     You may add a passage of up to five words as a Front-Cover Text,
+     and a passage of up to 25 words as a Back-Cover Text, to the end
+     of the list of Cover Texts in the Modified Version.  Only one
+     passage of Front-Cover Text and one of Back-Cover Text may be
+     added by (or through arrangements made by) any one entity.  If the
+     Document already includes a cover text for the same cover,
+     previously added by you or by arrangement made by the same entity
+     you are acting on behalf of, you may not add another; but you may
+     replace the old one, on explicit permission from the previous
+     publisher that added the old one.
+
+     The author(s) and publisher(s) of the Document do not by this
+     License give permission to use their names for publicity for or to
+     assert or imply endorsement of any Modified Version.
+
+  5. COMBINING DOCUMENTS
+
+     You may combine the Document with other documents released under
+     this License, under the terms defined in section 4 above for
+     modified versions, provided that you include in the combination
+     all of the Invariant Sections of all of the original documents,
+     unmodified, and list them all as Invariant Sections of your
+     combined work in its license notice, and that you preserve all
+     their Warranty Disclaimers.
+
+     The combined work need only contain one copy of this License, and
+     multiple identical Invariant Sections may be replaced with a single
+     copy.  If there are multiple Invariant Sections with the same name
+     but different contents, make the title of each such section unique
+     by adding at the end of it, in parentheses, the name of the
+     original author or publisher of that section if known, or else a
+     unique number.  Make the same adjustment to the section titles in
+     the list of Invariant Sections in the license notice of the
+     combined work.
+
+     In the combination, you must combine any sections Entitled
+     "History" in the various original documents, forming one section
+     Entitled "History"; likewise combine any sections Entitled
+     "Acknowledgements", and any sections Entitled "Dedications".  You
+     must delete all sections Entitled "Endorsements."
+
+  6. COLLECTIONS OF DOCUMENTS
+
+     You may make a collection consisting of the Document and other
+     documents released under this License, and replace the individual
+     copies of this License in the various documents with a single copy
+     that is included in the collection, provided that you follow the
+     rules of this License for verbatim copying of each of the
+     documents in all other respects.
+
+     You may extract a single document from such a collection, and
+     distribute it individually under this License, provided you insert
+     a copy of this License into the extracted document, and follow
+     this License in all other respects regarding verbatim copying of
+     that document.
+
+  7. AGGREGATION WITH INDEPENDENT WORKS
+
+     A compilation of the Document or its derivatives with other
+     separate and independent documents or works, in or on a volume of
+     a storage or distribution medium, is called an "aggregate" if the
+     copyright resulting from the compilation is not used to limit the
+     legal rights of the compilation's users beyond what the individual
+     works permit.  When the Document is included in an aggregate, this
+     License does not apply to the other works in the aggregate which
+     are not themselves derivative works of the Document.
+
+     If the Cover Text requirement of section 3 is applicable to these
+     copies of the Document, then if the Document is less than one half
+     of the entire aggregate, the Document's Cover Texts may be placed
+     on covers that bracket the Document within the aggregate, or the
+     electronic equivalent of covers if the Document is in electronic
+     form.  Otherwise they must appear on printed covers that bracket
+     the whole aggregate.
+
+  8. TRANSLATION
+
+     Translation is considered a kind of modification, so you may
+     distribute translations of the Document under the terms of section
+     4.  Replacing Invariant Sections with translations requires special
+     permission from their copyright holders, but you may include
+     translations of some or all Invariant Sections in addition to the
+     original versions of these Invariant Sections.  You may include a
+     translation of this License, and all the license notices in the
+     Document, and any Warranty Disclaimers, provided that you also
+     include the original English version of this License and the
+     original versions of those notices and disclaimers.  In case of a
+     disagreement between the translation and the original version of
+     this License or a notice or disclaimer, the original version will
+     prevail.
+
+     If a section in the Document is Entitled "Acknowledgements",
+     "Dedications", or "History", the requirement (section 4) to
+     Preserve its Title (section 1) will typically require changing the
+     actual title.
+
+  9. TERMINATION
+
+     You may not copy, modify, sublicense, or distribute the Document
+     except as expressly provided for under this License.  Any other
+     attempt to copy, modify, sublicense or distribute the Document is
+     void, and will automatically terminate your rights under this
+     License.  However, parties who have received copies, or rights,
+     from you under this License will not have their licenses
+     terminated so long as such parties remain in full compliance.
+
+ 10. FUTURE REVISIONS OF THIS LICENSE
+
+     The Free Software Foundation may publish new, revised versions of
+     the GNU Free Documentation License from time to time.  Such new
+     versions will be similar in spirit to the present version, but may
+     differ in detail to address new problems or concerns.  See
+     `http://www.gnu.org/copyleft/'.
+
+     Each version of the License is given a distinguishing version
+     number.  If the Document specifies that a particular numbered
+     version of this License "or any later version" applies to it, you
+     have the option of following the terms and conditions either of
+     that specified version or of any later version that has been
+     published (not as a draft) by the Free Software Foundation.  If
+     the Document does not specify a version number of this License,
+     you may choose any version ever published (not as a draft) by the
+     Free Software Foundation.
+
+ADDENDUM: How to use this License for your documents
+====================================================
+
+To use this License in a document you have written, include a copy of
+the License in the document and put the following copyright and license
+notices just after the title page:
+
+       Copyright (C)  YEAR  YOUR NAME.
+       Permission is granted to copy, distribute and/or modify this document
+       under the terms of the GNU Free Documentation License, Version 1.2
+       or any later version published by the Free Software Foundation;
+       with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+       Texts.  A copy of the license is included in the section entitled ``GNU
+       Free Documentation License''.
+
+   If you have Invariant Sections, Front-Cover Texts and Back-Cover
+Texts, replace the "with...Texts." line with this:
+
+         with the Invariant Sections being LIST THEIR TITLES, with
+         the Front-Cover Texts being LIST, and with the Back-Cover Texts
+         being LIST.
+
+   If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.
+
+   If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of
+free software license, such as the GNU General Public License, to
+permit their use in free software.
+
+
+File: find.info,  Node: Primary Index,  Prev: GNU Free Documentation License,  Up: Top
 
 `find' Primary Index
 ********************
@@ -5731,7 +6179,7 @@ Expressions::, for more information on expressions.
 * -fstype:                               Filesystems.         (line  22)
 * -gid:                                  Owner.               (line  13)
 * -group:                                Owner.               (line   8)
-* -ignore_readdir_race:                  Directories.         (line  86)
+* -ignore_readdir_race:                  Directories.         (line  88)
 * -ilname:                               Symbolic Links.      (line  87)
 * -iname:                                Base Name Patterns.  (line   8)
 * -inum:                                 Hard Links.          (line  41)
@@ -5751,8 +6199,8 @@ Expressions::, for more information on expressions.
 * -newer:                                Comparing Timestamps.
                                                               (line  19)
 * -nogroup:                              Owner.               (line  18)
-* -noignore_readdir_race:                Directories.         (line 103)
-* -noleaf:                               Directories.         (line  71)
+* -noignore_readdir_race:                Directories.         (line 105)
+* -noleaf:                               Directories.         (line  73)
 * -not:                                  Combining Primaries With Operators.
                                                               (line  14)
 * -nouser:                               Owner.               (line  17)
@@ -5789,123 +6237,124 @@ Expressions::, for more information on expressions.
 
 
 Tag Table:
-Node: Top1523
-Node: Introduction2568
-Node: Scope4864
-Node: Overview6789
-Node: find Expressions8660
-Node: Finding Files10285
-Node: Name10752
-Node: Base Name Patterns11380
-Ref: Base Name Patterns-Footnote-112478
-Node: Full Name Patterns12690
-Node: Fast Full Name Search15353
-Node: Shell Pattern Matching17774
-Node: Links19864
-Node: Symbolic Links20299
-Node: Hard Links24796
-Node: Time27350
-Node: Age Ranges27938
-Node: Comparing Timestamps29465
-Node: Size30757
-Node: Type32599
-Node: Owner34267
-Node: Permissions35094
-Node: Contents38255
-Node: Directories39428
-Node: Filesystems44389
-Node: Combining Primaries With Operators45740
-Node: Actions47358
-Node: Print File Name47920
-Node: Print File Information48937
-Node: Escapes51932
-Node: Format Directives52683
-Node: Name Directives54146
-Node: Ownership Directives55132
-Node: Size Directives56149
-Node: Location Directives56915
-Node: Time Directives58034
-Node: Time Formats58937
-Node: Time Components59373
-Node: Date Components59879
-Node: Combined Time Formats60702
-Node: Formatting Flags61419
-Node: Run Commands62031
-Node: Single File62389
-Node: Multiple Files64311
-Node: Unsafe File Name Handling68847
-Node: Safe File Name Handling70410
-Node: Unusual Characters in File Names71986
-Node: Limiting Command Size75022
-Node: Interspersing File Names77315
-Node: Querying79770
-Node: Delete Files81300
-Node: Adding Tests81704
-Node: Databases84344
-Node: Database Locations85062
-Node: Database Formats86070
-Node: New Database Format86974
-Node: Sample Database88641
-Node: Old Database Format89289
-Node: Newline Handling91591
-Node: File Permissions93037
-Node: Mode Structure93606
-Node: Symbolic Modes96747
-Node: Setting Permissions97844
-Node: Copying Permissions100392
-Node: Changing Special Permissions101206
-Node: Conditional Executability102750
-Node: Multiple Changes103282
-Node: Umask and Protection104939
-Node: Numeric Modes106037
-Node: Reference107729
-Node: Invoking find108077
-Node: Warning Messages110409
-Node: Invoking locate112097
-Node: Invoking updatedb117988
-Node: Invoking xargs121784
-Node: Regular Expressions126814
-Node: findutils-default regular expression syntax128009
-Node: awk regular expression syntax130514
-Node: egrep regular expression syntax132399
-Node: emacs regular expression syntax134610
-Node: gnu-awk regular expression syntax137138
-Node: grep regular expression syntax139478
-Node: posix-awk regular expression syntax142203
-Node: posix-basic regular expression syntax144474
-Node: posix-egrep regular expression syntax147112
-Node: posix-extended regular expression syntax149485
-Node: Environment Variables151960
-Node: Common Tasks153904
-Node: Viewing And Editing154329
-Node: Archiving155335
-Node: Cleaning Up156967
-Node: Strange File Names158756
-Node: Fixing Permissions160406
-Node: Classifying Files160970
-Node: Worked Examples161688
-Node: Deleting Files162325
-Node: Updating A Timestamp File175344
-Node: Security Considerations182074
-Node: Levels of Risk183608
-Ref: Levels of Risk-Footnote-1186406
-Node: Security Considerations for find186585
-Ref: Security Considerations for find-Footnote-1188907
-Node: Problems with -exec and filenames188980
-Node: Changing the Current Working Directory190243
-Node: O_NOFOLLOW192012
-Ref: O_NOFOLLOW-Footnote-1193656
-Node: Systems without O_NOFOLLOW193758
-Node: Race Conditions with -exec195862
-Node: Race Conditions with -print and -print0198773
-Node: Security Considerations for xargs199693
-Node: Security Considerations for locate201763
-Node: Security Summary203954
-Node: Error Messages204711
-Node: Error Messages From find205723
-Node: Error Messages From xargs210580
-Node: Error Messages From locate212340
-Node: Error Messages From updatedb213572
-Node: Primary Index213975
+Node: Top1259
+Node: Introduction3021
+Node: Scope5317
+Node: Overview7242
+Node: find Expressions9113
+Node: Finding Files10738
+Node: Name11205
+Node: Base Name Patterns11833
+Ref: Base Name Patterns-Footnote-112931
+Node: Full Name Patterns13143
+Node: Fast Full Name Search15806
+Node: Shell Pattern Matching18227
+Node: Links20317
+Node: Symbolic Links20752
+Node: Hard Links25249
+Node: Time27803
+Node: Age Ranges28391
+Node: Comparing Timestamps29918
+Node: Size31210
+Node: Type33052
+Node: Owner34720
+Node: Permissions35547
+Node: Contents38708
+Node: Directories39881
+Node: Filesystems45002
+Node: Combining Primaries With Operators46353
+Node: Actions47971
+Node: Print File Name48533
+Node: Print File Information49550
+Node: Escapes52545
+Node: Format Directives53296
+Node: Name Directives54759
+Node: Ownership Directives55745
+Node: Size Directives56762
+Node: Location Directives57527
+Node: Time Directives58646
+Node: Time Formats59549
+Node: Time Components59985
+Node: Date Components60491
+Node: Combined Time Formats61314
+Node: Formatting Flags62031
+Node: Run Commands62643
+Node: Single File63001
+Node: Multiple Files64923
+Node: Unsafe File Name Handling69459
+Node: Safe File Name Handling71022
+Node: Unusual Characters in File Names72598
+Node: Limiting Command Size75634
+Node: Interspersing File Names77927
+Node: Querying80382
+Node: Delete Files81912
+Node: Adding Tests82316
+Node: Databases84956
+Node: Database Locations85674
+Node: Database Formats86682
+Node: New Database Format87586
+Node: Sample Database89253
+Node: Old Database Format89901
+Node: Newline Handling92187
+Node: File Permissions93633
+Node: Mode Structure94202
+Node: Symbolic Modes97343
+Node: Setting Permissions98440
+Node: Copying Permissions100988
+Node: Changing Special Permissions101802
+Node: Conditional Executability103346
+Node: Multiple Changes103878
+Node: Umask and Protection105535
+Node: Numeric Modes106633
+Node: Reference108325
+Node: Invoking find108673
+Node: Warning Messages111005
+Node: Invoking locate112941
+Node: Invoking updatedb118832
+Node: Invoking xargs122678
+Node: Regular Expressions127708
+Node: findutils-default regular expression syntax128903
+Node: awk regular expression syntax131408
+Node: egrep regular expression syntax133293
+Node: emacs regular expression syntax135504
+Node: gnu-awk regular expression syntax138032
+Node: grep regular expression syntax140372
+Node: posix-awk regular expression syntax143097
+Node: posix-basic regular expression syntax145368
+Node: posix-egrep regular expression syntax148006
+Node: posix-extended regular expression syntax150379
+Node: Environment Variables152854
+Node: Common Tasks154798
+Node: Viewing And Editing155223
+Node: Archiving156229
+Node: Cleaning Up157861
+Node: Strange File Names159650
+Node: Fixing Permissions161300
+Node: Classifying Files161864
+Node: Worked Examples162582
+Node: Deleting Files163219
+Node: Updating A Timestamp File176238
+Node: Security Considerations182968
+Node: Levels of Risk184502
+Ref: Levels of Risk-Footnote-1187300
+Node: Security Considerations for find187479
+Ref: Security Considerations for find-Footnote-1189801
+Node: Problems with -exec and filenames189874
+Node: Changing the Current Working Directory191137
+Node: O_NOFOLLOW192906
+Ref: O_NOFOLLOW-Footnote-1194550
+Node: Systems without O_NOFOLLOW194652
+Node: Race Conditions with -exec196756
+Node: Race Conditions with -print and -print0199667
+Node: Security Considerations for xargs200586
+Node: Security Considerations for locate202656
+Node: Security Summary204828
+Node: Error Messages205585
+Node: Error Messages From find206614
+Node: Error Messages From xargs211471
+Node: Error Messages From locate213231
+Node: Error Messages From updatedb214463
+Node: GNU Free Documentation License214866
+Node: Primary Index237305
 
 End Tag Table
