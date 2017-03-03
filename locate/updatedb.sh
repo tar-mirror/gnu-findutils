@@ -1,29 +1,29 @@
 #! /bin/sh
 # updatedb -- build a locate pathname database
-# Copyright (C) 1994, 1996, 1997, 2000, 2001, 2003, 2004, 2005, 2006
-# Free Software Foundation, Inc.
+# Copyright (C) 1994, 1996, 1997, 2000, 2001, 2003, 2004, 2005, 2006,
+# 2010, 2011 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # csh original by James Woods; sh conversion by David MacKenzie.
 
-#exec 2> /tmp/updatedb-trace.txt 
+#exec 2> /tmp/updatedb-trace.txt
 #set -x
 
 version='
 updatedb (@PACKAGE_NAME@) @VERSION@
-Copyright (C) 2007 Free Software Foundation, Inc.
+Copyright (C) 2007,2008,2009,2010 Free Software Foundation, Inc.
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
@@ -36,7 +36,7 @@ usage="\
 Usage: $0 [--findoptions='-option1 -option2...']
        [--localpaths='dir1 dir2...'] [--netpaths='dir1 dir2...']
        [--prunepaths='dir1 dir2...'] [--prunefs='fs1 fs2...']
-       [--output=dbfile] [--netuser=user] [--localuser=user] 
+       [--output=dbfile] [--netuser=user] [--localuser=user]
        [--old-format] [--dbformat] [--version] [--help]
 
 Report bugs to <bug-findutils@gnu.org>."
@@ -44,8 +44,8 @@ changeto=/
 old=no
 for arg
 do
-  # If we are unable to fork, the back-tick operator will 
-  # fail (and the shell will emit an error message).  When 
+  # If we are unable to fork, the back-tick operator will
+  # fail (and the shell will emit an error message).  When
   # this happens, we exit with error value 71 (EX_OSERR).
   # Alternative candidate - 75, EX_TEMPFAIL.
   opt=`echo $arg|sed 's/^\([^=]*\).*/\1/'`  || exit 71
@@ -73,12 +73,12 @@ done
 
 
 
-case "${dbformat:+yes}_${old}" in 
+case "${dbformat:+yes}_${old}" in
     yes_yes)
 	echo "The --dbformat and --old cannot both be specified." >&2
 	exit 1
 	;;
-	*) 
+	*)
 	;;
 esac
 
@@ -90,7 +90,7 @@ if test "$old" = yes || test "$dbformat" = "old" ; then
     frcode_options=""
 else
     frcode_options=""
-    case "$dbformat" in 
+    case "$dbformat" in
 	"")
 		# Default, use LOCATE02
 	    ;;
@@ -134,7 +134,7 @@ select_shell() {
 	    # Yes.
 	    echo "-s $SHELL"
         else
-	    # su is unconditionally failing.  We won't be able to 
+	    # su is unconditionally failing.  We won't be able to
 	    # figure out what is wrong, so be conservative.
 	    echo ""
 	fi
@@ -158,10 +158,18 @@ select_shell() {
 : ${NETPATHS=}
 
 # Directories to not put in the database, which would otherwise be.
-: ${PRUNEPATHS="/tmp /usr/tmp /var/tmp /afs /amd /sfs /proc"}
+: ${PRUNEPATHS="
+/afs
+/amd
+/proc
+/sfs
+/tmp
+/usr/tmp
+/var/tmp
+"}
 
-# Trailing slashes result in regex items that are never matched, which 
-# is not what the user will expect.   Therefore we now reject such 
+# Trailing slashes result in regex items that are never matched, which
+# is not what the user will expect.   Therefore we now reject such
 # constructs.
 for p in $PRUNEPATHS; do
     case "$p" in
@@ -210,6 +218,26 @@ fi
 : ${bigram:=${LIBEXECDIR}/@bigram@}
 : ${code:=${LIBEXECDIR}/@code@}
 
+make_tempdir () {
+    # This implementation is adapted from the GNU Autoconf manual.
+    {
+        tmp=`
+    (umask 077 && mktemp -d "$TMPDIR/updatedbXXXXXX") 2>/dev/null
+    ` &&
+        test -n "$tmp" && test -d "$tmp"
+    } || {
+	# This method is less secure than mktemp -d, but it's a fallback.
+	#
+	# We use $$ as well as $RANDOM since $RANDOM may not be available.
+	# We also add a time-dependent suffix.  This is actually somewhat
+	# predictable, but then so is $$.  POSIX does not require date to
+	# support +%N.
+	ts=`date +%N%S || date +%S 2>/dev/null`
+        tmp="$TMPDIR"/updatedb"$$"-"${RANDOM:-}${ts}"
+        (umask 077 && mkdir "$tmp")
+    }
+    echo "$tmp"
+}
 
 checkbinary () {
     if test -x "$1" ; then
@@ -226,9 +254,26 @@ do
 done
 
 
-PATH=/bin:/usr/bin:${BINDIR}; export PATH
-
-: ${PRUNEFS="nfs NFS proc afs smbfs autofs iso9660 ncpfs coda devpts ftpfs devfs mfs sysfs shfs"}
+: ${PRUNEFS="
+9P
+NFS
+afs
+autofs
+cifs
+coda
+devfs
+devpts
+ftpfs
+iso9660
+mfs
+ncpfs
+nfs
+nfs4
+proc
+shfs
+smbfs
+sysfs
+"}
 
 if test -n "$PRUNEFS"; then
 prunefs_exp=`echo $PRUNEFS |sed -e 's/\([^ ][^ ]*\)/-o -fstype \1/g' \
@@ -263,7 +308,7 @@ if test -n "$SEARCHPATHS"; then
 fi
 
 if test -n "$NETPATHS"; then
-myuid=`getuid` 
+myuid=`getuid`
 if [ "$myuid" = 0 ]; then
     # : A3
     su $NETUSER `select_shell $NETUSER` -c \
@@ -298,18 +343,16 @@ fi
 
 else # old
 
-if ! bigrams=`mktemp -t updatedbXXXXXXXXX`; then
-    echo mktemp failed >&2
-    exit 1
-fi
-
-if ! filelist=`mktemp -t updatedbXXXXXXXXX`; then
-    echo mktemp failed >&2
+if temp_directory="`make_tempdir`"; then
+    bigrams="${temp_directory}"/bigrams
+    filelist="${temp_directory}"/filelist
+else
+    echo "failed to create temporary directory" >&2
     exit 1
 fi
 
 rm -f $LOCATE_DB.n
-trap 'rm -f $bigrams $filelist $LOCATE_DB.n; exit' HUP TERM
+trap 'rm -f $LOCATE_DB.n; rm -rf "${temp_directory}"; exit' HUP TERM
 
 # Alphabetize subdirectories before file entries using tr.  James Woods says:
 # "to get everything in monotonic collating sequence, to avoid some
@@ -344,16 +387,16 @@ if test -n "$NETPATHS"; then
     exit $?
   fi
 fi
-} | tr / '\001' | $sort -f | tr '\001' / > $filelist
+} | tr / '\001' | $sort -f | tr '\001' / > "$filelist"
 
 # Compute the (at most 128) most common bigrams in the file list.
 $bigram $bigram_opts < $filelist | sort | uniq -c | sort -nr |
-  awk '{ if (NR <= 128) print $2 }' | tr -d '\012' > $bigrams
+  awk '{ if (NR <= 128) print $2 }' | tr -d '\012' > "$bigrams"
 
 # Code the file list.
-$code $bigrams < $filelist > $LOCATE_DB.n
+$code "$bigrams" < "$filelist" > $LOCATE_DB.n
 
-rm -f $bigrams $filelist
+rm -rf "${temp_directory}"
 
 # To reduce the chances of breaking locate while this script is running,
 # put the results in a temp file, then rename it atomically.

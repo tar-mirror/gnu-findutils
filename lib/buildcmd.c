@@ -1,6 +1,6 @@
 /* buildcmd.c -- build command lines from a list of arguments.
-   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2005, 2006,
-                 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2003, 2005, 2006,
+   2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,56 +15,32 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-/*
- XXX_SOC:
- 
- One of the aspects of the SOC project is to adapt this module.  
- This module currently makes an initial guess at two things:
-  
-   buildcmd_control->arg_max   (The most characters we can fit in)
-   buildcmd_control->max_arg_count (most args)
-
- The nature of the SOC task is to adjust these values when exec fails.
- Optionally (if we have the time) we can make the software adjust them 
- when exec succeeds.  If we do the latter, we need to ensure we don't
- get into some state where we are sitting just below the limit and 
- keep trying to extend, because that would lead to every other exec
- failing. 
-
- If our initial guess is successful, there is no pressing need really to 
- increase our guess.  Indeed, if we are beign called by xargs (as opposed
- to find) th user may have specified a limit with "-s" and we should not 
- exceed it.
-*/
-
-
+/* config.h must be included first. */
 #include <config.h>
 
-# ifndef PARAMS
-#  if defined PROTOTYPES || (defined __STDC__ && __STDC__)
-#   define PARAMS(Args) Args
-#  else
-#   define PARAMS(Args) ()
-#  endif
-# endif
-
-#include <string.h>
-
-
-#if DO_MULTIBYTE
-# if HAVE_MBRLEN
-#  include <wchar.h>
-# else
-   /* Simulate mbrlen with mblen as best we can.  */
-#  define mbstate_t int
-#  define mbrlen(s, n, ps) mblen (s, n)
-# endif
-#endif
-
-#ifdef HAVE_LOCALE_H
+/* system headers. */
+#include <assert.h>
+#include <errno.h>
+#include <error.h>
+#include <limits.h>
 #include <locale.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#ifndef _POSIX_SOURCE
+# include <sys/param.h>
 #endif
+#include <unistd.h>
+#include <wchar.h>
+#include <xalloc.h>
+
+/* gnulib headers. */
+#include "gettext.h"
+#include "xstrtol.h"
+
+/* find headers. */
+#include "buildcmd.h"
+
 #if ENABLE_NLS
 # include <libintl.h>
 # define _(Text) gettext (Text)
@@ -80,39 +56,26 @@
 # define N_(String) String
 #endif
 
-#ifndef _POSIX_SOURCE
-#include <sys/param.h>
-#endif
-
-#ifdef HAVE_LIMITS_H
-#include <limits.h>
-#endif
-
-/* The presence of unistd.h is assumed by gnulib these days, so we 
- * might as well assume it too. 
- */
-/* for sysconf() */
-#include <unistd.h>
-
-#include <assert.h>
-
 /* COMPAT:  SYSV version defaults size (and has a max value of) to 470.
    We try to make it as large as possible.  See bc_get_arg_max() below. */
-#if !defined(ARG_MAX) && defined(NCARGS)
-#error "You have an unusual system.  Once you remove this error message from buildcmd.c, it should work, but please make sure that DejaGnu is installed on your system and that 'make check' passes before using the findutils programs"
+#if defined NCARGS && !defined ARG_MAX
+/* We include sys/param.h in order to detect this case. */
+#error "You have an unusual system.  Once you remove this error message from buildcmd.c, it should work, but please make sure that DejaGnu is installed on your system and that 'make check' passes before using the findutils programs.  Please mail bug-findutils@gnu.org to tell us about your system."
 #define ARG_MAX NCARGS
 #endif
 
 
-
-#include <xalloc.h>
-#include <error.h>
-#include <openat.h>
-
-#include "buildcmd.h"
+static const char *special_terminating_arg = "do_not_care";
 
 
-extern char **environ;
+
+/* Add a terminator to the argument list. */
+static void
+bc_args_complete (struct buildcmd_control *ctl,
+		  struct buildcmd_state *state)
+{
+  bc_push_arg (ctl, state, special_terminating_arg, 0, NULL, 0, 0);
+}
 
 
 /* Replace all instances of `replace_pat' in ARG with `linebuf',
@@ -128,7 +91,7 @@ extern char **environ;
    Those restrictions do not exist here.  */
 
 void
-bc_do_insert (const struct buildcmd_control *ctl,
+bc_do_insert (struct buildcmd_control *ctl,
               struct buildcmd_state *state,
               char *arg, size_t arglen,
               const char *prefix, size_t pfxlen,
@@ -162,7 +125,7 @@ bc_do_insert (const struct buildcmd_control *ctl,
         {
           len = arglen;
         }
-      
+
       if (bytes_left <= len)
         break;
       else
@@ -179,7 +142,7 @@ bc_do_insert (const struct buildcmd_control *ctl,
 	    break;
 	  else
 	    bytes_left -= (lblen + pfxlen);
-	  
+
 	  if (prefix)
 	    {
 	      strcpy (p, prefix);
@@ -194,38 +157,161 @@ bc_do_insert (const struct buildcmd_control *ctl,
     }
   while (*arg);
   if (*arg)
-    error (1, 0, _("command too long"));
+    error (EXIT_FAILURE, 0, _("command too long"));
   *p++ = '\0';
-  
+
   bc_push_arg (ctl, state,
 	       insertbuf, p - insertbuf,
                NULL, 0,
                initial_args);
 }
 
-static
-void do_exec(const struct buildcmd_control *ctl,
-             struct buildcmd_state *state)
+
+/* Update our best guess as to how many arguments we should pass to the next
+ * invocation of the command.
+ */
+static size_t
+update_limit (struct buildcmd_control *ctl,
+	      struct buildcmd_state *state,
+	      bool success,
+	      size_t limit)
 {
-  /* XXX_SOC:
-   
-     Here we are calling the user's function.  Currently there is no
-     way for it to report that the argument list was too long.  We
-     should introduce an externally callable function that allows them
-     to report this.
+  if (success)
+    {
+      if (limit > state->largest_successful_arg_count)
+	state->largest_successful_arg_count = limit;
+    }
+  else
+    {
+      if (limit < state->smallest_failed_arg_count
+	  || (0 == state->smallest_failed_arg_count))
+	state->smallest_failed_arg_count = limit;
+    }
 
-     If the callee does report that the exec failed, we need to retry
-     the exec with a shorter argument list.  Once we have reduced the
-     argument list to the point where the exec can succeed, we need to 
-     preserve the list of arguments we couldn't exec this time. 
+  if (0 == (state->largest_successful_arg_count)
+      || (state->smallest_failed_arg_count <= state->largest_successful_arg_count))
+    {
+      /* No success yet, or running on a system which has
+	 limits on total argv length, but not arg count. */
+      if (success)
+	{
+	  if (limit < SIZE_MAX)
+	    ++limit;
+	}
+      else
+	{
+	  limit /= 2;
+	}
+    }
+  else  /* We can use bisection. */
+    {
+      const size_t shift = (state->smallest_failed_arg_count
+			  - state->largest_successful_arg_count) / 2;
+      if (success)
+	{
+	  if (shift)
+	    limit += shift;
+	  else
+	    ++limit;
+	}
+      else
+	{
+	  if (shift)
+	    limit -= shift;
+	  else
+	    --limit;
+	}
+    }
 
-     This also means that the control argument here probably needs not 
-     to be const (since the limits are in the control arg).
-
-     The caller's only requirement on do_exec is that it should 
-     free up enough room for at least one argument.   
+  /* Make sure the returned value is such that progress is
+   * actually possible.
    */
-  (ctl->exec_callback)(ctl, state);
+  if (ctl->initial_argc && (limit <= ctl->initial_argc + 1u))
+    limit = ctl->initial_argc + 1u;
+  if (0 == limit)
+    limit = 1u;
+
+  return limit;
+}
+
+
+/* Copy some of the program arguments into an argv list.   Copy all the
+ * initial arguments, plus up to LIMIT additional arguments.
+ */
+static size_t
+copy_args (struct buildcmd_control *ctl,
+	   struct buildcmd_state *state,
+	   char** working_args, size_t limit, size_t done)
+{
+  size_t dst_pos = 0;
+  size_t src_pos = 0;
+
+  while (src_pos < ctl->initial_argc)
+    {
+      working_args[dst_pos++] = state->cmd_argv[src_pos++];
+    }
+  src_pos += done;
+  while (src_pos < state->cmd_argc && dst_pos < limit)
+    {
+      working_args[dst_pos++] = state->cmd_argv[src_pos++];
+    }
+  assert (dst_pos >= ctl->initial_argc);
+  working_args[dst_pos] = NULL;
+  return dst_pos;
+}
+
+
+
+
+/* Execute the program with the currently-built list of arguments. */
+void
+bc_do_exec (struct buildcmd_control *ctl,
+	    struct buildcmd_state *state)
+{
+    char** working_args;
+    size_t limit, done;
+
+    /* Terminate the args. */
+    bc_args_complete (ctl, state);
+    /* Verify that the argument list is terminated. */
+    assert (state->cmd_argc > 0);
+    assert (state->cmd_argv[state->cmd_argc-1] == NULL);
+
+    working_args = xmalloc ((1+state->cmd_argc) * sizeof (char*));
+    done = 0;
+    limit = state->cmd_argc;
+
+    do
+      {
+	const size_t dst_pos = copy_args (ctl, state, working_args,
+					  limit, done);
+	if (ctl->exec_callback (ctl, state->usercontext, dst_pos, working_args))
+	  {
+	    limit = update_limit (ctl, state, true, limit);
+	    done += (dst_pos - ctl->initial_argc);
+	  }
+	else  /* got E2BIG, adjust arguments */
+	  {
+	    if (limit <= ctl->initial_argc + 1)
+	      {
+		/* No room to reduce the length of the argument list.
+		   Issue an error message and give up. */
+		error (EXIT_FAILURE, 0,
+		       _("can't call exec() due to argument size restrictions"));
+	      }
+	    else
+	      {
+		/* Try fewer arguments. */
+		limit = update_limit (ctl, state, false, limit);
+	      }
+	  }
+      }
+    while ((done + 1) < (state->cmd_argc - ctl->initial_argc));
+    /* (state->cmd_argc - ctl->initial_argc) includes the terminating NULL,
+     * which is why we add 1 to done in the test above. */
+
+    free (working_args);
+    bc_clear_args (ctl, state);
 }
 
 
@@ -236,10 +322,10 @@ void do_exec(const struct buildcmd_control *ctl,
  * If we return zero, there still may not be enough room for the next
  * argument, depending on its length.
  */
-static int 
-bc_argc_limit_reached(int initial_args, 
-		      const struct buildcmd_control *ctl,
-		      struct buildcmd_state *state)
+static int
+bc_argc_limit_reached (int initial_args,
+		       const struct buildcmd_control *ctl,
+		       struct buildcmd_state *state)
 {
   /* Check to see if we about to exceed a limit set by xargs' -n option */
   if (!initial_args && ctl->args_per_exec &&
@@ -257,52 +343,41 @@ bc_argc_limit_reached(int initial_args,
 /* Add ARG to the end of the list of arguments `cmd_argv' to pass
    to the command.
    LEN is the length of ARG, including the terminating null.
-   If this brings the list up to its maximum size, execute the command.  
+   If this brings the list up to its maximum size, execute the command.
 */
-/* XXX: sometimes this function is called (internally) 
- *      just to push a NULL onto the and of the arg list.
- *      We should probably do that with a separate function
- *      for greater clarity.
- */
 void
-bc_push_arg (const struct buildcmd_control *ctl,
+bc_push_arg (struct buildcmd_control *ctl,
              struct buildcmd_state *state,
              const char *arg, size_t len,
              const char *prefix, size_t pfxlen,
              int initial_args)
 {
+  const int terminate = (arg == special_terminating_arg);
+
+  assert (arg != NULL);
+
   if (!initial_args)
     {
       state->todo = 1;
     }
-  
-  if (arg)
+
+  if (!terminate)
     {
-      /* XXX_SOC: if do_exec() is only guaranteeed to free up one
-       * argument, this if statement may need to become a while loop.
-       * If it becomes a while loop, it needs not to be an infinite
-       * loop...
-       */
-      if (state->cmd_argv_chars + len > ctl->arg_max)
+      if (state->cmd_argv_chars + len + pfxlen > ctl->arg_max)
         {
           if (initial_args || state->cmd_argc == ctl->initial_argc)
-            error (1, 0, _("can not fit single argument within argument list size limit"));
+            error (EXIT_FAILURE, 0,
+		   _("cannot fit single argument within argument list size limit"));
+
           /* xargs option -i (replace_pat) implies -x (exit_if_size_exceeded) */
           if (ctl->replace_pat
               || (ctl->exit_if_size_exceeded &&
                   (ctl->lines_per_exec || ctl->args_per_exec)))
-            error (1, 0, _("argument list too long"));
-          do_exec (ctl, state);
+            error (EXIT_FAILURE, 0, _("argument list too long"));
+            bc_do_exec (ctl, state);
         }
-      /* XXX_SOC: this if may also need to become a while loop.  In
-	 fact perhaps it is best to factor this out into a separate
-	 function which ceeps calling the exec handler until there is
-	 space for our next argument.  Each exec will free one argc
-	 "slot" so the main thing to worry about repeated exec calls
-	 for would be total argument length.
-       */
-      if (bc_argc_limit_reached(initial_args, ctl, state))
-	do_exec (ctl, state);
+      if (bc_argc_limit_reached (initial_args, ctl, state))
+            bc_do_exec (ctl, state);
     }
 
   if (state->cmd_argc >= state->cmd_argv_alloc)
@@ -321,7 +396,7 @@ bc_push_arg (const struct buildcmd_control *ctl,
         }
     }
 
-  if (!arg)
+  if (terminate)
     state->cmd_argv[state->cmd_argc++] = NULL;
   else
     {
@@ -331,17 +406,17 @@ bc_push_arg (const struct buildcmd_control *ctl,
           strcpy (state->argbuf + state->cmd_argv_chars, prefix);
           state->cmd_argv_chars += pfxlen;
         }
-      
+
       strcpy (state->argbuf + state->cmd_argv_chars, arg);
       state->cmd_argv_chars += len;
-      
+
       /* If we have now collected enough arguments,
-       * do the exec immediately.  This must be 
-       * conditional on arg!=NULL, since do_exec() 
-       * actually calls bc_push_arg(ctl, state, NULL, 0, false).
+       * do the exec immediately.
        */
-      if (bc_argc_limit_reached(initial_args, ctl, state))
-	do_exec (ctl, state);
+      if (bc_argc_limit_reached (initial_args, ctl, state))
+	{
+	  bc_do_exec (ctl, state);
+	}
     }
 
   /* If this is an initial argument, set the high-water mark. */
@@ -351,39 +426,9 @@ bc_push_arg (const struct buildcmd_control *ctl,
     }
 }
 
-#if 0
-/* We used to set posix_arg_size_min to the LINE_MAX limit, but 
- * currently we use _POSIX_ARG_MAX (which is the minimum value).
- */
-static size_t
-get_line_max(void)
-{
-  long val;
-#ifdef _SC_LINE_MAX  
-  val = sysconf(_SC_LINE_MAX);
-#else
-  val = -1;
-#endif
-  
-  if (val > 0)
-    return val;
-
-  /* either _SC_LINE_MAX was not available or 
-   * there is no particular limit.
-   */
-#ifdef LINE_MAX
-  val = LINE_MAX;
-#endif
-
-  if (val > 0)
-    return val;
-
-  return 2048L;			/* a reasonable guess. */
-}
-#endif
 
 size_t
-bc_get_arg_max(void)
+bc_get_arg_max (void)
 {
   long val;
 
@@ -391,8 +436,8 @@ bc_get_arg_max(void)
   /* XXX: better to do a compile-time check */
   assert ( (~(size_t)0) >= LONG_MAX);
 
-#ifdef _SC_ARG_MAX  
-  val = sysconf(_SC_ARG_MAX);
+#ifdef _SC_ARG_MAX
+  val = sysconf (_SC_ARG_MAX);
 #else
   val = -1;
 #endif
@@ -400,32 +445,36 @@ bc_get_arg_max(void)
   if (val > 0)
     return val;
 
-  /* either _SC_ARG_MAX was not available or 
+  /* either _SC_ARG_MAX was not available or
    * there is no particular limit.
    */
 #ifdef ARG_MAX
   val = ARG_MAX;
-#endif
-
   if (val > 0)
     return val;
-  
+#endif
+
   /* The value returned by this function bounds the
    * value applied as the ceiling for the -s option.
    * Hence it the system won't tell us what its limit
-   * is, we allow the user to specify more or less 
+   * is, we allow the user to specify more or less
    * whatever value they like.
    */
   return LONG_MAX;
 }
 
 
-static int cb_exec_noop(const struct buildcmd_control *ctl,
-                         struct buildcmd_state *state)
+static int
+cb_exec_noop (struct buildcmd_control * ctl,
+	      void *usercontext,
+	      int argc,
+	      char **argv)
 {
   /* does nothing. */
   (void) ctl;
-  (void) state;
+  (void) usercontext;
+  (void) argc;
+  (void) argv;
 
   return 0;
 }
@@ -446,18 +495,18 @@ bc_size_of_environment (void)
 
 
 enum BC_INIT_STATUS
-bc_init_controlinfo(struct buildcmd_control *ctl,
-		    size_t headroom)
+bc_init_controlinfo (struct buildcmd_control *ctl,
+		     size_t headroom)
 {
-  size_t size_of_environment = bc_size_of_environment();
+  size_t size_of_environment = bc_size_of_environment ();
 
   /* POSIX requires that _POSIX_ARG_MAX is 4096.  That is the lowest
    * possible value for ARG_MAX on a POSIX compliant system.  See
    * http://www.opengroup.org/onlinepubs/009695399/basedefs/limits.h.html
    */
   ctl->posix_arg_size_min = _POSIX_ARG_MAX;
-  ctl->posix_arg_size_max = bc_get_arg_max();
-  
+  ctl->posix_arg_size_max = bc_get_arg_max ();
+
   ctl->exit_if_size_exceeded = 0;
 
   /* Take the size of the environment into account.  */
@@ -479,9 +528,9 @@ bc_init_controlinfo(struct buildcmd_control *ctl,
       ctl->posix_arg_size_max -= size_of_environment;
       ctl->posix_arg_size_max -= headroom;
     }
-  
+
   /* need to subtract 2 on the following line - for Linux/PPC */
-  ctl->max_arg_count = (ctl->posix_arg_size_max / sizeof(char*)) - 2u;
+  ctl->max_arg_count = (ctl->posix_arg_size_max / sizeof (char*)) - 2u;
   assert (ctl->max_arg_count > 0);
   ctl->rplen = 0u;
   ctl->replace_pat = NULL;
@@ -499,7 +548,7 @@ bc_init_controlinfo(struct buildcmd_control *ctl,
 }
 
 void
-bc_use_sensible_arg_max(struct buildcmd_control *ctl)
+bc_use_sensible_arg_max (struct buildcmd_control *ctl)
 {
 #ifdef DEFAULT_ARG_SIZE
   enum { arg_size = DEFAULT_ARG_SIZE };
@@ -507,12 +556,12 @@ bc_use_sensible_arg_max(struct buildcmd_control *ctl)
   enum { arg_size = (128u * 1024u) };
 #endif
 
-  /* Check against the upper and lower limits. */  
+  /* Check against the upper and lower limits. */
   if (arg_size > ctl->posix_arg_size_max)
     ctl->arg_max = ctl->posix_arg_size_max;
   else if (arg_size < ctl->posix_arg_size_min)
     ctl->arg_max = ctl->posix_arg_size_min;
-  else 
+  else
     ctl->arg_max = arg_size;
 }
 
@@ -520,35 +569,86 @@ bc_use_sensible_arg_max(struct buildcmd_control *ctl)
 
 
 void
-bc_init_state(const struct buildcmd_control *ctl,
-              struct buildcmd_state *state,
-              void *context)
+bc_init_state (const struct buildcmd_control *ctl,
+	       struct buildcmd_state *state,
+	       void *context)
 {
   state->cmd_argc = 0;
   state->cmd_argv_chars = 0;
   state->cmd_argv = NULL;
   state->cmd_argv_alloc = 0;
-  
+  state->largest_successful_arg_count = 0;
+  state->smallest_failed_arg_count = 0;
+
   /* XXX: the following memory allocation is inadvisable on systems
-   * with no ARG_MAX, because ctl->arg_max may actually be close to 
+   * with no ARG_MAX, because ctl->arg_max may actually be close to
    * LONG_MAX.   Adding one to it is safe though because earlier we
    * subtracted 2048.
    */
   assert (ctl->arg_max <= (LONG_MAX - 2048L));
   state->argbuf = xmalloc (ctl->arg_max + 1u);
-  
+
   state->cmd_argv_chars = state->cmd_initial_argv_chars = 0;
   state->todo = 0;
   state->dir_fd = -1;
   state->usercontext = context;
 }
 
-void 
-bc_clear_args(const struct buildcmd_control *ctl,
-              struct buildcmd_state *state)
+void
+bc_clear_args (const struct buildcmd_control *ctl,
+	       struct buildcmd_state *state)
 {
   state->cmd_argc = ctl->initial_argc;
   state->cmd_argv_chars = state->cmd_initial_argv_chars;
   state->todo = 0;
   state->dir_fd = -1;
+}
+
+
+/* Return nonzero if the value stored in the environment variable ENV_VAR_NAME
+ * exceeds QUANTITY.
+ */
+static int
+exceeds (const char *env_var_name, size_t quantity)
+{
+  const char *val = getenv (env_var_name);
+  if (val)
+    {
+      char *tmp;
+      unsigned long limit;
+
+      if (xstrtoul (val, &tmp, 10, &limit, NULL) == LONGINT_OK)
+	{
+	  if (quantity > limit)
+	    return 1;
+	}
+      else
+	{
+	  error (EXIT_FAILURE, errno,
+		 _("Environment variable %s is not set to a "
+		   "valid decimal number"),
+		 env_var_name);
+	  return 0;
+	}
+    }
+  return 0;
+}
+
+/* Return nonzero if the indicated argument list exceeds a testing limit.
+ * NOTE: argv could be declared 'const char *const *argv', but it works as
+ * expected only with C++ compilers <http://c-faq.com/ansi/constmismatch.html>.
+ */
+bool
+bc_args_exceed_testing_limit (char **argv)
+{
+  size_t chars, args;
+
+  for (chars=args=0; *argv; ++argv)
+    {
+      ++args;
+      chars += strlen(*argv);
+    }
+
+  return (exceeds ("__GNU_FINDUTILS_EXEC_ARG_COUNT_LIMIT", args) ||
+	  exceeds ("__GNU_FINDUTILS_EXEC_ARG_LENGTH_LIMIT", chars));
 }

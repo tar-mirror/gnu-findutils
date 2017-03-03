@@ -18,10 +18,15 @@ Prerequisites
  * GNU gettext
  * GNU Dejagnu
 
+Dejagnu is in fact optional, but it's strongly recommened, since it is
+needed to run findutils' test suite (which is how you know that find
+works once it is built on your system).
+
 The configure program should tell you if you try to use a version of
-one of these tools which is not oif a recent enough version.  The file
+one of these tools which is not of a recent enough version.  The file
 tool-versions.txt indicates which version of each tool the current
-release was built and tested with.
+release was built and tested with.  This is included in the tar-file
+releases, but it's not checked in to git.
 
 
 Use the latest upstream sources
@@ -31,8 +36,8 @@ Use the latest upstream sources
 
   git clone git://git.sv.gnu.org/findutils
 
-This will download the whole repository, it's about 14MB.  If you
-already have a copy you can refresh it with
+This will download the whole repository, it's about 16MB once fetched.
+If you already have a copy you can refresh it with:
 
   git checkout master  (to switch to your copy of the master branch)
   git pull (to collect and merge changes)
@@ -43,33 +48,16 @@ already have a copy you can refresh it with
  is, the directory containing this file).   Then run the following
  command:-
 
-    sh import-gnulib.sh
+    ./bootstrap
 
  This command will use git to check out the version of gnulib which is
- intended to work with the findutils source you already have, as
- configured by the file import-gnulib.config.  The gnulib code itself
- is left in the directory "gnulib-git".  The "gnulib" directory
- contains just the gnulib files that findutils needs during the build
- process.
+ intended to work with the findutils source you already have (gnulib
+ is used as a git submodule).  The gnulib code itself is left in the
+ directory "gnulib".  The "gl" directory contains just the gnulib
+ files that findutils needs during the build process.
 
- If you want to build findutils with a different version of gnulib,
- just edit import-gnulib.config to change the version and then re-run
- import-gnulib.sh.  When specifying the version, you can specify
- either the date or a tag.  If making any kind of release, please
- use a fully identifying version (rather than just, say, "HEAD").
-
- The import-gnulib.sh script will also run Autoconf and Automake to
- generate the "configure" script and "Makefile.in" files.  Should you
- need to do this manually, you can do it like this :-
-
-    aclocal -I m4 -I gnulib/m4     && \
-    autoheader			   && \
-    autoconf			   && \
-    automake --add-missing --copy
-
-3. (Optional) Update the translations
-
-    rsync -Lrtvz  translationproject.org::tp/latest/findutils/ po
+ This will also run Autoconf and Automake to generate the "configure"
+ script and "Makefile.in" files.
 
 3. Run "configure" and "make" in the normal way.
 
@@ -94,6 +82,51 @@ example values:
 [user]
   name = Joe X. User
   email = joe.user@example.com
+
+
+Required format for check-in messages
+=====================================
+
+We use a specific style for check-in messages.  See "git log" for
+examples.  The format corresponds to the standard GNU ChangeLog
+format, but without date & author headers (since git provides this
+data) and without a left margin (since there are no headers).
+
+--- example begins ---
+Don't overflow sig_atomic_t for --max-procs.
+
+* xargs/xargs.c (__STDC_LIMIT_MACROS): Define __STDC_LIMIT_MACROS
+in order to ensure that <stdint.h> defines the SIG_ATOMIC_MAX
+macro, which we need.
+(MAX_PROC_MAX): Define this as the maximum allowed value of
+proc_max.
+(main): Show the value of MAX_PROC_MAX for --show-limits.
+(increment_proc_max): Don't increment proc_max beyond
+MAX_PROC_MAX.
+--- example ends ---
+
+There are several things to notice about this checkin message.  Most
+importatly, it begins with a single line summary of the whole change.
+This needs to be short.  It would be used as the subject line of
+patches mailed by "git send-email".  Some people begin that line with
+a one-word tag indicating what is addected (for example find: for
+changes to find, doc: to changes to the documentation, maint: for
+changes to the maintainer automation and so forth).
+
+All changes a file are grouped together in an entry which begins with
+an asterisk (*) and the file name.  The name of the modified function
+(if any) follows immediately in parentheses followed by a colon.  If
+you're modifying a file for which "function" isn't the logical unit of
+organisation, use whatever seems most useful.  For example when
+modifying the Texinfo source, use the section name.
+
+After the colon, describe the change you made to that function.  If
+you made a related change mention the places you made that change,
+too.  If you maded many individually small changes, you can summarise
+these if they're not individually interesting.  For example you could
+just say "Update all callers to remove this function argument".  If
+that change spans several files, mention the other files modifies.
+
 
 
 Making commits locally
@@ -124,7 +157,7 @@ changes you just pulled:
 There are some useful checks that git commit hooks will do for you,
 it's a good idea to enable these:
 
-  chmod +x .git/hooks/pre-commit
+  mv .git/hooks/pre-commit.sample .git/hooks/pre-commit
 
 
 Submitting patches
@@ -136,9 +169,9 @@ Some common things you might have forgotten to do are:
 
  - document your change in both the manual pages and the Texinfo file
  - re-run the test suite (with Dejagnu installed!)
- - add a ChangeLog entry (for now we still do that manually)
  - add a test case for the bug you're fixing or feature you're adding
  - mention your fix or change (if it's significant) in the NEWS file
+ - commit using a descriptive commit message
 
 If you have patches, please generate them with "git format-patch" and
 mail them to these addresses:
@@ -158,7 +191,7 @@ Here is a complete session
   emacs doc/find.texi xargs/xargs.1
   emacs xargs/testsuite/Makefile.am  xargs/testsuite/xargs.gnu/blah.exp
   make check
-  emacs ChangeLog NEWS
+  emacs NEWS
 
   # make sure you didn't break anything
   make distcheck
@@ -180,9 +213,11 @@ Copyright assignment
 If your change is significant (i.e., if it adds more than ~10 lines),
 then you'll have to have a copyright assignment on file with the FSF.
 Since that involves first an email exchange between you and the FSF,
-and then the exchange (FSF to you, then back) of an actual sheet of paper
-with your signature on it, and finally, some administrative processing
-in Boston, the process can take a few weeks.
+and then the exchange (FSF to you, then back) of an actual sheet of
+paper with your signature on it, and finally, some administrative
+processing in Boston, the process can take a few weeks (for
+contributors in some geographies, this can all be done electronically,
+saving a lot of time).
 
 The forms to choose from are in gnulib's doc/Copyright/ directory.
 If you want to assign a single change, you should use the file,
@@ -203,11 +238,11 @@ In case you're wondering why we bother with all of this, read this:
 
 
 ========================================================================
-Copyright (C) 2009 Free Software Foundation, Inc.
+Copyright (C) 2009, 2010, 2014, 2015 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts.  A copy of the license is included in the ``GNU Free
-Documentation License'' file as part of this distribution.
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the ``GNU Free Documentation
+License'' file as part of this distribution.

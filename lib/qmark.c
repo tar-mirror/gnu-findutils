@@ -1,46 +1,41 @@
 /* qmark.c -- quote 'dangerous' filenames
 
-   Copyright (C) 2005 Free Software Foundation, Inc.  
+   Copyright (C) 2005, 2007, 2009, 2010, 2011 Free Software Foundation,
+   Inc.
    Derived from courutils' ls.c:
-   Copyright (C) 85, 88, 90, 91, 1995-2005 Free Software Foundation, Inc.  
+   Copyright (C) 85, 88, 90, 91, 1995-2005 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+/* config.h must be included first. */
 #include <config.h>
 
-# include <stddef.h>
-# include <stdlib.h>
+/* system headers. */
 #include <ctype.h>
-
-#if HAVE_STRING_H || STDC_HEADERS
+#include <stdlib.h>
 #include <string.h>
-#else
-#include <strings.h>
-#endif
+#include <wchar.h>
 
+/* gnulib headers would go here if any needed to be included. */
 
-/* Get mbstate_t, mbrtowc(), mbsinit(), wcwidth().  */
-#if HAVE_WCHAR_H
-# include <wchar.h>
-#endif
-
+/* find headers. */
 #include "printquoted.h"
 
 
-/* 
-   This comment, IN_CTYPE_DOMAIN and ISPRINT were borrowed from 
+
+/*
+   This comment, IN_CTYPE_DOMAIN and ISPRINT were borrowed from
    coreutils at Sun Jun  5 21:17:40 2005 UTC.
 
    Jim Meyering writes:
@@ -60,20 +55,20 @@
    outside the range -1 <= c <= 255. One is tempted to write isupper(c)
    with c being of type `char', but this is wrong if c is an 8-bit
    character >= 128 which gets sign-extended to a negative value.
-   The macro ISUPPER protects against this as well."  */
+   The macro ISUPPER protects against this as well."
 
+   (Actually that rule of ISUPPER is now taken by to_uchar).
+*/
 
-
-
-/* ISPRINT is defined in <sys/euc.h> on at least Solaris2.6 systems.  */
-#undef ISPRINT
-#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (c))
-
-#if STDC_HEADERS || (!defined (isascii) && !HAVE_ISASCII)
+#if STDC_HEADERS
 # define IN_CTYPE_DOMAIN(c) 1
 #else
 # define IN_CTYPE_DOMAIN(c) isascii(c)
 #endif
+
+/* ISPRINT is defined in <sys/euc.h> on at least Solaris2.6 systems.  */
+#undef ISPRINT
+#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (c))
 
 
 
@@ -81,9 +76,9 @@
 
 /* Convert a possibly-signed character to an unsigned character.  This is
  * a bit safer than casting to unsigned char, since it catches some type
- * errors that the cast doesn't.  
+ * errors that the cast doesn't.
  *
- * This code taken from coreutils' system.h header at 
+ * This code taken from coreutils' system.h header at
  * Sun Jun  5 21:05:21 2005 UTC.
  */
 static inline unsigned char to_uchar (char ch)
@@ -92,13 +87,12 @@ static inline unsigned char to_uchar (char ch)
 }
 
 
-
 static size_t
-unibyte_qmark_chars(char *buf, size_t len)
+unibyte_qmark_chars (char *buf, size_t len)
 {
   char *p = buf;
   char const *plimit = buf + len;
-  
+
   while (p < plimit)
     {
       if (! ISPRINT (to_uchar (*p)))
@@ -109,13 +103,22 @@ unibyte_qmark_chars(char *buf, size_t len)
 }
 
 
-#if HAVE_MBRTOWC
-static size_t
-multibyte_qmark_chars(char *buf, size_t len)
+
+
+
+/* Scan BUF, replacing any dangerous-looking characters with question
+ * marks.  This code is taken from the ls.c file in coreutils as at
+ * Sun Jun  5 20:51:54 2005 UTC.
+ *
+ * This function may shrink the buffer.   Either way, the new length
+ * is returned.
+ */
+size_t
+qmark_chars (char *buf, size_t len)
 {
   if (MB_CUR_MAX <= 1)
     {
-      return unibyte_qmark_chars(buf, len);
+      return unibyte_qmark_chars (buf, len);
     }
   else
     {
@@ -215,23 +218,3 @@ multibyte_qmark_chars(char *buf, size_t len)
       return len;
     }
 }
-#endif
-
-
-/* Scan BUF, replacing any dangerous-looking characters with question
- * marks.  This code is taken from the ls.c file in coreutils as at 
- * Sun Jun  5 20:51:54 2005 UTC.
- *
- * This function may shrink the buffer.   Either way, the new length
- * is returned.
- */
-size_t
-qmark_chars(char *buf, size_t len)
-{
-#if HAVE_MBRTOWC
-  return multibyte_qmark_chars(buf, len);
-#else
-  return unibyte_qmark_chars(buf, len);
-#endif  
-}
-

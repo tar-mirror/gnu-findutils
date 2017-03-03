@@ -1,5 +1,5 @@
 /* findutils-version.h -- show version information for findutils
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,13 +16,12 @@
 */
 
 /*
- * display_findutils_version displays GNU coding standard compliant 
- * version information.   
+ * display_findutils_version displays GNU coding standard compliant
+ * version information.
  *
  * official_name   Official name of the program, for example
  *                 "find" or "xargs" (as opposed to "/bin/find"
  *                 or gfind).
- *                       
+ *
  */
 void display_findutils_version(const char *official_name);
-

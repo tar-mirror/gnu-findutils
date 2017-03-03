@@ -15,7 +15,7 @@ The locate program and its helper programs are derived (heavily
 modified) from James Woods' public domain fast-find code, which is
 also distributed with the 4.3BSD find.
 
-Eric B. Decker
+Eric B. Decker <cire@soe.ucsc.edu>, <cire831@gmail.com>
 Michael Rendell
 David J. MacKenzie
 Jim Meyering
@@ -29,6 +29,8 @@ Dmitry V. Levin
 Bas van Gompel
 Eric Blake <ebb9@byu.net>
 Andreas Metzler
+Kamil Dudka  <kdudka@redhat.com>
+Bernhard Voelker <mail@bernhard-voelker.de>
 
 The current maintainer of the findutils package is James Youngman.
 Questions about findutils should be addressed to the mailing list,

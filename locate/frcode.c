@@ -1,5 +1,6 @@
 /* frcode -- front-compress a sorted list
-   Copyright (C) 1994,2005,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2005, 2006, 2007, 2010, 2011 Free Software
+   Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,25 +63,30 @@
    Modified by James Youngman <jay@gnu.org>.
 */
 
+/* config.h must be included first. */
 #include <config.h>
 
-
-#include <stdio.h>
-#include <limits.h>
+/* system headers. */
 #include <assert.h>
 #include <errno.h>
-#include <sys/types.h>
+#include <getopt.h>
+#include <limits.h>
 #include <stdbool.h>
-
-#if defined HAVE_STRING_H || defined STDC_HEADERS
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-
-#ifdef STDC_HEADERS
+#include <stdio.h>
 #include <stdlib.h>
-#endif
+#include <string.h>
+#include <sys/types.h>
+
+/* gnulib headers. */
+#include "closeout.h"
+#include "error.h"
+#include "gettext.h"
+#include "progname.h"
+#include "xalloc.h"
+
+/* find headers. */
+#include "findutils-version.h"
+#include "locatedb.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -103,17 +109,6 @@
 # define N_(String) String
 #endif
 
-
-#include "locatedb.h"
-#include <getopt.h>
-#include "error.h"
-#include "closeout.h"
-#include "findutils-version.h"
-
-char *xmalloc PARAMS((size_t));
-
-/* The name this program was run with.  */
-char *program_name;
 
 /* Write out a 16-bit int, high byte first (network byte order).
  * Return true iff all went well.
@@ -158,10 +153,6 @@ static struct option const longopts[] =
 
 extern char *version_string;
 
-/* The name this program was run with. */
-char *program_name;
-
-
 static void
 usage (FILE *stream)
 {
@@ -172,7 +163,7 @@ usage (FILE *stream)
 }
 
 static long
-get_seclevel(char *s)
+get_seclevel (char *s)
 {
   long result;
   char *p;
@@ -182,24 +173,27 @@ get_seclevel(char *s)
    */
   errno = 0;
 
-  result = strtol(s, &p, 10);
+  result = strtol (s, &p, 10);
   if ((0==result) && (p == optarg))
     {
-      error(1, 0, _("You need to specify a security level as a decimal integer."));
+      error (EXIT_FAILURE, 0,
+	     _("You need to specify a security level as a decimal integer."));
       /*NOTREACHED*/
       return -1;
     }
   else if ((LONG_MIN==result || LONG_MAX==result) && errno)
 
     {
-      error(1, 0, _("Security level %s is outside the convertible range."), s);
+      error (EXIT_FAILURE, 0,
+	     _("Security level %s is outside the convertible range."), s);
       /*NOTREACHED*/
       return -1;
     }
   else if (*p)
     {
       /* Some suffix exists */
-      error(1, 0, _("Security level %s has unexpected suffix %s."), s, p);
+      error (EXIT_FAILURE, 0,
+	     _("Security level %s has unexpected suffix %s."), s, p);
       /*NOTREACHED*/
       return -1;
     }
@@ -210,10 +204,10 @@ get_seclevel(char *s)
 }
 
 static void
-outerr(void)
+outerr (void)
 {
-  /* Issue the same error message as closeout() would. */
-  error(1, errno, _("write error"));
+  /* Issue the same error message as closeout () would. */
+  error (EXIT_FAILURE, errno, _("write error"));
 }
 
 int
@@ -229,10 +223,15 @@ main (int argc, char **argv)
   int slocate_compat = 0;
   long slocate_seclevel = 0L;
 
-  program_name = argv[0];
-  if (!program_name)
-    program_name = "frcode";
-  atexit (close_stdout);
+  if (argv[0])
+    set_program_name (argv[0]);
+  else
+    set_program_name ("frcode");
+
+  if (atexit (close_stdout))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
 
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
@@ -251,12 +250,12 @@ main (int argc, char **argv)
 
       case 'S':
 	slocate_compat = 1;
-	slocate_seclevel = get_seclevel(optarg);
+	slocate_seclevel = get_seclevel (optarg);
 	if (slocate_seclevel < 0 || slocate_seclevel > 1)
 	  {
-	    error(1, 0,
-		  _("slocate security level %ld is unsupported."),
-		  slocate_seclevel);
+	    error (EXIT_FAILURE, 0,
+		   _("slocate security level %ld is unsupported."),
+		   slocate_seclevel);
 	  }
 	break;
 
@@ -265,7 +264,7 @@ main (int argc, char **argv)
 	return 0;
 
       case 'v':
-	display_findutils_version("frcode");
+	display_findutils_version ("frcode");
 	return 0;
 
       default:
@@ -283,17 +282,17 @@ main (int argc, char **argv)
 
   if (slocate_compat)
     {
-      fputc(slocate_seclevel ? '1' : '0', stdout);
-      fputc(0, stdout);
+      fputc (slocate_seclevel ? '1' : '0', stdout);
+      fputc (0, stdout);
 
     }
   else
     {
       /* GNU LOCATE02 format */
       if (fwrite (LOCATEDB_MAGIC, 1, sizeof (LOCATEDB_MAGIC), stdout)
-	  != sizeof(LOCATEDB_MAGIC))
+	  != sizeof (LOCATEDB_MAGIC))
 	{
-	  error(1, errno, _("Failed to write to standard output"));
+	  error (EXIT_FAILURE, errno, _("Failed to write to standard output"));
 	}
     }
 
@@ -307,7 +306,7 @@ main (int argc, char **argv)
       if ( (diffcount > SHRT_MAX) || (diffcount < SHRT_MIN) )
 	{
 	  /* We do this to prevent overflow of the value we
-	   * write with put_short()
+	   * write with put_short ()
 	   */
 	  count = 0;
 	  diffcount = (-oldcount);
@@ -327,21 +326,21 @@ main (int argc, char **argv)
 	      || diffcount > LOCATEDB_ONEBYTE_MAX)
 	    {
 	      if (EOF == putc (LOCATEDB_ESCAPE, stdout))
-		outerr();
+		outerr ();
 	      if (!put_short (diffcount, stdout))
-		outerr();
+		outerr ();
 	    }
 	  else
 	    {
 	      if (EOF == putc (diffcount, stdout))
-		outerr();
+		outerr ();
 	    }
 	}
 
       if ( (EOF == fputs (path + count, stdout))
 	   || (EOF == putc ('\0', stdout)))
 	{
-	  outerr();
+	  outerr ();
 	}
 
       if (1)

@@ -1,3 +1,25 @@
+# Copyright (C) 2001, 2002, 2003-2015 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# The 2001 copyright line above was added in 2015 based on James
+# Youngman's best estimate of the original publication date of this
+# file (it appeared in findutils release 4.1.7 but may have appeared
+# in earlier releases which I don't have copies of).
+
+# Essentially this test verifies that ls -i and find -printf %i produce
+# the same output.
 AUTOMAKE_OPTIONS=dejagnu
 XARGS = ../xargs
 XARGSFLAGS =
@@ -20,19 +42,19 @@ xargs.gnu/L2_2-0.exp \
 xargs.gnu/L3-0.exp \
 xargs.gnu/n1-0.exp \
 xargs.gnu/n2-0.exp \
-xargs.gnu/n2-s26-0.exp \
-xargs.gnu/n2-s26-x-0.exp \
+xargs.gnu/n2-s21-0.exp \
+xargs.gnu/n2-s21-x-0.exp \
 xargs.gnu/n3-0.exp \
-xargs.gnu/n3-s36-0.exp \
+xargs.gnu/n3-s31-0.exp \
 xargs.gnu/noeof-0.exp \
 xargs.gnu/nothing.exp \
 xargs.gnu/P3-n1-IARG.exp \
 xargs.gnu/r.exp \
 xargs.gnu/s118-0.exp \
-xargs.gnu/s19-0.exp \
-xargs.gnu/s19_2-0.exp \
-xargs.gnu/s20-0.exp \
-xargs.gnu/s30-0.exp \
+xargs.gnu/s14_2-0.exp \
+xargs.gnu/s14-0.exp \
+xargs.gnu/s15-0.exp \
+xargs.gnu/s25-0.exp \
 xargs.gnu/space-0.exp \
 xargs.gnu/space-r.exp \
 xargs.gnu/space-t-0.exp \
@@ -56,10 +78,10 @@ xargs.posix/L2-n2.exp \
 xargs.posix/L3.exp \
 xargs.posix/n1.exp \
 xargs.posix/n2.exp \
-xargs.posix/n2-s26.exp \
-xargs.posix/n2-s26-x.exp \
+xargs.posix/n2-s21.exp \
+xargs.posix/n2-s21-x.exp \
 xargs.posix/n3.exp \
-xargs.posix/n3-s36.exp \
+xargs.posix/n3-s31.exp \
 xargs.posix/noeof.exp \
 xargs.posix/quotes.exp \
 xargs.posix/rc-123.exp \
@@ -68,12 +90,12 @@ xargs.posix/rc-125.exp \
 xargs.posix/rc-126.exp \
 xargs.posix/rc-127.exp \
 xargs.posix/s118.exp \
-xargs.posix/s19_2.exp \
-xargs.posix/s19.exp \
-xargs.posix/s20.exp \
-xargs.posix/s30.exp \
+xargs.posix/s14.exp \
+xargs.posix/s14_2.exp \
+xargs.posix/s15.exp \
+xargs.posix/s25.exp \
+xargs.posix/s42.exp \
 xargs.posix/s470.exp \
-xargs.posix/s47.exp \
 xargs.posix/s48.exp \
 xargs.posix/s6.exp \
 xargs.posix/savannah-11865.exp \
@@ -98,7 +120,7 @@ xargs.sysv/l1_2.exp \
 xargs.sysv/l1.exp \
 xargs.sysv/l1n4.exp \
 xargs.sysv/lc_l2.exp \
-xargs.sysv/s30-t.exp \
+xargs.sysv/s25-t.exp \
 xargs.sysv/sv-bug-18713.exp \
 xargs.sysv/space-t.exp \
 xargs.sysv/trace.exp
@@ -118,18 +140,18 @@ xargs.gnu/L2_2-0.xo \
 xargs.gnu/L3-0.xo \
 xargs.gnu/n1-0.xo \
 xargs.gnu/n2-0.xo \
-xargs.gnu/n2-s26-0.xo \
-xargs.gnu/n2-s26-x-0.xo \
+xargs.gnu/n2-s21-0.xo \
+xargs.gnu/n2-s21-x-0.xo \
 xargs.gnu/n3-0.xo \
-xargs.gnu/n3-s36-0.xo \
+xargs.gnu/n3-s31-0.xo \
 xargs.gnu/noeof-0.xo \
 xargs.gnu/nothing.xo \
 xargs.gnu/P3-n1-IARG.xo \
 xargs.gnu/r.xo \
 xargs.gnu/s118-0.xo \
-xargs.gnu/s19-0.xo \
-xargs.gnu/s20-0.xo \
-xargs.gnu/s30-0.xo \
+xargs.gnu/s14-0.xo \
+xargs.gnu/s15-0.xo \
+xargs.gnu/s25-0.xo \
 xargs.gnu/space-0.xo \
 xargs.gnu/space-t-0.xo \
 xargs.posix/EEOFb.xo \
@@ -148,20 +170,20 @@ xargs.posix/L2-n2.xo \
 xargs.posix/uc_L2.xo \
 xargs.posix/L3.xo \
 xargs.posix/n1.xo \
-xargs.posix/n2-s26.xo \
-xargs.posix/n2-s26-x.xo \
+xargs.posix/n2-s21.xo \
+xargs.posix/n2-s21-x.xo \
 xargs.posix/n2.xo \
-xargs.posix/n3-s36.xo \
+xargs.posix/n3-s31.xo \
 xargs.posix/n3.xo \
 xargs.posix/noeof.xo \
 xargs.posix/quotes.xo \
 xargs.posix/rc-123.xo \
 xargs.posix/s118.xo \
-xargs.posix/s19.xo \
-xargs.posix/s20.xo \
-xargs.posix/s30.xo \
+xargs.posix/s14.xo \
+xargs.posix/s15.xo \
+xargs.posix/s25.xo \
+xargs.posix/s42.xo \
 xargs.posix/s470.xo \
-xargs.posix/s47.xo \
 xargs.posix/s48.xo \
 xargs.posix/savannah-11865.xo \
 xargs.posix/space.xo \
@@ -183,7 +205,7 @@ xargs.sysv/l1_2.xo \
 xargs.sysv/l1n4.xo \
 xargs.sysv/l1.xo \
 xargs.sysv/lc_l2.xo \
-xargs.sysv/s30-t.xo \
+xargs.sysv/s25-t.xo \
 xargs.sysv/sv-bug-18713.xo \
 xargs.sysv/space-t.xo \
 xargs.sysv/trace.xo
@@ -194,7 +216,7 @@ EXTRA_DIST_XE = \
 xargs.gnu/space-t-0.xe \
 xargs.sysv/empty_def-t.xe \
 xargs.sysv/empty-t.xe \
-xargs.sysv/s30-t.xe \
+xargs.sysv/s25-t.xe \
 xargs.sysv/space-t.xe \
 xargs.sysv/trace.xe
 

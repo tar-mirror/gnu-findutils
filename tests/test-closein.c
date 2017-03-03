@@ -1,5 +1,5 @@
 /* Test of closein module.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007-2015 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,8 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 /* Written by Eric Blake.  */
 
@@ -26,6 +25,7 @@
 #include <unistd.h>
 
 #include "binary-io.h"
+#include "ignore-value.h"
 
 char *program_name;
 
@@ -36,8 +36,7 @@ int
 main (int argc, char **argv)
 {
   char buf[7];
-  int i = -1;
-  atexit(close_stdin);
+  atexit (close_stdin);
   program_name = argv[0];
 
   /* close_stdin currently relies on ftell, but mingw ftell is
@@ -48,6 +47,6 @@ main (int argc, char **argv)
     close (0);
 
   if (argc > 1)
-    i = fread (buf, 1, 6, stdin);
+    ignore_value (fread (buf, 1, 6, stdin));
   return 0;
 }

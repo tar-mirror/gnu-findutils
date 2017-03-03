@@ -1,22 +1,32 @@
-info_TEXINFOS = find.texi find-maint.texi
-find_TEXINFOS = perm.texi getdate.texi regexprops.texi fdl.texi
-find_maint_TEXINFOS = fdl.texi
-MOSTLYCLEANFILES = find.cps 
-CLEANFILES = find.txt find_mono.html findutils.texi_html_node.tar.gz
+# Copyright (C) 1996,1999,2000,2001,2003-2015 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+AM_CFLAGS = $(WARN_CFLAGS)
 
-# To build regexprops.texi, we need to build the regexprops program and 
-# run it on the host.  If we are cross compiling, we may not have a native
-# binary.  When this is the case, we use a workaround; don't delete the 
-# file for 'make clean'.  This fixes Savannah bug #19658.
-if !CROSS_COMPILING
-CLEANFILES += regexprops.texi regexprops-generic.texi
-endif
+info_TEXINFOS = find.texi find-maint.texi
+find_TEXINFOS = perm.texi parse-datetime.texi regexprops.texi fdl.texi
+BUILT_SOURCES = dblocation.texi
+nodist_find_TEXINFOS = dblocation.texi
+find_maint_TEXINFOS = fdl.texi
+MOSTLYCLEANFILES = find.cps
+CLEANFILES = find.txt find_mono.html findutils.texi_html_node.tar.gz dblocation.texi
 
 MAKEINFOTXT = $(MAKEINFO) --plaintext
 
 find.txt: find.texi $(srcdir)/version.texi $(find_TEXINFOS)
 
-# find.txt is a file which we need to know how to build 
+# find.txt is a file which we need to know how to build
 # because it gets put on the www.gnu.org website.
 # This rule is derived from the .texi.html rule.
 .texi.txt:
@@ -34,7 +44,7 @@ find.txt: find.texi $(srcdir)/version.texi $(find_TEXINFOS)
 	fi
 
 
-# find_mono.html is a file which we need to know how to build 
+# find_mono.html is a file which we need to know how to build
 # because it gets put on the www.gnu.org website.
 # This rule is derived from the generic .texi.html rule.
 find_mono.html: find.texi
@@ -54,22 +64,12 @@ find_mono.html: find.texi
 
 # findutils.texi_html_node.tar.gz is a file which we need to know
 # how to build because it gets put on the www.gnu.org website.
-# This rule depends on GNU tar, but it's principally used 
-# by the maintainer, and we don't need to build the file 
+# This rule depends on GNU tar, but it's principally used
+# by the maintainer, and we don't need to build the file
 # for "make all" or "make install" (or even "make check").
 findutils.texi_html_node.tar.gz: find.html
 	tar zcf $@ $<
 
-if CROSS_COMPILING
-regexprops.texi regexprops-generic.texi: ../gnulib/lib/regex.h
-	echo "WARNING: $? is newer than $@ but $@ cannot be rebuilt because we are cross-compiling.   Continuing anyway." >&2
-else
-regexprops.texi: ../gnulib/lib/regex.h ../lib/regexprops.c
-	cd ../lib && $(MAKE) $(AM_MAKEFLAGS) regexprops$(EXEEXT)
-	../lib/regexprops$(EXEEXT) "Regular Expressions" findutils > $@
-	rm ../lib/regexprops$(EXEEXT)
-regexprops-generic.texi: ../gnulib/lib/regex.h ../lib/regexprops.c
-	cd ../lib && $(MAKE) $(AM_MAKEFLAGS) regexprops$(EXEEXT)
-	../lib/regexprops$(EXEEXT) "Regular Expressions" generic > $@
-	rm ../lib/regexprops$(EXEEXT)
-endif
+
+dblocation.texi: ../locate/dblocation.texi
+	$(LN_S) ../locate/dblocation.texi $@

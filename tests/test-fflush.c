@@ -1,5 +1,5 @@
 /* Test of POSIX compatible fflush() function.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,11 +18,21 @@
 
 #include <config.h>
 
+/* None of the files accessed by this test are large, so disable the
+   ftell link warning if we are not using the gnulib ftell module.  */
+#define _GL_NO_LARGE_FILES
 #include <stdio.h>
+
+#include "signature.h"
+SIGNATURE_CHECK (fflush, int, (FILE *));
+
+#include <errno.h>
 #include <unistd.h>
 
+#include "macros.h"
+
 int
-main (int argc, char *argv[])
+main (void)
 {
   FILE *f;
   char buffer[10];
@@ -39,11 +49,13 @@ main (int argc, char *argv[])
 
   /* Test fflush.  */
   f = fopen ("test-fflush.txt", "r");
+  ASSERT (f != NULL);
   fd = fileno (f);
   if (!f || 0 > fd || fread (buffer, 1, 5, f) != 5)
     {
       fputs ("Failed initial read of sample file.\n", stderr);
-      fclose (f);
+      if (f)
+        fclose (f);
       unlink ("test-fflush.txt");
       return 1;
     }
@@ -59,7 +71,7 @@ main (int argc, char *argv[])
     }
 #endif
   /* POSIX requires fflush-fseek to set file offset of fd.  */
-  if (fflush (f) != 0 || fseek (f, 0, SEEK_CUR) != 0)
+  if (fflush (f) != 0 || fseeko (f, 0, SEEK_CUR) != 0)
     {
       fputs ("Failed to flush-fseek sample file.\n", stderr);
       fclose (f);
@@ -70,7 +82,7 @@ main (int argc, char *argv[])
   if (lseek (fd, 0, SEEK_CUR) != 5)
     {
       fprintf (stderr, "File offset is wrong after fseek: %ld.\n",
-	       (long) lseek (fd, 0, SEEK_CUR));
+               (long) lseek (fd, 0, SEEK_CUR));
       fclose (f);
       unlink ("test-fflush.txt");
       return 1;
@@ -78,7 +90,7 @@ main (int argc, char *argv[])
   if (ftell (f) != 5)
     {
       fprintf (stderr, "ftell result is wrong after fseek: %ld.\n",
-	       (long) ftell (f));
+               (long) ftell (f));
       fclose (f);
       unlink ("test-fflush.txt");
       return 1;
@@ -111,7 +123,7 @@ main (int argc, char *argv[])
   if (lseek (fd, 0, SEEK_CUR) != 6)
     {
       fprintf (stderr, "File offset is wrong after fseeko: %ld.\n",
-	       (long) lseek (fd, 0, SEEK_CUR));
+               (long) lseek (fd, 0, SEEK_CUR));
       fclose (f);
       unlink ("test-fflush.txt");
       return 1;
@@ -119,7 +131,7 @@ main (int argc, char *argv[])
   if (ftell (f) != 6)
     {
       fprintf (stderr, "ftell result is wrong after fseeko: %ld.\n",
-	       (long) ftell (f));
+               (long) ftell (f));
       fclose (f);
       unlink ("test-fflush.txt");
       return 1;
@@ -133,6 +145,47 @@ main (int argc, char *argv[])
       return 1;
     }
   fclose (f);
+
+  /* Test that fflush() sets errno if someone else closes the stream
+     fd behind the back of stdio.  */
+  {
+    FILE *fp = fopen ("test-fflush.txt", "w");
+    ASSERT (fp != NULL);
+    fputc ('x', fp);
+    ASSERT (close (fileno (fp)) == 0);
+    errno = 0;
+    ASSERT (fflush (fp) == EOF);
+    ASSERT (errno == EBADF);
+    fclose (fp);
+  }
+
+  /* Test that fflush() sets errno if the stream was constructed with
+     an invalid file descriptor.  */
+  {
+    FILE *fp = fdopen (-1, "w");
+    if (fp != NULL)
+      {
+        fputc ('x', fp);
+        errno = 0;
+        ASSERT (fflush (fp) == EOF);
+        ASSERT (errno == EBADF);
+      }
+  }
+  {
+    FILE *fp;
+    close (99);
+    fp = fdopen (99, "w");
+    if (fp != NULL)
+      {
+        fputc ('x', fp);
+        errno = 0;
+        ASSERT (fflush (fp) == EOF);
+        ASSERT (errno == EBADF);
+      }
+  }
+
+  /* Clean up.  */
   unlink ("test-fflush.txt");
+
   return 0;
 }

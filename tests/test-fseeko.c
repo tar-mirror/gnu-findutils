@@ -1,5 +1,5 @@
 /* Test of fseeko() function.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,40 +18,57 @@
 
 #include <config.h>
 
+/* None of the files accessed by this test are large, so disable the
+   fseek link warning if we are not using the gnulib fseek module.  */
+#define _GL_NO_LARGE_FILES
 #include <stdio.h>
 
-/* Get off_t.  */
-#include <sys/types.h>
+#include "signature.h"
+SIGNATURE_CHECK (fseeko, int, (FILE *, off_t, int));
+
+
+#include "macros.h"
+
+#ifndef FUNC_UNGETC_BROKEN
+# define FUNC_UNGETC_BROKEN 0
+#endif
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv _GL_UNUSED)
 {
-  /* Assume stdin is non-empty and seekable iff argc > 1.  */
+  /* Assume stdin is non-empty, seekable, and starts with '#!/bin/sh'
+     iff argc > 1.  */
   int expected = argc > 1 ? 0 : -1;
   /* Exit with success only if fseek/fseeko agree.  */
-  int r1 = fseeko (stdin, (off_t)0, SEEK_CUR);
-  int r2 = fseek (stdin, (long)0, SEEK_CUR);
-  if (r1 != r2 || r1 != expected)
-    return 1;
+  int r1 = fseeko (stdin, 0, SEEK_CUR);
+  int r2 = fseek (stdin, 0, SEEK_CUR);
+  ASSERT (r1 == r2 && r1 == expected);
   if (argc > 1)
     {
-      /* Test that fseek discards ungetc data.  */
+      /* Test that fseek discards previously read ungetc data.  */
       int ch = fgetc (stdin);
-      if (ch == EOF)
-        return 1;
-      if (ungetc (ch ^ 0xff, stdin) != (ch ^ 0xff))
-        return 1;
-      if (fseeko (stdin, (off_t) 0, SEEK_END))
-        return 1;
-      if (fgetc (stdin) != EOF)
-        return 1;
+      ASSERT (ch == '#');
+      ASSERT (ungetc (ch, stdin) == ch);
+      ASSERT (fseeko (stdin, 2, SEEK_SET) == 0);
+      ch = fgetc (stdin);
+      ASSERT (ch == '/');
+      if (2 < argc)
+        {
+          if (FUNC_UNGETC_BROKEN)
+            {
+              fputs ("Skipping test: ungetc cannot handle arbitrary bytes\n",
+                     stderr);
+              return 77;
+            }
+          /* Test that fseek discards random ungetc data.  */
+          ASSERT (ungetc (ch ^ 0xff, stdin) == (ch ^ 0xff));
+        }
+      ASSERT (fseeko (stdin, 0, SEEK_END) == 0);
+      ASSERT (fgetc (stdin) == EOF);
       /* Test that fseek resets end-of-file marker.  */
-      if (!feof (stdin))
-        return 1;
-      if (fseeko (stdin, (off_t) 0, SEEK_END))
-        return 1;
-      if (feof (stdin))
-        return 1;
+      ASSERT (feof (stdin));
+      ASSERT (fseeko (stdin, 0, SEEK_END) == 0);
+      ASSERT (!feof (stdin));
     }
   return 0;
 }

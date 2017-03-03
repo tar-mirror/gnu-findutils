@@ -1,5 +1,5 @@
-/* Ensures that the FINDLIB_REPLACE_FUNCS macro in configure.in works 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+/* Ensures that the FINDLIB_REPLACE_FUNCS macro in configure.in works
+   Copyright (C) 2004, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,26 +22,26 @@
 #include <config.h>
 
 
-extern void forcefindlib(void);	/* prevent GCC warning... */
+extern void forcefindlib (void);	/* prevent GCC warning... */
 
 
 
 /* forcefindlib
  *
- * This function exists only to be pulled into libfind.a by the 
- * FINDLIB_REPLACE_FUNCS macro in configure.in.   We already have 
+ * This function exists only to be pulled into libfind.a by the
+ * FINDLIB_REPLACE_FUNCS macro in configure.in.   We already have
  * AC_REPLACE_FUNCS, but that adds to LIBOBJS, and that's a gnulib thing
- * in the case of findutils.  Hence we have out own library of replacement 
+ * in the case of findutils.  Hence we have out own library of replacement
  * functions which aren't in gnulib (or aren't in it any more).  An example
- * of this is waitpid().   I develop on a system that doesn't 
+ * of this is waitpid().   I develop on a system that doesn't
  * lack waitpid, for example.   Therefore FINDLIB_REPLACE_FUNCS(waitpid)
- * never puts waitpid.o into FINDLIBOBJS.  Hence, to ensure that these 
- * macros are tested every time, we use FINDLIB_REPLACE_FUNCS on a function 
- * that never exists anywhere, so always needs to be pulled in.  That function 
+ * never puts waitpid.o into FINDLIBOBJS.  Hence, to ensure that these
+ * macros are tested every time, we use FINDLIB_REPLACE_FUNCS on a function
+ * that never exists anywhere, so always needs to be pulled in.  That function
  * is forcefindlib().
  */
 void
-forcefindlib(void)
+forcefindlib (void)
 {
   /* does nothing, exists only to ensure that FINDLIB_REPLACE_FUNCS works. */
 }

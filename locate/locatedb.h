@@ -1,22 +1,22 @@
 /* locatedb.h -- declarations for the locate database
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _LOCATEDB_H
-#define _LOCATEDB_H 1
+#ifndef INC_LOCATEDB_H
+#define INC_LOCATEDB_H 1
 
 /* The magic string at the start of a locate database, to make sure
    it's in the right format.  The 02 is the database format version number.
@@ -52,16 +52,8 @@
 /* Offset added to differential counts to encode them as positive numbers.  */
 #define	LOCATEDB_OLD_OFFSET	14
 
-# ifndef PARAMS
-#  if defined PROTOTYPES || (defined __STDC__ && __STDC__)
-#   define PARAMS(Args) Args
-#  else
-#   define PARAMS(Args) ()
-#  endif
-# endif
-
-typedef enum 
-  { 
+typedef enum
+  {
     GetwordEndianStateInitial = 0,
     GetwordEndianStateNative  = 1,
     GetwordEndianStateSwab    = 2
@@ -77,4 +69,4 @@ bool putword (FILE *fp, int word,
 
 #define SLOCATE_DB_MAGIC_LEN 2
 
-#endif /* !_LOCATEDB_H */
+#endif /* !INC_LOCATEDB_H */

@@ -1,291 +1,159 @@
 # Vietnamese translation for FindUtils.
-# Copyright © 2008 Free Software Foundation, Inc.
-# This file is distributed under the same license as the findutils-4.4.0 package.
-# Clytie Siddall <clytie@riverland.net.au>, 2006-2008.
+# Bản dịch tiếng Việt dành cho FindUtils.
+# Copyright © 2015 Free Software Foundation, Inc.
+# This file is distributed under the same license as the findutils package.
+# Clytie Siddall <clytie@riverland.net.au>, 2006-2010.
+# Nguyễn Thái Ngọc Duy <pclouds@gmail.com>, 2012.
+# Trần Ngọc Quân <vnwildman@gmail.com>, 2012-2014, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils 4.4.0\n"
+"Project-Id-Version: findutils 4.5.15\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
-"POT-Creation-Date: 2009-05-12 09:47+0100\n"
-"PO-Revision-Date: 2008-03-20 18:57+1030\n"
-"Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
-"Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
+"POT-Creation-Date: 2015-12-28 21:37+0000\n"
+"PO-Revision-Date: 2015-12-19 07:29+0700\n"
+"Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
+"Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
+"Language: vi\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: LocFactoryEditor 1.7b3\n"
+"X-Language-Team-Website: <http://translationproject.org/team/vi.html>\n"
+"X-Generator: Gtranslator 2.91.7\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 
-#: gnulib/lib/argmatch.c:133
+#: find/exec.c:136
 #, c-format
-msgid "invalid argument %s for %s"
-msgstr "đối số %s không hợp lệ cho %s"
+msgid "Failed to save working directory in order to run a command on %s"
+msgstr "Gặp lỗi khi lưu thư mục làm việc để mà chạy lệnh trên %s"
 
-#: gnulib/lib/argmatch.c:134
+#: find/exec.c:256
 #, c-format
-msgid "ambiguous argument %s for %s"
-msgstr "đối số %s mơ hồ cho %s"
+msgid "Cannot close standard input"
+msgstr "Không thể đóng đầu vào tiêu chuẩn"
 
-#: gnulib/lib/argmatch.c:153
+#: find/exec.c:285
+#, fuzzy, c-format
+msgid "Failed to change directory%s%s"
+msgstr "Gặp lỗi khi thay đổi thư mục: %s"
+
+#: find/exec.c:314 xargs/xargs.c:1265
 #, c-format
-msgid "Valid arguments are:"
-msgstr "Các đối số hợp lệ:"
+msgid "cannot fork"
+msgstr "không thể rẽ nhánh tiến trình"
 
-#: gnulib/lib/closein.c:99
-msgid "error closing file"
-msgstr "lỗi đóng tập tin"
-
-#: gnulib/lib/closeout.c:73 locate/code.c:152 locate/frcode.c:216
-msgid "write error"
-msgstr "lỗi ghi"
-
-#: gnulib/lib/error.c:125
-msgid "Unknown system error"
-msgstr "Không biết lỗi hệ thống"
-
-#: gnulib/lib/getopt.c:530 gnulib/lib/getopt.c:546
+#: find/exec.c:345
 #, c-format
-msgid "%s: option `%s' is ambiguous\n"
-msgstr "%s: tùy chọn « %s » là mơ hồ\n"
+msgid "error waiting for %s"
+msgstr "gặp lỗi khi chờ %s"
 
-#: gnulib/lib/getopt.c:579 gnulib/lib/getopt.c:583
+#: find/exec.c:354
 #, c-format
-msgid "%s: option `--%s' doesn't allow an argument\n"
-msgstr "%s: tùy chọn « --%s » không cho phép đối số\n"
+msgid "%s terminated by signal %d"
+msgstr "tín hiệu %2$d chấm dứt %1$s"
 
-#: gnulib/lib/getopt.c:592 gnulib/lib/getopt.c:597
+#: find/fstype.c:185
 #, c-format
-msgid "%s: option `%c%s' doesn't allow an argument\n"
-msgstr "%s: tùy chọn « %c%s » không cho phép đối số\n"
+msgid "Cannot read mounted file system list"
+msgstr "Không đọc được danh sách hệ thống tập tin đã gắn kết"
 
-#: gnulib/lib/getopt.c:640 gnulib/lib/getopt.c:659 gnulib/lib/getopt.c:975
-#: gnulib/lib/getopt.c:994
-#, c-format
-msgid "%s: option `%s' requires an argument\n"
-msgstr "%s: tùy chọn « %s » cần đến đối số\n"
+#: find/fstype.c:244
+msgid "unknown"
+msgstr "không hiểu"
 
-#: gnulib/lib/getopt.c:697 gnulib/lib/getopt.c:700
-#, c-format
-msgid "%s: unrecognized option `--%s'\n"
-msgstr "%s: không nhận diện tùy chọn « --%s »\n"
-
-#: gnulib/lib/getopt.c:708 gnulib/lib/getopt.c:711
-#, c-format
-msgid "%s: unrecognized option `%c%s'\n"
-msgstr "%s: không nhận diện tùy chọn « %c%s »\n"
-
-#: gnulib/lib/getopt.c:763 gnulib/lib/getopt.c:766
-#, c-format
-msgid "%s: illegal option -- %c\n"
-msgstr "%s: không cho phép tùy chọn « -- %c »\n"
-
-#: gnulib/lib/getopt.c:772 gnulib/lib/getopt.c:775
-#, c-format
-msgid "%s: invalid option -- %c\n"
-msgstr "%s: tùy chọn không hợp lệ « -- %c »\n"
-
-#: gnulib/lib/getopt.c:827 gnulib/lib/getopt.c:843 gnulib/lib/getopt.c:1047
-#: gnulib/lib/getopt.c:1065
-#, c-format
-msgid "%s: option requires an argument -- %c\n"
-msgstr "%s: tùy chọn cần đến đối số « -- %c »\n"
-
-#: gnulib/lib/getopt.c:896 gnulib/lib/getopt.c:912
-#, c-format
-msgid "%s: option `-W %s' is ambiguous\n"
-msgstr "%s: tùy chọn « -W %s » là mơ hồ\n"
-
-#: gnulib/lib/getopt.c:936 gnulib/lib/getopt.c:954
-#, c-format
-msgid "%s: option `-W %s' doesn't allow an argument\n"
-msgstr "%s: tùy chọn « -W %s » không cho phép đối số\n"
-
-#: gnulib/lib/openat-die.c:33
-msgid "unable to record current working directory"
-msgstr "không thể ghi lưu thư mục làm việc hiện thời"
-
-#: gnulib/lib/openat-die.c:46
-msgid "failed to return to initial working directory"
-msgstr "lỗi trả về thư mục làm việc đầu tiên"
-
-#. TRANSLATORS:
-#. Get translations for open and closing quotation marks.
-#.
-#. The message catalog should translate "`" to a left
-#. quotation mark suitable for the locale, and similarly for
-#. "'".  If the catalog has no translation,
-#. locale_quoting_style quotes `like this', and
-#. clocale_quoting_style quotes "like this".
-#.
-#. For example, an American English Unicode locale should
-#. translate "`" to U+201C (LEFT DOUBLE QUOTATION MARK), and
-#. should translate "'" to U+201D (RIGHT DOUBLE QUOTATION
-#. MARK).  A British English Unicode locale should instead
-#. translate these to U+2018 (LEFT SINGLE QUOTATION MARK) and
-#. U+2019 (RIGHT SINGLE QUOTATION MARK), respectively.
-#.
-#. If you don't know what to put here, please see
-#. <http://en.wikipedia.org/wiki/Quotation_mark#Glyphs>
-#. and use glyphs suitable for your language.
-#: gnulib/lib/quotearg.c:228
-msgid "`"
-msgstr "« "
-
-#: gnulib/lib/quotearg.c:229
-msgid "'"
-msgstr " »"
-
-#: gnulib/lib/regcomp.c:131
-msgid "Success"
-msgstr "Thành công"
-
-#: gnulib/lib/regcomp.c:134
-msgid "No match"
-msgstr "Không tìm thấy"
-
-#: gnulib/lib/regcomp.c:137
-msgid "Invalid regular expression"
-msgstr "Biểu thức chính quy không hợp lệ"
-
-#: gnulib/lib/regcomp.c:140
-msgid "Invalid collation character"
-msgstr "Ký tự đối chiếu không hợp lệ"
-
-#: gnulib/lib/regcomp.c:143
-msgid "Invalid character class name"
-msgstr "Tên hạng ký tự không hợp lệ"
-
-#: gnulib/lib/regcomp.c:146
-msgid "Trailing backslash"
-msgstr "Dấu xuyệc ngược đi theo"
-
-#: gnulib/lib/regcomp.c:149
-msgid "Invalid back reference"
-msgstr "Tham chiếu ngược không hợp lệ"
-
-#: gnulib/lib/regcomp.c:152
-msgid "Unmatched [ or [^"
-msgstr "Chưa khớp ký tự « [ » hay « [^ »"
-
-#: gnulib/lib/regcomp.c:155
-msgid "Unmatched ( or \\("
-msgstr "Chưa khớp ký tự « ( » hay « \\( »"
-
-#: gnulib/lib/regcomp.c:158
-msgid "Unmatched \\{"
-msgstr "Chưa khớp ký tự « \\{ »"
-
-#: gnulib/lib/regcomp.c:161
-msgid "Invalid content of \\{\\}"
-msgstr "Nội dụng « \\{\\} » không hợp lệ"
-
-#: gnulib/lib/regcomp.c:164
-msgid "Invalid range end"
-msgstr "Sai kết thúc phạm vi"
-
-#: gnulib/lib/regcomp.c:167
-msgid "Memory exhausted"
-msgstr "Hết bộ nhớ hoàn toàn"
-
-#: gnulib/lib/regcomp.c:170
-msgid "Invalid preceding regular expression"
-msgstr "Biểu thức chính quy đi trước không hợp lệ"
-
-#: gnulib/lib/regcomp.c:173
-msgid "Premature end of regular expression"
-msgstr "Biểu thức chính quy kết thúc quá sớm"
-
-#: gnulib/lib/regcomp.c:176
-msgid "Regular expression too big"
-msgstr "Biểu thức chính quy quá lớn"
-
-#: gnulib/lib/regcomp.c:179
-msgid "Unmatched ) or \\)"
-msgstr "Chưa khớp ký tự « ) » hay « \\) »"
-
-#: gnulib/lib/regcomp.c:680
-msgid "No previous regular expression"
-msgstr "Không có biểu thức chính quy đi trước"
-
-#: gnulib/lib/rpmatch.c:69
-msgid "^[yY]"
-msgstr "^[cC]"
-
-#: gnulib/lib/rpmatch.c:72
-msgid "^[nN]"
-msgstr "^[kK]"
-
-#: gnulib/lib/xalloc-die.c:34
-msgid "memory exhausted"
-msgstr "hết bộ nhớ hoàn toàn"
-
-#: gnulib/lib/xstrtol-error.c:63
-#, c-format
-msgid "invalid %s%s argument `%s'"
-msgstr "đối số %s%s không hợp lệ « %s »"
-
-#: gnulib/lib/xstrtol-error.c:68
-#, c-format
-msgid "invalid suffix in %s%s argument `%s'"
-msgstr "hậu tố không hợp lệ trong đối số %s%s « %s »"
-
-#: gnulib/lib/xstrtol-error.c:72
-#, c-format
-msgid "%s%s argument `%s' too large"
-msgstr "đối số %s%s « %s » quá lớn"
-
-#: find/find.c:201 find/ftsfind.c:730
-msgid "cannot get current directory"
-msgstr "không thể lấy thư mục hiện có"
-
-#: find/find.c:205
-msgid "cannot stat current directory"
-msgstr "không thể lấy các thông tin về thư mục hiện thời"
-
-#: find/find.c:385
-#, c-format
-msgid "Warning: file system %s has recently been unmounted."
-msgstr "Cảnh báo : hệ thống tập tin %s vừa bị tháo gắn kết."
-
-#: find/find.c:395
-#, c-format
-msgid "Warning: file system %s has recently been mounted."
-msgstr "Cảnh báo : hệ thống tập tin « %s » vừa được gắn kết."
-
-#: find/find.c:491
-#, c-format
-msgid ""
-"%s%s changed during execution of %s (old device number %ld, new device "
-"number %ld, file system type is %s) [ref %ld]"
-msgstr ""
-"%1$s%2$s đã thay đổi trong khi thì hành %3$s (số hiệu thiết bị cũ %4$ld, số "
-"thiết bị mới %5$ld, kiểu hệ thống tập tin là %6$s) [nhắc %7$ld]"
-
-#: find/find.c:528
-#, c-format
-msgid ""
-"%s%s changed during execution of %s (old inode number %<PRIuMAX>, new inode "
-"number %<PRIuMAX>, file system type is %s) [ref %ld]"
-msgstr ""
-"%s%s đã thay đổi trong khi thì hành %s (số hiệu inode cũ %<PRIuMAX>, số "
-"inode mới %<PRIuMAX>, kiểu hệ thống tập tin là %s) [nhắc %ld]"
-
-#: find/find.c:1012
-#, c-format
-msgid "Failed to safely change directory into %s"
-msgstr "Lỗi thay đổi thư mục một cách an toàn thành %s"
-
-#: find/find.c:1109 find/ftsfind.c:284
+#: find/ftsfind.c:245 find/oldfind.c:1139
 #, c-format
 msgid ""
 "Symbolic link %s is part of a loop in the directory hierarchy; we have "
 "already visited the directory to which it points."
 msgstr ""
-"Liên kết tượng trưng %s là phần của vòng lặp trong phân cấp thư mục; đã thăm "
-"thư mục đến đó nó hướng."
+"Liên kết biểu tượng %s là phần của vòng lặp trong phân cấp thư mục; đã thăm "
+"thư mục nó chỉ đến rồi."
 
-#: find/find.c:1128
+#: find/ftsfind.c:259
+#, c-format
+msgid ""
+"File system loop detected; %s is part of the same file system loop as %s."
+msgstr ""
+"Mới phát hiện vòng lặp hệ thống tập tin; %s có thuộc về cùng một vòng lặp hệ "
+"thống tập tin với %s."
+
+#: find/ftsfind.c:444 find/util.c:221
+#, c-format
+msgid "WARNING: file %s appears to have mode 0000"
+msgstr "CẢNH BÁO: tập tin %s hình như có chế độ 0000"
+
+#: find/ftsfind.c:559
+#, c-format
+msgid "cannot search %s"
+msgstr "không thể tìm thấy %s"
+
+#: find/ftsfind.c:609
+#, c-format
+msgid "failed to restore working directory after searching %s"
+msgstr "đã không phục hồi được thư mục làm việc sau khi tìm kiếm qua %s"
+
+#: find/ftsfind.c:677 find/oldfind.c:204
+#, c-format
+msgid "Failed to initialize shared-file hash table"
+msgstr "Gặp lỗi khi khởi tạo bảng băm tập-tin-dùng-chung"
+
+#: find/ftsfind.c:693 find/oldfind.c:220 locate/bigram.c:105 locate/code.c:174
+#: locate/frcode.c:233 locate/locate.c:1581 xargs/xargs.c:423
+#, c-format
+msgid "The atexit library function failed"
+msgstr "Hàm thư viện etexit(3) thất bại"
+
+#: find/oldfind.c:264
+#, c-format
+msgid "cannot stat current directory"
+msgstr "không thể lấy các thông tin về thư mục hiện tại"
+
+#: find/oldfind.c:355
+#, c-format
+msgid "Cannot read list of mounted devices."
+msgstr "Không đọc được danh sách các thiết bị đã gắn kết."
+
+#: find/oldfind.c:444
+#, c-format
+msgid "WARNING: file system %s has recently been unmounted."
+msgstr "CẢNH BÁO: hệ thống tập tin %s vừa bị tháo gắn kết."
+
+#: find/oldfind.c:454
+#, c-format
+msgid "WARNING: file system %s has recently been mounted."
+msgstr "CẢNH BÁO: hệ thống tập tin %s vừa được gắn kết."
+
+#: find/oldfind.c:551
+#, c-format
+msgid ""
+"%s%s changed during execution of %s (old device number %ld, new device "
+"number %ld, file system type is %s) [ref %ld]"
+msgstr ""
+"%s%s đã thay đổi trong khi thi hành %s (số hiệu thiết bị cũ %ld, số mới %ld, "
+"kiểu hệ thống tập tin là %s) [tham chiếu %ld]"
+
+#: find/oldfind.c:588
+#, c-format
+msgid ""
+"%s%s changed during execution of %s (old inode number %<PRIuMAX>, new inode "
+"number %<PRIuMAX>, file system type is %s) [ref %ld]"
+msgstr ""
+"%s%s đã thay đổi trong khi thi hành %s (số hiệu inode cũ %<PRIuMAX>, số mới "
+"%<PRIuMAX>, kiểu hệ thống tập tin là %s) [tham chiếu %ld]"
+
+#: find/oldfind.c:753
+#, c-format
+msgid "failed to return to parent directory"
+msgstr "Gặp lỗi khi trở về thư mục mẹ"
+
+#: find/oldfind.c:1039
+#, c-format
+msgid "Failed to safely change directory into %s"
+msgstr "Gặp lỗi khi thay đổi thư mục thành %s một cách an toàn"
+
+#: find/oldfind.c:1158
 #, c-format
 msgid ""
 "Filesystem loop detected; %s has the same device number and inode as a "
@@ -294,60 +162,40 @@ msgid_plural ""
 "Filesystem loop detected; %s has the same device number and inode as a "
 "directory which is %d levels higher in the file system hierarchy"
 msgstr[0] ""
-"Mới phát hiện vòng lặp hệ thống tập tin; %1$s có cùng một số hiệu thiết bị "
-"và inode với thư mục nằm %2$d cấp cao hơn trong phân cấp hệ thống tập tin."
+"Mới phát hiện vòng lặp hệ thống tập tin; %s có cùng một số hiệu thiết bị và "
+"inode với thư mục nằm %d cấp cao hơn trong phân cấp hệ thống tập tin."
 
-#: find/find.c:1379
+#: find/oldfind.c:1410
 #, c-format
 msgid "warning: not following the symbolic link %s"
-msgstr "cảnh báo : không đi theo liên kết tượng trưng %s."
+msgstr "cảnh báo: không theo liên kết tượng trưng %s"
 
-#: find/find.c:1423
+#: find/oldfind.c:1483
 #, c-format
 msgid ""
-"WARNING: Hard link count is wrong for %s (saw only st_nlink=%d but we "
-"already saw %d subdirectories): this may be a bug in your file system "
-"driver.  Automatically turning on find's -noleaf option.  Earlier results "
-"may have failed to include directories that should have been searched."
+"WARNING: Hard link count is wrong for %s (saw only st_nlink=%<PRIuMAX> but "
+"we already saw %<PRIuMAX> subdirectories): this may be a bug in your file "
+"system driver.  Automatically turning on find's -noleaf option.  Earlier "
+"results may have failed to include directories that should have been "
+"searched."
 msgstr ""
-"CẢNH BÁO : số đếm liên kết cứng không đúng đối với %1$s (thấy chỉ « st_nlink=%"
-"2$d » nhưng đã thấy %3$d thư mục con): có thể là lỗi trong trình điều khiển "
-"hệ thống tập tin. Vì thế tự động bật tùy chọn « -noleaf » của find. Kết quả "
-"sớm hơn có thể không bao gồm thư mục nên được tìm kiếm."
+"CẢNH BÁO: số đếm liên kết cứng không đúng đối với %s (thấy được chỉ st_nlink="
+"%<PRIuMAX> nhưng đã thấy %<PRIuMAX> thư mục con): có thể là lỗi trong trình "
+"điều khiển hệ thống tập tin. Vì thế chức năng này tự động bật tùy chọn -"
+"noleaf. Kết quả sớm hơn có thể không bao gồm thư mục nên được tìm kiếm."
 
-#: find/fstype.c:250
-msgid "unknown"
-msgstr "không rõ"
-
-#: find/ftsfind.c:298
+#: find/parser.c:452
 #, c-format
 msgid ""
-"File system loop detected; %s is part of the same file system loop as %s."
-msgstr ""
-"Mới phát hiện vòng lặp hệ thống tập tin; %1$s có thuộc về cùng một vòng lặp "
-"hệ thống tập tin với %2$s."
-
-#: find/ftsfind.c:488 find/util.c:201
-#, c-format
-msgid "Warning: file %s appears to have mode 0000"
-msgstr "Cảnh báo : có vẻ là tập tin %s có chế độ 0000"
-
-#: find/ftsfind.c:610
-#, c-format
-msgid "cannot search %s"
-msgstr "không thể tìm kiếm qua %s"
-
-#: find/parser.c:385
-msgid ""
-"The -delete action atomatically turns on -depth, but -prune does nothing "
+"The -delete action automatically turns on -depth, but -prune does nothing "
 "when -depth is in effect.  If you want to carry on anyway, just explicitly "
 "use the -depth option."
 msgstr ""
-"Hành động xoá thì tự động bật tùy chọn « -depth », nhưng « -prune » không làm "
-"gì khi « -depth » hoạt động. Vẫn muốn tiếp tục thì chỉ dùng tùy chọn « -depth "
-"» một cách dứt khoát."
+"Hành động xóa -delete thì tự động bật tùy chọn -depth, nhưng -prune không "
+"làm gì khi -depth bị ảnh hưởng. Nếu bạn vẫn muốn tiếp tục thì chỉ hãy chỉ "
+"định dùng tùy chọn -depth."
 
-#: find/parser.c:529
+#: find/parser.c:608
 #, c-format
 msgid ""
 "warning: you have specified the %s option after a non-option argument %s, "
@@ -355,60 +203,61 @@ msgid ""
 "as those specified after it).  Please specify options before other "
 "arguments.\n"
 msgstr ""
-"cảnh báo : bạn đã ghi ro tùy chọn %1$s sau đối số khác tùy chọn %2$s, nhưng "
-"mà tùy chọn không phải thuộc vị trí (%3$s làm ảnh hướng đến điều thử được "
-"ghi rõ cả hai trước lẫn sau nó). Hãy ghi rõ tùy chọn _trước_ đối số khác.\n"
+"cảnh báo: bạn đặt tùy chọn %s sau đối số không phải tùy chọn %s. Tuy nhiên "
+"tùy chọn không phụ thuộc vị trí (%s tác động các phép thử trước và sau nó). "
+"Hãy ghi rõ tùy chọn trước đối số khác.\n"
 
-#: find/parser.c:820
+#: find/parser.c:915
+#, c-format
 msgid ""
 "warning: the -d option is deprecated; please use -depth instead, because the "
 "latter is a POSIX-compliant feature."
 msgstr ""
-"cảnh báo : tùy chọn « -d » bị phản đối nên hãy sử dụng tùy chọn « -depth » (độ "
-"sâu) thay thế, vì nó là tính năng tuân theo POSIX."
+"cảnh báo: tùy chọn -d đã lỗi thời; dùng tùy chọn -depth để thay thế, đó tính "
+"năng tuân theo POSIX."
 
-#: find/parser.c:1070
+#: find/parser.c:1188
 #, c-format
 msgid ""
 "%s is not the name of an existing group and it does not look like a numeric "
 "group ID because it has the unexpected suffix %s"
 msgstr ""
-"%1$s không phải là tên của nhóm tồn tại; cũng không hình như mã nhận diện "
-"nhóm thuộc số, vì nó có hậu số bất thường %2$s"
+"%s không phải là tên nhóm đã có; cũng không phải ID nhóm vì hậu tố lạ %s"
 
-#: find/parser.c:1083
+#: find/parser.c:1203
 #, c-format
 msgid "%s is not the name of an existing group"
-msgstr "%s không phải là tên của nhóm tồn tại"
+msgstr "%s không phải là tên nhóm đã có"
 
-#: find/parser.c:1088
+#: find/parser.c:1209
+#, c-format
 msgid "argument to -group is empty, but should be a group name"
-msgstr "đối số rỗng tới « -group » (nhóm): nên là tên nhóm"
+msgstr "đối số -group rỗng, cần đối số là tên nhóm"
 
-#: find/parser.c:1109
+#: find/parser.c:1231
 msgid ""
 "\n"
 "default path is the current directory; default expression is -print\n"
 "expression may consist of: operators, options, tests, and actions:\n"
 msgstr ""
 "\n"
-"đường dẫn mặc định là thư mục hiện có; biểu thức mặc định là « -print » (in)\n"
-"biểu thức có thể bao gồm: toán tử, tùy chọn, điều thử và hành động:\n"
+"đường dẫn mặc định là thư mục hiện tại; biểu thức mặc định là -print\n"
+"biểu thức có thể bao gồm: toán tử, tùy chọn, phép thử và hành động:\n"
 
-#: find/parser.c:1112
+#: find/parser.c:1234
 msgid ""
 "operators (decreasing precedence; -and is implicit where no others are "
 "given):\n"
 "      ( EXPR )   ! EXPR   -not EXPR   EXPR1 -a EXPR2   EXPR1 -and EXPR2\n"
 "      EXPR1 -o EXPR2   EXPR1 -or EXPR2   EXPR1 , EXPR2\n"
 msgstr ""
-"toán tử (quyền đi trước giảm; ngụ ý tùy chọn « -and » (và)\n"
-"khi không có điều khác):\n"
-"      ( EXPR )   ! EXPR   -not EXPR   EXPR1 -a EXPR2   EXPR1 -and EXPR2\n"
-"      EXPR1 -o EXPR2   EXPR1 -or EXPR2   EXPR1 , EXPR2\n"
-"[EXPR (biểu thức); not (không phải); and (và); or (hoặc)]\n"
+"các toán tử (quyền ưu tiên giảm dần; ngầm định -and trừ khi không đưa ra cái "
+"gì khác):\n"
+"      ( B.THỨC ) ! B.THỨC  -not B.THỨC B.THỨC1 -a B.THỨC2\n"
+"      B.THỨC1 -and B.THỨC2  B.THỨC1 -o B.THỨC2   B.THỨC1 -or B.THỨC2\n"
+"      B.THỨC1 , B.THỨC2\n"
 
-#: find/parser.c:1116
+#: find/parser.c:1238
 msgid ""
 "positional options (always true): -daystart -follow -regextype\n"
 "\n"
@@ -416,24 +265,13 @@ msgid ""
 "      -depth --help -maxdepth LEVELS -mindepth LEVELS -mount -noleaf\n"
 "      --version -xdev -ignore_readdir_race -noignore_readdir_race\n"
 msgstr ""
-"tùy chọn vị trí \t(đúng luôn):\n"
-"\t-daystart \t\t(ngày bắt đầu)\n"
-"\t-follow \t\t(theo)\n"
-"\t-regextype\t\t(kiểu biểu thức chính quy)\n"
+"tùy chọn phụ thuộc vị trí (luôn đúng): -daystart -follow -regextype\n"
 "\n"
-"tùy chọn thường \t(đúng luôn, hãy ghi rõ trước các biểu thức khác):\n"
-"\t-depth \t\t\t(độ sâu)\n"
-"\t--help \t\t\t(trợ giúp)\n"
-"\t-maxdepth CẤP \t(độ sâu tối đa)\n"
-"\t-mindepth CẤP \t(độ sâu tối thiểu)\n"
-"\t-mount \t\t(gắn kết)\n"
-"\t-noleaf \t\t(không lá)\n"
-"\t--version \t\t(phiên bản)\n"
-"\t-xdev \t\t\t(chỉ thiết bị này)\n"
-"\t-ignore_readdir_race \t\t(bỏ qua thư mục đọc [race])\n"
-"\t-noignore_readdir_race \t(đừng bỏ qua thư mục đọc [race])\n"
+"tùy chọn thường (luôn đúng, chỉ định trước các biểu thức khác):\n"
+"      -depth --help -maxdepth MỨC -mindepth MỨC -mount -noleaf\n"
+"      --version -xdev -ignore_readdir_race -noignore_readdir_race\n"
 
-#: find/parser.c:1121
+#: find/parser.c:1243
 msgid ""
 "tests (N can be +N or -N or N): -amin N -anewer FILE -atime N -cmin N\n"
 "      -cnewer FILE -ctime N -empty -false -fstype TYPE -gid N -group NAME\n"
@@ -441,100 +279,59 @@ msgid ""
 "PATTERN\n"
 "      -links N -lname PATTERN -mmin N -mtime N -name PATTERN -newer FILE"
 msgstr ""
-"điều thử (N có thể là +N hay -N hay N: ba kiểu cũng được):\n"
-"\t-amin N \t\t(tối thiểu)\n"
-"\t-anewer TẬP_TIN (mới hơn)\n"
-"\t-atime N \t\t(giờ)\n"
-"\t-cmin N \t\t(tối thiểu)\n"
-"\t-cnewer TẬP_TIN (mới hơn)\n"
-"\t-ctime N \t\t(giờ)\n"
-"\t-empty \t\t(trống)\n"
-"\t-false \t\t\t(sai)\n"
-"\t-fstype KIỂU \t(kiểu hệ thống tập tin)\n"
-"\t-gid N \t\t\t(thông tin nhận biết nhóm)\n"
-"\t-group TÊN \t\t(nhóm)\n"
-"\t-ilname MẪU \t(tên)\n"
-"\t-iname MẤU \t(tên)\n"
-"\t-inum N \t\t(số)\n"
-"\t-iwholename MẤU (tên đầy đủ)\n"
-"\t-iregex MẤU \t(biểu thức chính quy)\n"
-" \t-links N \t\t(liên kết)\n"
-"\t-lname MẤU \t(tên)\n"
-"\t-mmin N \t\t(tối thiểu)\n"
-"\t-mtime N \t\t(giờ)\n"
-"\t-name MẤÚ \t(tên)\n"
-"\t-newer TẬP_TIN \t(mới hơn)"
+"phép thử (N có thể là +N or -N hoặc N):\n"
+"      -amin N -anewer TẬP-TIN -atime N -cmin N\n"
+"      -cnewer TẬP-TIN -ctime N -empty -false -fstype LOẠI -gid N -group TÊN\n"
+"      -ilname MẪU -iname MẪU -inum N -iwholename MẪU -iregex MẪU\n"
+"      -links N -lname MẪU -mmin N -mtime N -name MẪU -newer TẬP-TIN"
 
-#: find/parser.c:1126
+#: find/parser.c:1248
 msgid ""
-"      -nouser -nogroup -path PATTERN -perm [+-]MODE -regex PATTERN\n"
+"      -nouser -nogroup -path PATTERN -perm [-/]MODE -regex PATTERN\n"
 "      -readable -writable -executable\n"
 "      -wholename PATTERN -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n"
-"      -used N -user NAME -xtype [bcdpfls]\n"
+"      -used N -user NAME -xtype [bcdpfls]"
 msgstr ""
-"-nouser \t\t\t(không có người dùng)\n"
-"-nogroup \t\t(không có nhóm)\n"
-"-path MẪU \t\t(đường dẫn)\n"
-"-perm [+-]CHẾ_ĐỘ (vĩnh cửu)\n"
-"-regex MẪU \t\t(biểu thức chính quy)\n"
-"-readable \t\tđọc được\n"
-"-writable \t\tghi được\n"
-"-executable\t\tthực hiện được\n"
-"-wholename MẪU \t(tên đầy đủ)\n"
-"-size N[bcwkMG] \t(cỡ)\n"
-"-true \t\t\t(đúng)\n"
-"-type [bcdpflsD] \t(kiểu)\n"
-"-uid N \t\t\t(ID ngươi dùng)\n"
-"-used N \t\t\t(đã dùng)\n"
-"-user TÊN \t\t(người dùng)\n"
-"-xtype [bcdpfls] \t(kiểu)\n"
+"      -nouser -nogroup -path MẪU -perm [-/]CHẾ-ĐỘ -regex MẪU\n"
+"      -readable -writable -executable\n"
+"      -wholename MẪU -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n"
+"      -used N -user TÊN -xtype [bcdpfls]"
 
-#: find/parser.c:1131
+#: find/parser.c:1253
+msgid "      -context CONTEXT\n"
+msgstr "      -context NGỮ-CẢNH\n"
+
+#: find/parser.c:1255
 msgid ""
+"\n"
 "actions: -delete -print0 -printf FORMAT -fprintf FILE FORMAT -print \n"
 "      -fprint0 FILE -fprint FILE -ls -fls FILE -prune -quit\n"
 "      -exec COMMAND ; -exec COMMAND {} + -ok COMMAND ;\n"
 "      -execdir COMMAND ; -execdir COMMAND {} + -okdir COMMAND ;\n"
 msgstr ""
-"Hành động:\n"
-"-delete \t(xóa bỏ)\n"
 "\n"
-"Lệnh in:\n"
-"\t-print0\n"
-"\t-printf DẠNG\n"
-"\t-fprintf TẬP_TIN DẠNG\n"
-"\t-print \n"
-"\t-fprint0 TỆP\n"
-"\t-fprint FILE\n"
-"\n"
-"Lệnh liệt kê:\n"
-"\t-ls \n"
-"\t-fls TỆP\n"
-"-prune \t(xén bớt)\n"
-"-quit\t\t(thoát)\n"
-"\n"
-"Lệnh thực hiện:\n"
-"\t-exec LỆNH\n"
-"\t-exec LỆNH {} + -ok LỆNH\n"
-"\t-execdir LỆNH\n"
-"\t-execdir LỆNH {} + -okdir LỆNH\n"
+"thao tác: -delete -print0 -printf Đ.DẠNG -fprintf TẬP-TIN Đ.DẠNG -print \n"
+"      -fprint0 TẬP-TIN -fprint TẬP-TIN -ls -fls TẬP-TIN -prune -quit\n"
+"      -exec LỆNH ; -exec LỆNH {} + -ok LỆNH ;\n"
+"      -execdir LỆNH ; -execdir LỆNH {} + -okdir LỆNH ;\n"
 
-#: find/parser.c:1137
+#: find/parser.c:1261
 msgid ""
 "Report (and track progress on fixing) bugs via the findutils bug-reporting\n"
 "page at http://savannah.gnu.org/ or, if you have no web access, by sending\n"
 "email to <bug-findutils@gnu.org>."
 msgstr ""
-"Hãy thông báo (và theo dõi cách sửa chữa) lỗi nào thông qua\n"
+"Hãy thông báo (và theo dõi tiến trình sửa chữa) các lỗi thông qua\n"
 "trang thông báo lỗi findutils tại <http://savannah.gnu.org/>\n"
-"hoặc, nếu không có cách truy cập Mạng,\n"
-"bằng cách gởi thư cho địa chỉ <bug-findutils@gnu.org>."
+"hoặc, nếu không thể truy cập web, thì gửi thư cho chúng tôi theo địa chỉ\n"
+"<bug-findutils@gnu.org> (vui lòng dùng tiếng Anh)."
 
-#: find/parser.c:1191
+#: find/parser.c:1316
+#, c-format
 msgid "sanity check of the fnmatch() library function failed."
-msgstr "việc kiểm tra sự đúng mực chức năng thư viện « fnmatch() » bị lỗi."
+msgstr "thất bại kiểm tra đầu vào của thư viện fnmatch()."
 
-#: find/parser.c:1205
+#: find/parser.c:1330
 #, c-format
 msgid ""
 "warning: Unix filenames usually don't contain slashes (though pathnames "
@@ -543,497 +340,631 @@ msgid ""
 "perhaps '-samefile'.  Alternatively, if you are using GNU grep, you could "
 "use 'find ... -print0 | grep -FzZ %s'."
 msgstr ""
-"cảnh báo: tên tập tin Unix thường không chứa sổ chéo (dù tên đường dẫn có "
-"phải). Có nghĩa là « %s%s » sẽ rất có thể có kết quả « Sai » luôn luôn trên hệ "
-"thống này. Có lẽ việc thử ra « -wholename » (tên đầy đủ) hữu ích hơn cho bạn, "
-"hoặc có lẽ « -samefile » (cùng tập tin). Hoặc, nếu bạn có dùng công cụ « grep "
-"» của GNU, bạn có thể dùng lệnh « find ... -print0 | grep -FzZ %s »."
+"cảnh báo: tên tập tin Unix thường không chứa sổ chéo (dù tên đường dẫn thì "
+"có). Nên “%s %s” sẽ rất có thể luôn cho kết quả “sai” trên hệ thống này. Bạn "
+"có thể muốn dùng -wholename hoặc-samefile. Hoặc nếu bạn dùng công cụ grep "
+"của GNU, bạn có thể dùng lệnh “find … -print0 | grep -FzZ %s”."
 
-#: find/parser.c:1353
+#: find/parser.c:1456
 #, c-format
 msgid "Expected a positive decimal integer argument to %s, but got %s"
-msgstr "Đợi đối số kiểu số nguyên thập phân dương tới %1$s, chỉ nhận %2$s"
+msgstr "Cần đối số %s số nguyên dương thập phân nhưng nhận %s"
 
-#: find/parser.c:1504
+#: find/parser.c:1621
+#, c-format
 msgid "This system does not provide a way to find the birth time of a file."
 msgstr "Hệ thống này không cung cấp cách tìm giờ sinh của tập tin."
 
-#: find/parser.c:1525
-#, fuzzy, c-format
+#: find/parser.c:1642
+#, c-format
 msgid "The %s test needs an argument"
-msgstr "%s: tùy chọn « %s » cần đến đối số\n"
+msgstr "Phép thử %s yêu cầu một đối số"
 
-#: find/parser.c:1562
+#: find/parser.c:1679
 #, c-format
 msgid "I cannot figure out how to interpret %s as a date or time"
 msgstr "Không thể tìm biết cách giải thích %s dạng ngày hay giờ"
 
-#: find/parser.c:1578
+#: find/parser.c:1696
 #, c-format
 msgid "Cannot obtain birth time of file %s"
-msgstr "Không thể lấy giờ sinh của tập tin %s"
+msgstr "Không thể lấy thời điểm tạo tập tin %s"
 
-#: find/parser.c:1779
+#: find/parser.c:1840
 #, c-format
-msgid "Mode %s is not valid when POSIXLY_CORRECT is on."
-msgstr "Chế độ %s không hợp lệ khi POSIXLY_CORRECT hoạt động."
+msgid "warning: -%s %s will not match anything because it ends with /."
+msgstr "cảnh báo: -%s %s không tương ứng với gì vì nó kết thúc bằng /."
 
-#: find/parser.c:1862
+#: find/parser.c:1937
 #, c-format
 msgid "invalid mode %s"
 msgstr "chế độ không hợp lệ %s"
 
-#: find/parser.c:1881
+#: find/parser.c:1955
 #, c-format
 msgid ""
 "warning: you have specified a mode pattern %s (which is equivalent to /000). "
-"The meaning of -perm /000 has now been changed to be consistent with -perm -"
-"000; that is, while it used to match no files, it now matches all files."
+"The meaning of -perm /000 has now been changed to be consistent with -perm "
+"-000; that is, while it used to match no files, it now matches all files."
 msgstr ""
-"cảnh báo : bạn đã xác định một mẫu chế độ %s (bằng /000). Lời nghĩa của « -"
-"perm /000 » đã được thay đổi để tương ứng với « -perm -000 »; tức là nó đã "
-"từng không khớp với tập tin nào, bây giờ nó khớp với mọi tập tin."
+"cảnh báo: bạn đã chỉ định chế độ %s (tương đương /000). Ý nghĩa của -"
+"perm /000 đã thay đổi thống nhất với -perm -000; tức là nó từng không khớp "
+"với tập tin nào hết, nhưng giờ nó khớp với mọi tập tin."
 
-#: find/parser.c:2079
+#: find/parser.c:2128
+#, c-format
+msgid "failed to compile regular expression '%s': %s"
+msgstr ""
+
+#: find/parser.c:2157
+#, c-format
 msgid "invalid null argument to -size"
-msgstr "đối số rỗng không hợp lệ đối với tùy chọn « -size » (kích cỡ)"
+msgstr "đối số rỗng không hợp lệ cho -size"
 
-#: find/parser.c:2127
+#: find/parser.c:2207
 #, c-format
 msgid "invalid -size type `%c'"
-msgstr "kiểu « -size » (kích cỡ) không hợp lệ « %c »"
+msgstr "kiểu -size không hợp lệ “%c”"
 
-#: find/parser.c:2133
+#: find/parser.c:2217
 #, c-format
-msgid "Invalid argument `%s%c' to -size"
-msgstr "đối số không hợp lệ « %s%c » tới kích cỡ"
+msgid "Invalid argument `%s%s' to -size"
+msgstr "Đối số không hợp lệ “%s%s” cho tùy chọn -size"
 
-#: find/parser.c:2312
+#: find/parser.c:2399
 msgid ""
 "The -show-control-chars option takes a single argument which must be "
 "'literal' or 'safe'"
 msgstr ""
-"Tùy chọn « -show-control-chars » (hiển thị các ký tự điều khiển) chấp nhận "
-"một đối số riêng lẻ phải là « literal » (nghĩa chữ) hay « safe » (an toàn)."
+"Tùy chọn -show-control-chars chấp nhận một đối số đơn, “literal” hoặc “safe”."
 
-#: find/parser.c:2424
+#: find/parser.c:2513
 #, c-format
 msgid "Invalid argument %s to -used"
-msgstr "Đối số không hợp lệ %s tới « -used » (đã dùng)"
+msgstr "Đối số không hợp lệ “%s” cho -used"
 
-#: find/parser.c:2463
-#, fuzzy, c-format
+#: find/parser.c:2554
+#, c-format
 msgid "%s is not the name of a known user"
-msgstr "%s không phải là tên của nhóm tồn tại"
+msgstr "%s không phải là tên người dùng đã biết"
 
-#: find/parser.c:2469
-#, fuzzy
+#: find/parser.c:2561
+#, c-format
 msgid "The argument to -user should not be empty"
-msgstr "Đối số cho tùy chọn «  --max-database-age » không thể là rỗng"
+msgstr "Đối số cho --user không thể là rỗng"
 
-#: find/parser.c:2494
+#: find/parser.c:2586
 #, c-format
 msgid "Features enabled: "
 msgstr "Các tính năng hoạt động: "
 
-#: find/parser.c:2603
-msgid "Arguments to -type should contain only one letter"
-msgstr "Đối số tới « -type » (kiểu) nên chứa chỉ một chữ"
+#: find/parser.c:2663
+#, c-format
+msgid "invalid predicate -context: SELinux is not enabled."
+msgstr "tiêu chí tìm kiếm -context không hợp lệ: chưa bật SELinux."
 
-#: find/parser.c:2650
+#: find/parser.c:2727
+#, c-format
+msgid "Arguments to -type should contain only one letter"
+msgstr "Đối số -type chỉ nên chứa một chữ cái"
+
+#: find/parser.c:2756
+#, c-format
+msgid ""
+"-type %c is not supported because symbolic links are not supported on the "
+"platform find was compiled on."
+msgstr ""
+"-type %c không được hỗ trợ bởi vì liên kết mềm không được hỗ trợ trên nền "
+"tảng mà find được xây dựng cho nó."
+
+#: find/parser.c:2767
+#, c-format
+msgid ""
+"-type %c is not supported because FIFOs are not supported on the platform "
+"find was compiled on."
+msgstr ""
+"-type %c không được hỗ trợ bởi vì FIFOs không được hỗ trợ trên nền tảng mà "
+"find được xây dựng cho nó."
+
+#: find/parser.c:2778
+#, c-format
+msgid ""
+"-type %c is not supported because named sockets are not supported on the "
+"platform find was compiled on."
+msgstr ""
+"-type %c không được hỗ trợ bởi vì ổ cắm được đặt tên không được hỗ trợ trên "
+"nền tảng mà find được xây dựng cho nó."
+
+#: find/parser.c:2789
+#, c-format
+msgid ""
+"-type %c is not supported because Solaris doors are not supported on the "
+"platform find was compiled on."
+msgstr ""
+"-type %c không được hỗ trợ bởi vì các cửa Solaris không được hỗ trợ trên nền "
+"tảng mà find được xây dựng cho nó."
+
+#: find/parser.c:2796
 #, c-format
 msgid "Unknown argument to -type: %c"
-msgstr "Đối số không rõ tới « -type » (kiểu): %c"
+msgstr "Không hiểu đối số cho -type: %c"
 
-#: find/parser.c:2771
-#, c-format
-msgid "warning: unrecognized escape `\\%c'"
-msgstr "cảnh báo : không nhận diện ký tự thoát « \\%c »"
-
-#: find/parser.c:2787
-#, c-format
-msgid "error: %s at end of format string"
-msgstr "lỗi: %s ở kết thúc của chuỗi định dạng"
-
-#: find/parser.c:2826
-#, c-format
-msgid "warning: unrecognized format directive `%%%c'"
-msgstr "cảnh báo : không nhận diện chỉ thị định dạng « %%%c »"
-
-#: find/parser.c:2970
-#, c-format
-msgid "error: the format directive `%%%c' is reserved for future use"
-msgstr "lỗĩ: chỉ thị định dạng « %%%c » dành để dùng trong tương lai"
-
-#: find/parser.c:3004
+#: find/parser.c:2870
 #, c-format
 msgid ""
 "The current directory is included in the PATH environment variable, which is "
 "insecure in combination with the %s action of find.  Please remove the "
-"current directory from your $PATH (that is, remove \".\" or leading or "
-"trailing colons)"
+"current directory from your $PATH (that is, remove \".\", doubled colons, or "
+"leading or trailing colons)"
 msgstr ""
-"Gồm thư mục hiện thời trong biến môi trường « PATH » (đường dẫn) mà không an "
-"toàn khi được tổ hợp với hành động %s của trình find (tìm). Hãy gỡ bỏ thư "
-"mục hiện thời ra « $PATH » của bạn (tức là hãy gỡ bỏ dấu chấm « . » hay ký tự "
-"hai chấm nào « : » nằm trước hay nằm theo)."
+"Thư mục hiện tại đã được bao gồm trong biến môi trường PATH, điều này là "
+"không an toàn khi dùng chung với hành động tìm kiếm %s. Hãy bỏ thư mục hiện "
+"thời ra khỏi $PATH (tức là bỏ “.” hoặc dấu “:”, hoặc dấu hai chấm ở đầu hoặc "
+"cuối)"
 
-#: find/parser.c:3015
+#: find/parser.c:2882
 #, c-format
 msgid ""
 "The relative path %s is included in the PATH environment variable, which is "
 "insecure in combination with the %s action of find.  Please remove that "
 "entry from $PATH"
 msgstr ""
-"Đường dẫn tương đối %1$s được gồm trong biến môi trường đường dẫn PATH, mà "
-"không phải bảo mật cùng với hành động %2$s của find. Hãy gỡ bỏ mục nhập đó "
-"khỏi $PATH."
+"Đường dẫn tương đối %s nằm trong biến môi trường PATH, không an toàn khi "
+"dùng chung với hành động %s. Hãy bỏ nó khỏi $PATH."
 
-#: find/parser.c:3118
+#: find/parser.c:2991
+#, c-format
 msgid ""
 "You may not use {} within the utility name for -execdir and -okdir, because "
 "this is a potential security problem."
 msgstr ""
-"Không cho phép bạn dùng ký tự « {} » bên trong tên tiện ích cho đối số « -"
-"execdir » và « -okdir », vì có thể rủi ro bảo mật."
+"Bạn không được dùng {} với -execdir và -okdir vì có thể rủi ro an ninh tiềm "
+"ẩn."
 
-#: find/parser.c:3143
+#: find/parser.c:3017
 #, c-format
 msgid "Only one instance of {} is supported with -exec%s ... +"
-msgstr "Hỗ trợ chỉ một thể hiện « {} » với đối số « -exec%s ... + »"
+msgstr "Chỉ hỗ trợ một {} trong -exec%s … +"
 
-#: find/parser.c:3160
+#: find/parser.c:3027
+#, c-format
+msgid "In %s the %s must appear by itself, but you specified %s"
+msgstr "Trong %s, %s phải xuất bởi chính nó, nhưng bạn lại chỉ định %s"
+
+#: find/parser.c:3047
+#, c-format
 msgid "The environment is too large for exec()."
-msgstr "Môi trường quá lớn đối với « exec() » (thì hành)"
+msgstr "Môi trường quá lớn với exec()."
 
-#: find/parser.c:3363
+#: find/parser.c:3216
+#, c-format
+msgid "arithmetic overflow while converting %s days to a number of seconds"
+msgstr "tràn số khi chuyển đổi %s ngày sang giây"
+
+#: find/parser.c:3240
+#, c-format
 msgid "arithmetic overflow when trying to calculate the end of today"
-msgstr "tràn cộng khi thử tính kết thúc của hôm nay"
+msgstr "tràn số khi tính thời điểm cuối ngày"
 
-#: find/parser.c:3519
+#: find/parser.c:3399
 msgid "standard error"
-msgstr "thiết bị lỗi chuẩn"
+msgstr "đầu ra lỗi chuẩn"
 
-#: find/parser.c:3524
+#: find/parser.c:3404
 msgid "standard output"
-msgstr "thiết bị xuất chuẩn"
+msgstr "đầu ra chuẩn"
 
-#: find/pred.c:425
+#: find/pred.c:338
 #, c-format
 msgid "cannot delete %s"
-msgstr "không thể xoá %s"
+msgstr "không thể xóa %s"
 
-#: find/pred.c:1363
+#: find/pred.c:718
 #, c-format
-msgid "Warning: cannot determine birth time of file %s"
-msgstr "Cảnh báo : không thể quyết định giờ sinh của tập tin %s"
+msgid "WARNING: cannot determine birth time of file %s"
+msgstr "CẢNH BÁO: không thể xác định thời điểm tạo tập tin %s"
 
-#: find/pred.c:1427
+#: find/pred.c:766
 #, c-format
 msgid "< %s ... %s > ? "
-msgstr "< %s ... %s > ? "
+msgstr "< %s … %s > ? "
 
-#: find/pred.c:1877
-msgid "Cannot close standard input"
-msgstr "Không thể đóng thiết bị nhập chuẩn"
-
-#: find/pred.c:1912
-msgid "Failed to change directory"
-msgstr "Lỗi thay đổi thư mục"
-
-#: find/pred.c:1953 xargs/xargs.c:1137
-msgid "cannot fork"
-msgstr "không thể tạo tiến trình con"
-
-#: find/pred.c:1978
+#: find/pred.c:768
 #, c-format
-msgid "error waiting for %s"
-msgstr "gặp lỗi khi đời %s"
+msgid "Failed to write prompt for -ok"
+msgstr "Gặp lỗi khi ghi lời nhắc cho -ok"
 
-#: find/pred.c:1987
+#: find/pred.c:1192 find/print.c:1239
 #, c-format
-msgid "%s terminated by signal %d"
-msgstr "%s: bị chấm dứt bởi tín hiệu %d"
+msgid "getfilecon failed: %s"
+msgstr "getfilecon bị lỗi: %s"
 
-#: find/tree.c:89 find/tree.c:94 find/tree.c:174 find/tree.c:213
+#: find/print.c:346
+#, c-format
+msgid "warning: escape `\\' followed by nothing at all"
+msgstr "cảnh báo: thoát chuỗi “\\” mà chẳng có gì theo sau cả"
+
+#: find/print.c:365
+#, c-format
+msgid "warning: unrecognized escape `\\%c'"
+msgstr "cảnh báo: ký tự thoát lạ “\\%c”"
+
+#: find/print.c:385
+#, c-format
+msgid "error: %s at end of format string"
+msgstr "lỗi: %s ở cuối chuỗi định dạng"
+
+#: find/print.c:409
+#, c-format
+msgid "error: the format directive `%%%c' is reserved for future use"
+msgstr "lỗi: chỉ thị định dạng “%%%c” dành để dùng trong tương lai"
+
+#: find/print.c:417
+#, c-format
+msgid ""
+"warning: format directive `%%%c' should be followed by another character"
+msgstr "cảnh báo: chỉ thị định dạng “%%%c” nên theo sau bởi một ký tự khác"
+
+#: find/print.c:425
+#, c-format
+msgid "warning: unrecognized format directive `%%%c'"
+msgstr "cảnh báo: chỉ thị định dạng lạ “%%%c”"
+
+#: find/tree.c:129 find/tree.c:134 find/tree.c:224 find/tree.c:263
+#, c-format
 msgid "invalid expression"
 msgstr "biểu thức không hợp lệ"
 
-#: find/tree.c:99
+#: find/tree.c:140
 #, c-format
 msgid ""
 "invalid expression; you have used a binary operator '%s' with nothing before "
 "it."
 msgstr ""
-"biểu thức không hợp lệ; bạn đã dùng toán tử nhị phân « %s » không có gì nằm "
-"trước nó."
+"biểu thức không hợp lệ; bạn dùng toán tử nhị phân “%s” mà không có gì trước "
+"nó."
 
-#: find/tree.c:108
+#: find/tree.c:151
 #, c-format
 msgid "expected an expression between '%s' and ')'"
-msgstr "đợi biểu thức giữa « %s » và « ) »"
+msgstr "cần một biểu đứng thức giữa “%s” và “)”"
 
-#: find/tree.c:117
+#: find/tree.c:161
 #, c-format
 msgid "expected an expression after '%s'"
-msgstr "đợi biểu thức sau « %s »"
+msgstr "cần biểu thức sau “%s”"
 
-#: find/tree.c:121
+#: find/tree.c:166
+#, c-format
 msgid "invalid expression; you have too many ')'"
-msgstr "biểu thức không hợp lệ; có quá nhiều ký tự « ) »"
+msgstr "biểu thức không hợp lệ; quá nhiều “)”"
 
-#: find/tree.c:143
+#: find/tree.c:189
 #, c-format
 msgid ""
 "invalid expression; expected to find a ')' but didn't see one.  Perhaps you "
 "need an extra predicate after '%s'"
 msgstr ""
-"biểu thức không hợp lệ; đợi ký tự « ) » nhưng chưa gặp. Có thể bạn cần nhập "
-"vị ngữ thêm sau « %s »"
+"biểu thức không hợp lệ; cần một “)” nhưng không thấy. Có thể bạn cần tiêu "
+"chí tìm kiếm bổ sung sau “%s”"
 
-#: find/tree.c:149
+#: find/tree.c:197
+#, c-format
 msgid "invalid expression; empty parentheses are not allowed."
 msgstr "biểu thức không hợp lệ; không cho phép dấu ngoặc rỗng."
 
-#: find/tree.c:154
+#: find/tree.c:203
+#, c-format
 msgid ""
 "invalid expression; I was expecting to find a ')' somewhere but did not see "
 "one."
-msgstr "biểu thức không hợp lệ; ngờ ký tự « ) » nhưng chưa gặp."
+msgstr "biểu thức không hợp lệ; cần ký tự “)” nhưng không thấy."
 
-#: find/tree.c:159 find/tree.c:788
+#: find/tree.c:209 find/tree.c:833
+#, c-format
 msgid "oops -- invalid expression type!"
-msgstr "rõ tiếc — kiểu biểu thức không hợp lệ."
+msgstr "ối trời — kiểu biểu thức không hợp lệ!"
 
-#: find/tree.c:231
+#: find/tree.c:281
 #, c-format
 msgid "oops -- invalid expression type (%d)!"
-msgstr "rõ tiếc — kiểu biểu thức không hợp lệ (%d)."
+msgstr "ối trời — kiểu biểu thức không hợp lệ (%d)!"
 
-#: find/tree.c:1228
+#: find/tree.c:1120
+#, c-format
+msgid ""
+"warning: there is no entry in the predicate evaluation cost table for "
+"predicate %s; please report this as a bug"
+msgstr ""
+"cảnh báo: tiêu chí tìm kiếm %s không có trong bảng chi phí; hãy báo cáo lỗi "
+"này"
+
+#: find/tree.c:1294
 #, c-format
 msgid "paths must precede expression: %s"
 msgstr "đương dẫn phải nằm trước biểu thức: %s"
 
-#: find/tree.c:1237
+#: find/tree.c:1303
 #, c-format
 msgid "unknown predicate `%s'"
-msgstr "vị ngữ lạ « %s »"
+msgstr "tiêu chí tìm kiếm lạ “%s”"
 
-#: find/tree.c:1257
+#: find/tree.c:1323
 #, c-format
 msgid "invalid predicate `%s'"
-msgstr "vị ngữ không hợp lệ « %s »"
+msgstr "tiêu chí tìm kiếm không hợp lệ “%s”"
 
-#: find/tree.c:1262
+#: find/tree.c:1328
 #, c-format
 msgid "invalid argument `%s' to `%s'"
-msgstr "đối số « %1$s » không hợp lệ đối với « %2$s »"
+msgstr "đối số “%s” không hợp lệ cho “%s”"
 
-#: find/tree.c:1269
+#: find/tree.c:1336
 #, c-format
 msgid "missing argument to `%s'"
-msgstr "thiếu đối số đối với « %s »"
+msgstr "thiếu đối số cho “%s”"
 
-#: find/tree.c:1345
+#: find/tree.c:1412
+#, c-format
 msgid "you have too many ')'"
-msgstr "quá nhiều ký tự « ) »"
+msgstr "quá nhiều “)”"
 
-#: find/tree.c:1350
+#: find/tree.c:1418
 #, c-format
 msgid "unexpected extra predicate '%s'"
-msgstr "gặp vị ngữ thêm bất thường « %s »"
+msgstr "tiêu chí tìm kiếm mở rộng không mong đợi “%s”"
 
-#: find/tree.c:1352
+#: find/tree.c:1420
+#, c-format
 msgid "unexpected extra predicate"
-msgstr "gặp vị ngữ thêm bất ngờ"
+msgstr "tiêu chí tìm kiếm mở rộng"
 
-#: find/tree.c:1468
+#: find/tree.c:1553
+#, c-format
 msgid "oops -- invalid default insertion of and!"
-msgstr "rỗ tiếc — việc chèn mặc định điều « and » một cách không hợp lệ."
+msgstr "ối trời  — chèn -and mặc định sai!"
 
-#: find/util.c:158
+#: find/util.c:174
 #, c-format
 msgid "Usage: %s [-H] [-L] [-P] [-Olevel] [-D "
-msgstr "Cách sử dụng: %s [-H] [-L] [-P] [-Ocấp] [-D "
+msgstr "Cách dùng: %s [-H] [-L] [-P] [-Ocấp] [-D "
 
-#: find/util.c:160
+#: find/util.c:176
 #, c-format
 msgid "] [path...] [expression]\n"
-msgstr "] [đường dẫn...] [biểu thức]\n"
+msgstr "] [đường dẫn…] [biểu thức]\n"
 
-#: find/util.c:749
+#: find/util.c:458
+#, fuzzy, c-format
+msgid "Failed to save initial working directory%s%s"
+msgstr "gặp lỗi khi lưu thư mục làm việc ban đầu: %s"
+
+#: find/util.c:477
+#, fuzzy, c-format
+msgid "Failed to restore initial working directory%s%s"
+msgstr "gặp lỗi khi lấy lại thư mục làm việc ban đầu: %s"
+
+#: find/util.c:827
 #, c-format
 msgid "Ignoring unrecognised debug flag %s"
-msgstr "Đang bỏ qua cờ gỡ lỗi không nhận diện %s"
+msgstr "Đang bỏ qua cờ gỡ lỗi không nhận diện được %s"
 
-#: find/util.c:756
+#: find/util.c:834
+#, c-format
 msgid "Empty argument to the -D option."
-msgstr "Đối số rỗng tới tùy chọn « -D »"
+msgstr "Đối số tùy chọn -D bị rỗng."
 
-#: find/util.c:770
+#: find/util.c:850
+#, c-format
 msgid "The -O option must be immediately followed by a decimal integer"
-msgstr "Tùy chọn « -O » phải có một số nguyên thập phân theo đúng sau"
+msgstr "Cần một số nguyên thập phân ngay sau tùy chọn -O"
 
-#: find/util.c:779 find/util.c:789
+#: find/util.c:860 find/util.c:871
+#, c-format
 msgid "Please specify a decimal number immediately after -O"
-msgstr "Hãy ghi rõ một số thập phân đúng sau « -O »"
+msgstr "Hãy chỉ định một số nguyên thập phân ngay sau tùy chọn -O"
 
-#: find/util.c:794 find/util.c:798
+#: find/util.c:876 find/util.c:881
 #, c-format
 msgid "Invalid optimisation level %s"
-msgstr "Cấp tối ưu hoá không hợp lệ %s"
+msgstr "Cấp tối ưu %s không hợp lệ"
 
-#: find/util.c:805
+#: find/util.c:889
 #, c-format
 msgid ""
 "Optimisation level %lu is too high.  If you want to find files very quickly, "
 "consider using GNU locate."
 msgstr ""
-"Cấp tối ưu hoá %lu quá cao. Để tìm nhanh tập tin, khuyên bạn dùng phần mềm "
-"locate của GNU."
+"Cấp tối ưu %lu là quá cao. Để tìm nhanh tập tin, nên dùng phần mềm locate "
+"của GNU."
 
-#: find/util.c:948
+#: find/util.c:1033
+#, c-format
 msgid ""
 "The environment variable FIND_BLOCK_SIZE is not supported, the only thing "
 "that affects the block size is the POSIXLY_CORRECT environment variable"
 msgstr ""
-"Không hỗ trợ biến môi trường « FIND_BLOCK_SIZE » (tim kích cỡ của khối) thì "
-"chỉ một điều làm ảnh hướng đến kích cỡ của khối: biến môi trường « "
-"POSIXLY_CORRECT » (đúng kiểu Posix)"
+"Không hỗ trợ biến môi trường FIND_BLOCK_SIZE. Chỉ có biến môi trường "
+"POSIXLY_CORRECT tác động đến kích thước khối"
 
-#: lib/buildcmd.c:197
+#: lib/buildcmd.c:160
+#, c-format
 msgid "command too long"
 msgstr "lệnh quá dài"
 
-#: lib/buildcmd.c:289
-msgid "can not fit single argument within argument list size limit"
-msgstr "không thể vừa đối số đơn bên trong giới hạn kích cỡ danh sách đối số"
+#: lib/buildcmd.c:300
+#, c-format
+msgid "can't call exec() due to argument size restrictions"
+msgstr "không gọi được exec() do giới hạn kích cỡ đối số"
 
-#: lib/buildcmd.c:294
+#: lib/buildcmd.c:370
+#, c-format
+msgid "cannot fit single argument within argument list size limit"
+msgstr ""
+"không thể khớp một đối số đơn bên trong giới hạn kích cỡ danh sách đối số"
+
+#: lib/buildcmd.c:376
+#, c-format
 msgid "argument list too long"
 msgstr "danh sách đối số quá dài"
 
+#: lib/buildcmd.c:628
+#, c-format
+msgid "Environment variable %s is not set to a valid decimal number"
+msgstr "Biến môi trường %s không chứa số thập phân hợp lệ"
+
+#: lib/fdleak.c:377
+#, c-format
+msgid ""
+"File descriptor %d will leak; please report this as a bug, remembering to "
+"include a detailed description of the simplest way to reproduce this problem."
+msgstr ""
+"Bộ mô tả tập tin %d sẽ rò rỉ; hãy báo cáo đây là một lỗi, đừng quên bao gồm "
+"cả các thông tin chi tiết cách mà nó nảy sinh vấn đề dưới định dạng đơn giản "
+"nhất."
+
 # Name: don't translate/Tên: đừng dịch
-#: lib/findutils-version.c:60
+#: lib/findutils-version.c:55
 msgid "Eric B. Decker"
 msgstr "Eric B. Decker"
 
 # Name: don't translate/Tên: đừng dịch
-#: lib/findutils-version.c:61
+#: lib/findutils-version.c:56
 msgid "James Youngman"
 msgstr "James Youngman"
 
 # Name: don't translate/Tên: đừng dịch
-#: lib/findutils-version.c:62
+#: lib/findutils-version.c:57
 msgid "Kevin Dalley"
 msgstr "Kevin Dalley"
 
-#: lib/findutils-version.c:64
+#: lib/listfile.c:451
 #, c-format
-msgid "Built using GNU gnulib version %s\n"
-msgstr "Xây dựng dùng gnulib phiên bản %s của GNU\n"
+msgid "Failed to write output (at stage %d)"
+msgstr "Gặp lỗi khi ghi kết xuất (tại bước %d)"
 
-#: lib/regextype.c:106
+#: lib/regextype.c:110
 #, c-format
 msgid "Unknown regular expression type %s; valid types are %s."
-msgstr "Không rõ kiểu biểu thức chính quy %1$s: kiểu hợp lệ là %2$s."
+msgstr "Kiểu biểu thức chính quy không thể hiểu nổi %s; kiểu hợp lệ là %s."
 
-#: locate/code.c:130
+#: lib/safe-atoi.c:81
+#, c-format
+msgid "Unexpected suffix %s on %s"
+msgstr "Gặp hậu tố không cần %s trên %s"
+
+#: lib/safe-atoi.c:87
+#, c-format
+msgid "Expected an integer: %s"
+msgstr "Cần số nguyên: %s"
+
+#: locate/code.c:131
 #, c-format
 msgid ""
 "Usage: %s [--version | --help]\n"
 "or     %s most_common_bigrams < file-list > locate-database\n"
 msgstr ""
-"Cách sử dụng: %s [--version | --help]\n"
-"\t\t\t\t\t(phiên bản, trợ giúp)\n"
-"hoặc\n"
-"%s gần_hết_chữ_đôi_thường < danh_sách_tập_tin > cơ_sở_dữ_liệu_định_vị\n"
+"Cách dùng: %s [--version | --help]\n"
+"hoặc       %s bigram-thông-dụng < danh-mục-tập-tin > CSDL-locate\n"
 
-#: locate/code.c:134 locate/frcode.c:171 locate/locate.c:1423
-#: xargs/xargs.c:1379
+#: locate/code.c:135 locate/frcode.c:162 locate/locate.c:1394
+#: xargs/xargs.c:1697
 msgid ""
 "\n"
 "Report bugs to <bug-findutils@gnu.org>.\n"
 msgstr ""
 "\n"
-"Hãy thông báo lỗi nào cho <bug-findutils@gnu.org>.\n"
+"Hãy thông báo lỗi (bằng tiếng Anh) cho <bug-findutils@gnu.org>.\n"
+"Thông báo lỗi dịch cho: <http://translationproject.org/team/vi.html>.\n"
 
-#: locate/frcode.c:169
+#: locate/code.c:153 locate/frcode.c:210
+#, c-format
+msgid "write error"
+msgstr "lỗi ghi"
+
+#: locate/frcode.c:160
 #, c-format
 msgid "Usage: %s [-0 | --null] [--version] [--help]\n"
 msgstr ""
-"Sử dụng: %s [-0 | --null] [--version] [--help]\n"
+"Cách dùng: %s [-0 | --null] [--version] [--help]\n"
 "\n"
 "null\t\tvô giá trị\n"
 "version\tphiên bản\n"
 "help\t\ttrợ giúp\n"
 
-#: locate/frcode.c:188
+#: locate/frcode.c:180
+#, c-format
 msgid "You need to specify a security level as a decimal integer."
 msgstr "Bạn cần phải ghi rõ một cấp bảo mật dạng số nguyên thập phân."
 
-#: locate/frcode.c:195
+#: locate/frcode.c:188
 #, c-format
 msgid "Security level %s is outside the convertible range."
 msgstr "Cấp bảo mật %s bên ngoài phạm vi có thể chuyển đổi."
 
-#: locate/frcode.c:202
+#: locate/frcode.c:196
 #, c-format
 msgid "Security level %s has unexpected suffix %s."
 msgstr "Cấp bảo mật %s có hậu tố bất thường %s."
 
-#: locate/frcode.c:258
+#: locate/frcode.c:257
 #, c-format
 msgid "slocate security level %ld is unsupported."
 msgstr "Cấp bảo mật slocate %ld không được hỗ trợ."
 
-#: locate/frcode.c:296
+#: locate/frcode.c:295
+#, c-format
 msgid "Failed to write to standard output"
 msgstr "Lỗi ghi vào đầu ra tiêu chuẩn"
 
-#: locate/locate.c:151
+#: locate/locate.c:131
 msgid "days"
 msgstr "ngày"
 
-#: locate/locate.c:198
+#: locate/locate.c:178
+#, c-format
 msgid "The argument for option --max-database-age must not be empty"
-msgstr "Đối số cho tùy chọn «  --max-database-age » không thể là rỗng"
+msgstr "Đối số cho tùy chọn “--max-database-age” không thể là rỗng"
 
-#: locate/locate.c:214 locate/locate.c:221
+#: locate/locate.c:194 locate/locate.c:201
 #, c-format
 msgid "Invalid argument %s for option --max-database-age"
 msgstr ""
-"đối số %s không hợp lệ cho tùy chọn « --max-database-age » (tuổi cơ sở dữ "
-"liệu tối đa)"
+"Đối số %s không hợp lệ cho tùy chọn “--max-database-age” (tuổi cơ sở dữ liệu "
+"tối đa)"
 
-#: locate/locate.c:473
+#: locate/locate.c:451
 #, c-format
 msgid "locate database %s contains a filename longer than locate can handle"
 msgstr "cơ sở dữ liệu locate %s chứa một tên tập tin dài hơn ngưỡng của locate"
 
-#: locate/locate.c:608
+#: locate/locate.c:561 locate/locate.c:580
 #, c-format
 msgid "locate database %s is corrupt or invalid"
 msgstr "cơ sở dữ liệu locate (định vị) %s bị hỏng hay không hợp lệ"
 
-#: locate/locate.c:898
+#: locate/locate.c:865
+#, c-format
+msgid "Database was last modified at %s.%09ld"
+msgstr "Cơ sở dữ liệu đã sửa lần cuối vào %s.%09ld"
+
+#: locate/locate.c:873
 #, c-format
 msgid "Locate database size: %s byte\n"
 msgid_plural "Locate database size: %s bytes\n"
 msgstr[0] "Kích cỡ cơ sở dữ liệu định vị: %s byte\n"
 
-#: locate/locate.c:905
+#: locate/locate.c:879
 #, c-format
 msgid "Matching Filenames: %s\n"
 msgstr "Tên tập tin khớp: %s\n"
 
-#: locate/locate.c:906
+#: locate/locate.c:880
 #, c-format
 msgid "All Filenames: %s\n"
 msgstr "Mọi tên tập tin: %s\n"
 
-#: locate/locate.c:912
+#: locate/locate.c:886
 #, c-format
 msgid ""
 "File names have a cumulative length of %s bytes.\n"
@@ -1043,31 +974,31 @@ msgid ""
 "\t%s contain newline characters, \n"
 "\tand %s contain characters with the high bit set.\n"
 msgstr ""
-"Các tên tập tin có chiều dài tích luỹ %s byte.\n"
+"Các tên tập tin có chiều dài tích lũy %s byte.\n"
 "Trong những tên tập tin này:\n"
 "\n"
 "\t%s chứa khoảng trắng, \n"
 "\t%s chứa ký tự dòng mới, \n"
 "\t%s chứa ký tự đặt bit cao\n"
 
-#: locate/locate.c:926
+#: locate/locate.c:900
 #, c-format
 msgid ""
 "Some filenames may have been filtered out, so we cannot compute the "
 "compression ratio.\n"
 msgstr "Một số tập tin có thể bị lọc ra thì không thể tính tỷ lệ nén.\n"
 
-#: locate/locate.c:939
+#: locate/locate.c:913
 #, c-format
 msgid "Compression ratio %4.2f%% (higher is better)\n"
 msgstr "Tỷ lệ nén %4.2f%% (cao hơn thì tốt hơn)\n"
 
-#: locate/locate.c:946
+#: locate/locate.c:920
 #, c-format
 msgid "Compression ratio is undefined\n"
-msgstr "Tỷ lệ nén không xác định.\n"
+msgstr "Tỷ lệ nén không được định nghĩa.\n"
 
-#: locate/locate.c:1001
+#: locate/locate.c:975
 #, c-format
 msgid ""
 "locate database %s looks like an slocate database but it seems to have "
@@ -1076,7 +1007,7 @@ msgstr ""
 "cơ sở dữ liệu định vị %s hình như cơ sở dữ liệu slocate, nhưng có vẻ là nó "
 "có cấp bảo mật %c mà GNU findutils không hiện thời hỗ trợ"
 
-#: locate/locate.c:1118
+#: locate/locate.c:1088
 #, c-format
 msgid ""
 "%s is an slocate database.  Support for these is new, expect problems for "
@@ -1085,7 +1016,7 @@ msgstr ""
 "%s là cơ sở dữ liệu kiểu slocate. Chỉ bắt đầu hỗ trợ kiểu này: có thể gặp "
 "lỗi."
 
-#: locate/locate.c:1132
+#: locate/locate.c:1102
 #, c-format
 msgid ""
 "%s is an slocate database of unsupported security level %d; skipping it."
@@ -1093,209 +1024,244 @@ msgstr ""
 "%s là cơ sở dữ liệu kiểu slocate có cấp bảo mật không được hỗ trợ %d nên bỏ "
 "qua nó."
 
-#: locate/locate.c:1149
+#: locate/locate.c:1119
+#, c-format
 msgid ""
 "You specified the -E option, but that option cannot be used with slocate-"
 "format databases with a non-zero security level.  No results will be "
 "generated for this database.\n"
 msgstr ""
-"Bạn đã ghi rõ tùy chọn « -E », nhưng tùy chọn đó không thể được dùng với cơ "
-"sở dữ liệu định dạng slocate có cấp bảo mật khác số không. Vi thế không tạo "
-"ra kết quả cho cơ sở dữ liệu này.\n"
+"Bạn đã ghi rõ tùy chọn “-E”, nhưng tùy chọn đó không thể được dùng với cơ sở "
+"dữ liệu định dạng slocate có cấp bảo mật khác số không. Vi thế không tạo ra "
+"kết quả cho cơ sở dữ liệu này.\n"
 
-#: locate/locate.c:1160
+#: locate/locate.c:1130
 #, c-format
 msgid "%s is an slocate database.  Turning on the '-e' option."
-msgstr "%s là cơ sở dữ liệu kiểu slocate nên bật tùy chọn « -e »."
+msgstr "%s là cơ sở dữ liệu kiểu slocate nên bật tùy chọn “-e”."
 
-#: locate/locate.c:1198
+#: locate/locate.c:1168
 #, c-format
 msgid "Old-format locate database %s is too short to be valid"
 msgstr "Cơ sở dữ liệu locate định dạng cũ %s quá ngắn để hợp lệ"
 
-#: locate/locate.c:1350
+#: locate/locate.c:1320
 #, c-format
 msgid "Database %s is in the %s format.\n"
-msgstr "Cơ sở dư liệu %s có định dạng %s.\n"
+msgstr "Cơ sở dữ liệu %s có định dạng %s.\n"
 
-#: locate/locate.c:1371
+#: locate/locate.c:1347
 msgid "The database has little-endian machine-word encoding.\n"
-msgstr "Cơ sở dữ liệu này có mã hoá từ-máy về cuối nhỏ.\n"
+msgstr "Cơ sở dữ liệu này có mã hóa từ-máy về cuối nhỏ.\n"
 
-#: locate/locate.c:1373
+#: locate/locate.c:1349
 msgid "The database has big-endian machine-word encoding.\n"
-msgstr "Cơ sở dữ liệu này có mã hoá từ-máy về cuối lớn.\n"
+msgstr "Cơ sở dữ liệu này có mã hóa từ-máy về cuối lớn.\n"
 
-#: locate/locate.c:1386
+#: locate/locate.c:1362
 #, c-format
 msgid "The database machine-word encoding order is not obvious.\n"
-msgstr "Thứ tự mã hoá từ-máy của cơ sở dữ liệu này không phải hiển nhiên.\n"
+msgstr "Thứ tự mã hóa từ-máy của cơ sở dữ liệu này không phải hiển nhiên.\n"
 
-#: locate/locate.c:1414
+#: locate/locate.c:1385
 #, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
 "      [--limit=N | -l N] [-S | --statistics] [-0 | --null] [-c | --count]\n"
-"      [-P | -H | --nofollow] [-L | --follow] [-m | --mmap ] [ -s | --"
-"stdio ]\n"
-"      [-A | --all] [-p | --print] [-r | --regex ] [--regextype=TYPE]\n"
+"      [-P | -H | --nofollow] [-L | --follow] [-m | --mmap] [-s | --stdio]\n"
+"      [-A | --all] [-p | --print] [-r | --regex] [--regextype=TYPE]\n"
 "      [--max-database-age D] [--version] [--help]\n"
 "      pattern...\n"
 msgstr ""
-"Cách sử dụng: %s [-d đường_dẫn | --database=đường_dẫn] (cơ sở dữ liệu)\n"
-"[-e | -E| --[non-] existing] \t\t([không] tồn tại)\n"
-"[-i | --ignore-case] \t(bỏ qua chữ hoa/thường)\n"
-"[-w | --wholename] \t(tên đầy đủ)\n"
-"[-b | --basename] \t\t(tên cơ sở)\n"
-"[--limit=N | -l N] \t\t(giới hạn)\n"
-"[-S | --statistics] \t\t(thống kê)\n"
-"[-0 | --null] \t\t\t(rỗng)\n"
-"[-c | --count] \t\t\t(số đếm)\n"
-"[-P | -H | --nofollow] \t(không đi theo)\n"
-"[-L | --follow] \t\t(đi theo)\n"
-"[-m | --mmap ] \t\t(bản đồ m)\n"
-"[ -s | --stdio ] \t\t(thiết bị nhập/xuất)\n"
-"[-A | --all] \t\t\t(tất cả)\n"
-"[-p | --print]\t\t\t(in)\n"
-"[-r | --regex ] \t\t(biểu thức chính quy)\n"
-"[--regextype=KIỂU]\t\tkiểu biểu thức chính quy\n"
-"[--max-database-age D]\t\t(tuổi cơ sở dữ liệu tối đa)\n"
-"[--version] \t\t\t(phiên bản)\n"
-"[--help] mẫu... \t\t(trợ giúp)\n"
-"pattern...\t\t\t\t(mẫu)\n"
+"Cách dùng: %s\t[-d đường_dẫn | --database=đường_dẫn] (cơ sở dữ liệu)\n"
+"\t[-e | -E| --[non-]existing]\t([không] tồn tại)\n"
+"\t[-i | --ignore-case]\t(không phân biệt HOA/thường)\n"
+"\t[-w | --wholename]\t(tên đầy đủ)\n"
+"\t[-b | --basename]\t(tên cơ sở)\n"
+"\t[--limit=N | -l N]\t(giới hạn)\n"
+"\t[-S | --statistics]\t(thống kê)\n"
+"\t[-0 | --null]\t\t(vô giá trị)\n"
+"\t[-c | --count]\t\t(đếm)\n"
+"\t[-P | -H | --nofollow]\t(không đi theo)\n"
+"\t[-L | --follow]\t\t(đi theo)\n"
+"\t[-m | --mmap ]\t\t(ánh xạ bộ nhớ)\n"
+"\t[-s | --stdio ]\t\t(đầu vào/ra tiêu chuẩn)\n"
+"\t[-A | --all] \t\t(tất cả)\n"
+"\t[-p | --print]\t\t(in)\n"
+"\t[-r | --regex ]\t\t(biểu thức chính quy)\n"
+"\t[--regextype=KIỂU]\t(KIỂU biểu thức chính quy)\n"
+"\t[--max-database-age D]\t(tuổi cơ sở dữ liệu tối đa)\n"
+"\t[--version]\t\t(phiên bản)\n"
+"\t[--help] mẫu…\t\t(trợ giúp)\n"
+"\tpattern…\t\t(mẫu)\n"
 
-#: locate/locate.c:1477
+#: locate/locate.c:1448
 msgid "failed to drop group privileges"
-msgstr "lỗi bỏ quyền hạn nhóm"
+msgstr "gặp lỗi khi bỏ quyền hạn nhóm"
 
-#: locate/locate.c:1495
+#: locate/locate.c:1466
 msgid "failed to drop setuid privileges"
-msgstr "lỗi bỏ quyền hạn setuid"
+msgstr "gặp lỗi khi bỏ quyền hạn setuid"
 
-#: locate/locate.c:1509
+#: locate/locate.c:1480
 msgid "Failed to fully drop privileges"
-msgstr "Lỗi bỏ hoàn toàn quyền hạn"
+msgstr "Gặp lỗi khi bỏ hoàn toàn quyền hạn"
 
-#: locate/locate.c:1527
+#: locate/locate.c:1498
 msgid "failed to drop setgid privileges"
-msgstr "lỗi bỏ quyền hạn setgid"
+msgstr "gặp lỗi khi bỏ quyền hạn setgid"
 
-#: locate/locate.c:1794
+#: locate/locate.c:1778
+#, c-format
 msgid "warning: the locate database can only be read from stdin once."
 msgstr ""
-"cảnh báo : cơ sở dữ liệu định vị có thể được đọc từ thiết bị xuất chuẩn chỉ "
+"cảnh báo: cơ sở dữ liệu định vị có thể được đọc từ thiết bị xuất chuẩn chỉ "
 "một lần thôi."
 
-#: locate/locate.c:1856
+#: locate/locate.c:1851
+#, c-format
 msgid "time system call failed"
 msgstr "cuộc gọi hệ thống thời gian đã không thành công"
 
-#: locate/locate.c:1867
+#: locate/locate.c:1862
 #, c-format
 msgid "warning: database %s is more than %d %s old (actual age is %.1f %s)"
-msgstr "cảnh báo : cơ sở dữ liệu %s cũ hơn %d %s (thật là %.1f %s)"
+msgstr "cảnh báo: cơ sở dữ liệu %s cũ hơn %d %s (tuổi thật là %.1f %s)"
 
-#: locate/word_io.c:97
+#: locate/word_io.c:98
 #, c-format
-msgid "Warning: locate database %s was built with a different byte order"
+msgid "WARNING: locate database %s was built with a different byte order"
 msgstr ""
-"Cảnh báo : cơ sở dữ liệu locate %s đã được xây dựng với thứ tự byte khác"
+"CẢNH BÁO: cơ sở dữ liệu locate %s đã được xây dựng với thứ tự byte khác"
 
-#: locate/word_io.c:144
+#: locate/word_io.c:145
 #, c-format
 msgid "unexpected EOF in %s"
 msgstr "gặp kết thúc tập tin bất thường trong %s"
 
-#: locate/word_io.c:146
+#: locate/word_io.c:148
 #, c-format
 msgid "error reading a word from %s"
 msgstr "gặp lỗi khi đọc một từ trong %s"
 
-#: xargs/xargs.c:303
+#: xargs/xargs.c:261
 #, c-format
 msgid "Invalid escape sequence %s in input delimiter specification."
-msgstr "Gặp dãy thoát không hợp lệ « %s » trong đặc tả giới hạn dữ liệu nhập"
+msgstr "Dãy thoát không hợp lệ %s trong đặc tả phân cách dữ liệu nhập"
 
-#: xargs/xargs.c:321
+#: xargs/xargs.c:279
 #, c-format
 msgid ""
 "Invalid escape sequence %s in input delimiter specification; character "
 "values must not exceed %lx."
 msgstr ""
-"Gặp dãy thoát không hợp lệ %s trong đặc tả giới hạn dữ liệu nhập: không cho "
-"phép giá trị ký tự vượt trội %lx."
+"Dãy thoát không hợp lệ %s trong đặc tả phân cách dữ liệu nhập: không cho "
+"phép giá trị ký tự vượt %lx."
 
-#: xargs/xargs.c:327
+#: xargs/xargs.c:285
 #, c-format
 msgid ""
 "Invalid escape sequence %s in input delimiter specification; character "
 "values must not exceed %lo."
 msgstr ""
-"Gặp dãy thoát không hợp lệ %s trong đặc tả giới hạn dữ liệu nhập: không cho "
-"phép giá trị ký tự vượt trội %lo."
+"Dãy thoát không hợp lệ %s trong đặc tả phân cách dữ liệu nhập: không cho "
+"phép giá trị ký tự vượt %lo."
 
-#: xargs/xargs.c:336
+#: xargs/xargs.c:294
 #, c-format
 msgid ""
 "Invalid escape sequence %s in input delimiter specification; trailing "
 "characters %s not recognised."
 msgstr ""
-"Gặp dãy thoát không hợp lệ %s trong đặc tả giới hạn dữ liệu nhập: không nhận "
-"ra ký tự %s nằm theo."
+"Dãy thoát không hợp lệ %s trong đặc tả phân cách dữ liệu nhập: không nhận ra "
+"ký tự %s ở chót."
 
-#: xargs/xargs.c:381
+#: xargs/xargs.c:339
 #, c-format
 msgid ""
 "Invalid input delimiter specification %s: the delimiter must be either a "
 "single character or an escape sequence starting with \\."
 msgstr ""
-"Gặp đặc tả giới hận dữ liệu nhập không hợp lệ « %s »: dấu giới hạn phải là "
-"hoặc một ký tự đơn hoặc một dãy thoát bắt đầu với « \\ »."
+"Đặc tả phân cách dữ liệu nhập %s không hợp lệ: dấu phân cách phải là hoặc "
+"một ký tự đơn hoặc một dãy thoát bắt đầu bằng \\."
 
-#: xargs/xargs.c:398
-msgid "environment is too large for exec"
-msgstr "môi trường quá lớn đối với « exec » (thì hành)"
-
-#: xargs/xargs.c:583
+#: xargs/xargs.c:356
 #, c-format
-msgid "Warning: value %ld for -s option is too large, using %ld instead"
-msgstr ""
-"Cảnh báo : giá trị %ld cho tùy chọn « -s » quá lớn nên dùng %ld thay vào đó"
+msgid "environment is too large for exec"
+msgstr "môi trường quá lớn với “exec”"
 
-#: xargs/xargs.c:653
+#: xargs/xargs.c:590
+#, c-format
+msgid "warning: value %ld for -s option is too large, using %ld instead"
+msgstr "cảnh báo: giá trị %ld cho tùy chọn -s quá lớn nên dùng %ld"
+
+#: xargs/xargs.c:637
+#, c-format
+msgid "option --%s may not be set to a value which includes `='"
+msgstr "tùy chọn --%s không thể được đặt thành giá trị mà nó bao gồm “=”"
+
+#: xargs/xargs.c:649
+#, c-format
+msgid "failed to unset environment variable %s"
+msgstr "gặp lỗi khi bỏ đặt được biến môi trường %s"
+
+#: xargs/xargs.c:663
+#, c-format
+msgid "warning: the -E option has no effect if -0 or -d is used.\n"
+msgstr "cảnh báo: tùy chọn -E không có tác dụng nếu dùng tùy chọn -0 hay -d.\n"
+
+#: xargs/xargs.c:685
+#, c-format
+msgid "Cannot set SIGUSR1 signal handler"
+msgstr "Không thể đặt trình xử lý tín hiệu SIGUSR1"
+
+#: xargs/xargs.c:691
+#, c-format
+msgid "Cannot set SIGUSR2 signal handler"
+msgstr "Không thể đặt trình xử lý tín hiệu SIGUSR2"
+
+#: xargs/xargs.c:707
 #, c-format
 msgid "Cannot open input file %s"
 msgstr "Không thể mở tập tin nhập %s"
 
-#: xargs/xargs.c:689
+#: xargs/xargs.c:726
 #, c-format
-msgid "Your environment variables take up %lu bytes\n"
-msgstr "Các biến môi trường chiếm %lu byte\n"
+msgid "Your environment variables take up %<PRIuMAX> bytes\n"
+msgstr "Các biến môi trường của bạn chiếm %<PRIuMAX> byte\n"
 
-#: xargs/xargs.c:692
+#: xargs/xargs.c:729
 #, c-format
-msgid "POSIX upper limit on argument length (this system): %lu\n"
-msgstr "Giới hạn POSIX trên về độ dài đối số (hệ thống này): %lu\n"
+msgid "POSIX upper limit on argument length (this system): %<PRIuMAX>\n"
+msgstr "Giới hạn trên POSIX về chiều dài đối số (hệ thống này): %<PRIuMAX>\n"
 
-#: xargs/xargs.c:695
+#: xargs/xargs.c:732
 #, c-format
 msgid ""
-"POSIX smallest allowable upper limit on argument length (all systems): %lu\n"
+"POSIX smallest allowable upper limit on argument length (all systems): "
+"%<PRIuMAX>\n"
 msgstr ""
-"Giới hạn POSIX trên nhỏ nhất cho phép về độ dài đối số (mọi hệ thống): %lu\n"
+"Giới hạn trên POSIX nhỏ nhất cho phép về chiều dài đối số (mọi hệ thống): "
+"%<PRIuMAX>\n"
 
-#: xargs/xargs.c:698
+#: xargs/xargs.c:735
 #, c-format
-msgid "Maximum length of command we could actually use: %ld\n"
-msgstr "Độ dài lệnh tối đa mà thật có thể dùng: %ld\n"
+msgid "Maximum length of command we could actually use: %<PRIuMAX>\n"
+msgstr "Chiều dài câu lệnh tối đa có thể dùng: %<PRIuMAX>\n"
 
-#: xargs/xargs.c:702
+#: xargs/xargs.c:738
 #, c-format
-msgid "Size of command buffer we are actually using: %lu\n"
-msgstr "Kích cỡ của bộ đệm lệnh thật đang dùng: %lu\n"
+msgid "Size of command buffer we are actually using: %<PRIuMAX>\n"
+msgstr "Kích cỡ vùng đệm lệnh thực sự dùng: %<PRIuMAX>\n"
 
-#: xargs/xargs.c:708
+#: xargs/xargs.c:741
+#, c-format
+msgid "Maximum parallelism (--max-procs must be no greater): %<PRIuMAX>\n"
+msgstr ""
+"Mức song song tối đa (--max-procs phải không được lớn hơn): %<PRIuMAX>\n"
+
+#: xargs/xargs.c:747
 #, c-format
 msgid ""
 "\n"
@@ -1304,114 +1270,631 @@ msgid ""
 "of-file keystroke.\n"
 msgstr ""
 "\n"
-"Bây giờ sẽ tiếp tục thực hiện xargs, cũng thử đọc các lệnh nhập/xuất của nó. "
-"Không muốn thì gõ phím kết thúc tập tin.\n"
+"Bây giờ sẽ tiếp tục chạy xargs đọc lệnh nhập và chạy lệnh. Không muốn thí "
+"nhấn phím hết-tập-tin (Ctrl-D).\n"
 
-#: xargs/xargs.c:716
+#: xargs/xargs.c:755
 #, c-format
 msgid ""
 "Warning: %s will be run at least once.  If you do not want that to happen, "
 "then press the interrupt keystroke.\n"
-msgstr ""
-"Cảnh báo : %s sẽ được chạy ít nhất một lần. Không muốn thì bấm phím ngắt.\n"
+msgstr "Cảnh báo: %s sẽ chạy ít nhất một lần. Không muốn thì bấm phím ngắt.\n"
 
-#: xargs/xargs.c:842 xargs/xargs.c:935
+#: xargs/xargs.c:883 xargs/xargs.c:976
 #, c-format
 msgid ""
 "unmatched %s quote; by default quotes are special to xargs unless you use "
 "the -0 option"
 msgstr ""
-"chưa khớp dấu trích dẫn %s; mặc định là mọi dấu trích dẫn đơn là đặc biệt "
-"với xargs nếu không dùng tùy chọn -0"
+"dấu trích dẫn %s chưa đủ bộ; mặc định xargs coi mọi dấu trích dẫn là đặc "
+"biệt trừ khi dùng tùy chọn -0"
 
-#: xargs/xargs.c:843 xargs/xargs.c:936
+#: xargs/xargs.c:884 xargs/xargs.c:977
 msgid "double"
 msgstr "đôi"
 
-#: xargs/xargs.c:843 xargs/xargs.c:936
+#: xargs/xargs.c:884 xargs/xargs.c:977
 msgid "single"
 msgstr "đơn"
 
-#: xargs/xargs.c:955
+#: xargs/xargs.c:996
+#, c-format
 msgid ""
-"Warning: a NUL character occurred in the input.  It cannot be passed through "
+"WARNING: a NUL character occurred in the input.  It cannot be passed through "
 "in the argument list.  Did you mean to use the --null option?"
 msgstr ""
-"Cảnh báo : dữ liệu nhập chứa ký tự vô giá trị (NUL). Không thể gửi nó qua "
-"trong danh sách các đối số. Bạn thực sự muốn sử dụng tùy chọn « -null » không?"
+"CẢNH BÁO: gặp ký tự NUL trong đầu vào. Không thể gửi ký tự này trong danh "
+"sách đối số. Bạn định dùng --null?"
 
-#: xargs/xargs.c:965 xargs/xargs.c:1022
+#: xargs/xargs.c:1006 xargs/xargs.c:1071
+#, c-format
 msgid "argument line too long"
 msgstr "dòng đối số quá dài"
 
-#: xargs/xargs.c:1233
-msgid "error waiting for child process"
-msgstr "gặp lỗi khi đời tiến trình con"
-
-#: xargs/xargs.c:1255
+#: xargs/xargs.c:1090 xargs/xargs.c:1107
 #, c-format
-msgid "Warning: Lost track of %d child processes"
-msgstr "Cảnh báo : mất dấu vết của %d tiến trình con"
+msgid "Failed to write to stderr"
+msgstr "Gặp lỗi khi ghi vào đầu ra lỗi tiêu chuẩn"
 
-#: xargs/xargs.c:1275
+#: xargs/xargs.c:1103
+#, c-format
+msgid "failed to open /dev/tty for reading"
+msgstr "gặp lỗi khi mở /dev/tty để đọc"
+
+#: xargs/xargs.c:1113
+#, c-format
+msgid "Failed to read from stdin"
+msgstr "Gặp lỗi khi đọc từ đầu vào tiêu chuẩn"
+
+#: xargs/xargs.c:1150
+#, c-format
+msgid "unable to allocate memory"
+msgstr "không thể cấp phát vùng nhớ"
+
+#: xargs/xargs.c:1165
+#, c-format
+msgid "failed to set environment variable %s"
+msgstr "gặp lỗi khi đặt được biến môi trường %s"
+
+#: xargs/xargs.c:1254
+#, c-format
+msgid "could not create pipe before fork"
+msgstr "không tạo được ống dẫn trước khi phân nhánh"
+
+#: xargs/xargs.c:1325
+#, c-format
+msgid ""
+"errno-buffer safe_read failed in xargs_do_exec (this is probably a bug, "
+"please report it)"
+msgstr ""
+"gặp lỗi khi đọc errno-buffer trong xargs_do_exec (đây gần như chắc chắn là "
+"lỗi, vui lòng báo cáo)"
+
+#: xargs/xargs.c:1378
+#, c-format
+msgid ""
+"read returned unexpected value %zu; this is probably a bug, please report it"
+msgstr ""
+"đọc được giá trị trả về không cần %zu; đây gần như chắc chắn là một lỗi, vui "
+"lòng báo cáo"
+
+#: xargs/xargs.c:1471
+#, c-format
+msgid "error waiting for child process"
+msgstr "gặp lỗi khi chờ tiến trình con"
+
+#: xargs/xargs.c:1504
+#, c-format
+msgid "WARNING: Lost track of %lu child processes"
+msgstr "CẢNH BÁO: Mất dấu vết của %lu tiến trình con"
+
+#: xargs/xargs.c:1523
 #, c-format
 msgid "%s: exited with status 255; aborting"
-msgstr "%s: đã thoát với trạng thái 255; nên hủy bỏ"
+msgstr "%s: đã thoát với trạng thái 255; thoát"
 
-#: xargs/xargs.c:1277
+#: xargs/xargs.c:1526
 #, c-format
 msgid "%s: stopped by signal %d"
 msgstr "%s: bị ngừng bởi tín hiệu %d"
 
-#: xargs/xargs.c:1279
+#: xargs/xargs.c:1529
 #, c-format
 msgid "%s: terminated by signal %d"
 msgstr "%s: bị chấm dứt bởi tín hiệu %d"
 
-#: xargs/xargs.c:1329
+#: xargs/xargs.c:1614
 #, c-format
 msgid "%s: invalid number for -%c option\n"
 msgstr "%s: số không hợp lệ đối với tùy chọn -%c\n"
 
-#: xargs/xargs.c:1336
+#: xargs/xargs.c:1621
 #, c-format
 msgid "%s: value for -%c option should be >= %ld\n"
-msgstr "%s: giá trị cho tùy chọn -%c nên ≥ %ld\n"
+msgstr "%s: giá trị cho tùy chọn -%c nên >= %ld\n"
 
-#: xargs/xargs.c:1350
+#: xargs/xargs.c:1635
 #, c-format
-msgid "%s: value for -%c option should be < %ld\n"
-msgstr "%s: giá trị cho tùy chọn -%c nên < %ld\n"
+msgid "%s: value for -%c option should be <= %ld\n"
+msgstr "%s: giá trị cho tùy chọn -%c nên <= %ld\n"
 
-#: xargs/xargs.c:1368
+#: xargs/xargs.c:1654
 #, c-format
+msgid "Usage: %s [OPTION]... COMMAND [INITIAL-ARGS]...\n"
+msgstr "Cách dùng: %s [TÙY-CHỌN]… LỆNH [CÁC-ĐỐI-SỐ-KHỞI-TẠO]…\n"
+
+#: xargs/xargs.c:1659
 msgid ""
-"Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
-"       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
-"       [-L max-lines] [-l[max-lines]] [--max-lines[=max-lines]]\n"
-"       [-I replace-str] [-i[replace-str]] [--replace[=replace-str]]\n"
-"       [-n max-args] [--max-args=max-args]\n"
-"       [-s max-chars] [--max-chars=max-chars]\n"
-"       [-P max-procs]  [--max-procs=max-procs] [--show-limits]\n"
-"       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=file]\n"
-"       [--version] [--help] [command [initial-arguments]]\n"
+"Run COMMAND with arguments INITIAL-ARGS and more arguments read from input.\n"
+"\n"
 msgstr ""
-"Cách sử dụng: %s [-0prtx]\n"
-"[--interactive]\t\ttương tác\n"
-" [--null]\t\t\trỗng\n"
-" [-d|--delimiter=dấu_giới_hạn]\n"
-"[-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]      (chuỗi kết thúc tập tin)\n"
-"[-L max-lines] [-l[max-lines]] [--max-lines[=max-lines]]\n"
-"\t(số dòng tối đa)\n"
-"[-I replace-str] [-i[replace-str]] [--replace[=replace-str]]\n"
-"\t(thay thế chuỗi)\n"
-"[-n max-args] [--max-args=max-args]     (số đối số tối đa)\n"
-"[-s max-chars] [--max-chars=max-chars]    (số ký tự tối đa)\n"
-"[-P max-procs]  [--max-procs=max-procs]    (số tiến trình tối đa)\n"
-"[--verbose]\t\t\t\t\t\t(xuất chi tiết)\n"
-"[--exit] \t\t\t\t\t\t\t(thoát)\n"
-"[--no-run-if-empty] \t\t(đừng chạy nếu trống)\n"
-"[--arg-file=tập_tin]\t\t\t\t(tập tin đối số)\n"
-"[--version]\t\t\t\t\t\t(phiên bản)\n"
-"[--help]\t\t\t\t\t\t\t(trợ giúp)\n"
-"[lệnh [các_đối_số_đầu]]\n"
+"Chạy LỆNH với đối số Đ.SỐ-KHỞI-TẠO và các đối số khác được đọc vào từ đầu "
+"vào.\n"
+"\n"
+
+#: xargs/xargs.c:1661
+msgid ""
+"Mandatory and optional arguments to long options are also\n"
+"mandatory or optional for the corresponding short option.\n"
+msgstr ""
+"Các đối số và tùy chọn bắt buộc khi dùng với tùy chọn dài thì\n"
+"cũng bắt buộc khi dùng với tùy chọn dạng ngắn.\n"
+
+#: xargs/xargs.c:1663
+msgid ""
+"  -0, --null                   items are separated by a null, not "
+"whitespace;\n"
+"                                 disables quote and backslash processing "
+"and\n"
+"                                 logical EOF processing\n"
+msgstr ""
+"  -0, --null                   các mục được ngăn cách bằng null, chứ không "
+"phải\n"
+"                                 khoảng trắng; tắt xử lý trích dẫn và\n"
+"                                 dấu gạch ngược và xử lý EOF\n"
+
+#: xargs/xargs.c:1666
+msgid ""
+"  -a, --arg-file=FILE          read arguments from FILE, not standard input\n"
+msgstr ""
+"  -a, --arg-file=TẬP-TIN       đọc các đối số từ TẬP-TIN không từ đầu vào "
+"chuẩn\n"
+
+#: xargs/xargs.c:1667
+msgid ""
+"  -d, --delimiter=CHARACTER    items in input stream are separated by "
+"CHARACTER,\n"
+"                                 not by whitespace; disables quote and "
+"backslash\n"
+"                                 processing and logical EOF processing\n"
+msgstr ""
+"  -d, --delimiter=KÝ-TỰ        các mục trong dòng dữ liệu đầu vào được ngăn "
+"cách\n"
+"                                 bằng KÝ-TỰ,chứ không phải khoảng trắng; tắt "
+"xử\n"
+"                                 lý trích dẫn và dấu gạch ngược và xử lý "
+"EOF\n"
+
+#: xargs/xargs.c:1670
+msgid ""
+"  -E END                       set logical EOF string; if END occurs as a "
+"line\n"
+"                                 of input, the rest of the input is ignored\n"
+"                                 (ignored if -0 or -d was specified)\n"
+msgstr ""
+"  -E END                       đặt chuỗi lôgíc EOF; nếu END xuất hiện tại "
+"dòng\n"
+"                                 của đầu vào thì phần còn lại sẽ bị bỏ qua\n"
+"                                 (bị bỏ qua nếu -0 hay -d được chỉ định)\n"
+
+#: xargs/xargs.c:1673
+msgid ""
+"  -e, --eof[=END]              equivalent to -E END if END is specified;\n"
+"                                 otherwise, there is no end-of-file string\n"
+msgstr ""
+"  -e, --eof[=END]              tương đương với -E END nếu END được chỉ ra; "
+"nếu\n"
+"                                 không thì ở đây không có chuỗi kết-thúc-tập-"
+"tin\n"
+
+#: xargs/xargs.c:1675
+msgid "  -I R                         same as --replace=R\n"
+msgstr "  -I R                         giống với --replace=R\n"
+
+#: xargs/xargs.c:1676
+msgid ""
+"  -i, --replace[=R]            replace R in INITIAL-ARGS with names read\n"
+"                                 from standard input; if R is unspecified,\n"
+"                                 assume {}\n"
+msgstr ""
+"  -i, --replace[=R]            thay thế R trong ĐỐI-SỐ-KHỞI-TẠO với các tên "
+"đọc\n"
+"                                 từ đầu vào tiêu chuẩn; nếu không chỉ ra R,\n"
+"                                 thì coi là {}\n"
+
+#: xargs/xargs.c:1679
+msgid ""
+"  -L, --max-lines=MAX-LINES    use at most MAX-LINES non-blank input lines "
+"per\n"
+"                                 command line\n"
+msgstr ""
+"  -L, --max-lines=SỐ-DÒNG-TĐ   dùng nhiều nhất là SỐ dòng này đối với mỗi "
+"dòng\n"
+"                                 lệnh\n"
+
+#: xargs/xargs.c:1681
+msgid ""
+"  -l[MAX-LINES]                similar to -L but defaults to at most one "
+"non-\n"
+"                                 blank input line if MAX-LINES is not "
+"specified\n"
+msgstr ""
+"  -l[SỐ-DÒNG-TỐI-ĐA]           tương tự như -L nhưng mặc định là nhiều nhất "
+"là\n"
+"                                 một dòng không trống nếu không đưa ra giá "
+"trị\n"
+
+#: xargs/xargs.c:1683
+msgid ""
+"  -n, --max-args=MAX-ARGS      use at most MAX-ARGS arguments per command "
+"line\n"
+msgstr ""
+"  -n, --max-args=MAX-ARGS      dùng tối đa MAX-ARGS đối số trên mỗi dòng "
+"lệnh\n"
+
+#: xargs/xargs.c:1684
+msgid ""
+"  -P, --max-procs=MAX-PROCS    run at most MAX-PROCS processes at a time\n"
+msgstr ""
+"  -P, --max-procs=MAX-PROCS    chạy tối đa MAX-PROCS tiến trình cùng lúc\n"
+
+#: xargs/xargs.c:1685
+msgid "  -p, --interactive            prompt before running commands\n"
+msgstr "  -p, --interactive            nhắc trước khi chạy lệnh\n"
+
+#: xargs/xargs.c:1686
+msgid ""
+"      --process-slot-var=VAR   set environment variable VAR in child "
+"processes\n"
+msgstr ""
+"      --process-slot-var=BIẾN  đặt biến môi trường trong tiến trình con\n"
+
+#: xargs/xargs.c:1687
+msgid ""
+"  -r, --no-run-if-empty        if there are no arguments, then do not run "
+"COMMAND;\n"
+"                                 if this option is not given, COMMAND will "
+"be\n"
+"                                 run at least once\n"
+msgstr ""
+"  -r, --no-run-if-empty        nếu không có đối số thì không chạy LỆNH;\n"
+"                                 nếu không có tùy chọn này thì LỆNH chạy\n"
+"                                 ít nhất một lần\n"
+
+#: xargs/xargs.c:1690
+msgid ""
+"  -s, --max-chars=MAX-CHARS    limit length of command line to MAX-CHARS\n"
+msgstr "  -s, --max-chars=SỐ-CHỮ-T.ĐA  giới hạn chiều dài lệnh thành SỐ này\n"
+
+#: xargs/xargs.c:1691
+msgid "      --show-limits            show limits on command-line length\n"
+msgstr ""
+"      --show-limits            hiển thị giới hạn về độ dài của dòng lệnh\n"
+
+#: xargs/xargs.c:1692
+msgid "  -t, --verbose                print commands before executing them\n"
+msgstr "  -t, --verbose                in lệnh trước khi thi hành chúng\n"
+
+#: xargs/xargs.c:1693
+msgid "  -x, --exit                   exit if the size (see -s) is exceeded\n"
+msgstr ""
+"  -x, --exit                   thoát nếu kích thước (xem -s) bị vượt quá\n"
+
+#: xargs/xargs.c:1695
+msgid "      --help                   display this help and exit\n"
+msgstr "      --help                   hiển thị trợ giúp này rồi thoát\n"
+
+#: xargs/xargs.c:1696
+msgid "      --version                output version information and exit\n"
+msgstr "      --version                đưa ra thông tin phiên bản rồi thoát\n"
+
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "đối số %s cho %s không hợp lệ"
+
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "đối số “%s” cho “%s” chưa rõ ràng"
+
+#~ msgid "Valid arguments are:"
+#~ msgstr "Đối số hợp lệ là:"
+
+#~ msgid "error closing file"
+#~ msgstr "lỗi đóng tập tin"
+
+#~ msgid "Unknown system error"
+#~ msgstr "Gặp lỗi hệ thống không rõ"
+
+#~ msgid "%s: option '%s' is ambiguous; possibilities:"
+#~ msgstr "%s: tùy chọn “%s” chưa rõ ràng; khả năng là:"
+
+#, fuzzy
+#~ msgid "%s: option '%s' is ambiguous\n"
+#~ msgstr "%s: tùy chọn “-W %s” chưa rõ ràng\n"
+
+#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgstr "%s: tùy chọn “--%s” không nhận đối số\n"
+
+#~ msgid "%s: option '%c%s' doesn't allow an argument\n"
+#~ msgstr "%s: tùy chọn “%c%s” không nhận đối số\n"
+
+#~ msgid "%s: option '--%s' requires an argument\n"
+#~ msgstr "%s: tùy chọn “--%s” cần một đối số\n"
+
+#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgstr "%s: không nhận ra tùy chọn “--%s”\n"
+
+#~ msgid "%s: unrecognized option '%c%s'\n"
+#~ msgstr "%s: không nhận ra tùy chọn “%c%s”\n"
+
+#~ msgid "%s: invalid option -- '%c'\n"
+#~ msgstr "%s: tùy chọn không hợp lệ -- “%c”\n"
+
+#~ msgid "%s: option requires an argument -- '%c'\n"
+#~ msgstr "%s: tùy chọn cần một đối số -- “%c”\n"
+
+#~ msgid "%s: option '-W %s' is ambiguous\n"
+#~ msgstr "%s: tùy chọn “-W %s” chưa rõ ràng\n"
+
+#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: tùy chọn “-W %s” không cho phép có đối số\n"
+
+#~ msgid "%s: option '-W %s' requires an argument\n"
+#~ msgstr "%s: tùy chọn “-W %s” cần một đối số\n"
+
+#~ msgid "unable to record current working directory"
+#~ msgstr "không thể ghi lưu thư mục làm việc hiện tại"
+
+#~ msgid "failed to return to initial working directory"
+#~ msgstr "gặp lỗi khi trở về thư mục làm việc ban đầu"
+
+#~ msgid "`"
+#~ msgstr "“"
+
+#~ msgid "'"
+#~ msgstr "”"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[cCyY]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nNkK]"
+
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "Đóng gói bởi %s (%s)\n"
+
+#~ msgid "Packaged by %s\n"
+#~ msgstr "Đóng gói bởi %s\n"
+
+#~ msgid "(C)"
+#~ msgstr "©"
+
+#~ msgid ""
+#~ "\n"
+#~ "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl."
+#~ "html>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Giấy phép GPL pb3+: Giấy phép Công cộng GNU phiên bản 3 hoặc mới hơn:\n"
+#~ "<http://gnu.org/licenses/gpl.html>\n"
+#~ "Đây là phần mềm tự do: bạn có quyền sửa đổi và phát hành lại nó.\n"
+#~ "KHÔNG CÓ BẢO HÀNH GÌ CẢ, với điều kiện được pháp luật cho phép.\n"
+#~ "\n"
+
+#~ msgid "Written by %s.\n"
+#~ msgstr "Viết bởi %s.\n"
+
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Viết bởi %s và %s.\n"
+
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Viết bởi %s, %s và %s.\n"
+
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Viết bởi %s, %s, %s\n"
+#~ "và %s.\n"
+
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Viết bởi %s, %s, %s,\n"
+#~ "%s, và %s.\n"
+
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Viết bởi %s, %s, %s,\n"
+#~ "%s, %s, và %s.\n"
+
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Viết bởi %s, %s, %s,\n"
+#~ "%s, %s, %s, và %s.\n"
+
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Viết bởi %s, %s, %s,\n"
+#~ "%s, %s, %s, %s\n"
+#~ "và %s.\n"
+
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Viết bởi %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, và %s.\n"
+
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "Viết bởi %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s và những người khác.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Report bugs to: %s\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Hãy thông báo lỗi cho: %s\n"
+#~ "Hãy thông báo lỗi dịch cho <http://translationproject.org/team/vi.html>.\n"
+
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr ""
+#~ "Thông báo lỗi %s nào cho : %s\n"
+#~ "Hãy thông báo lỗi dịch cho <http://translationproject.org/team/vi.html>.\n"
+
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "Trang chủ %s: <%s>\n"
+
+#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
+#~ msgstr "Trang chủ %s: <http://www.gnu.org/software/%s/>\n"
+
+#~ msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
+#~ msgstr ""
+#~ "Trợ giúp chung về sử dụng phần mềm GNU: <http://www.gnu.org/gethelp/>\n"
+
+#~ msgid "memory exhausted"
+#~ msgstr "hết bộ nhớ"
+
+#~ msgid "invalid %s%s argument '%s'"
+#~ msgstr "đối số %s%s không hợp lệ “%s”"
+
+#~ msgid "invalid suffix in %s%s argument '%s'"
+#~ msgstr "gặp hậu tố không hợp lệ trong %s%s đối số “%s”"
+
+#~ msgid "%s%s argument '%s' too large"
+#~ msgstr "%s%s đối số “%s” quá lớn"
+
+#~ msgid "Mode %s is not valid when POSIXLY_CORRECT is on."
+#~ msgstr "Chế độ %s không hợp lệ khi POSIXLY_CORRECT hoạt động."
+
+#~ msgid ""
+#~ "\n"
+#~ "Mandatory arguments to long options are mandatory for short options too.\n"
+#~ "Non-mandatory arguments are indicated by [square brackets]\n"
+#~ "  -0, --null                   Items are separated by a null, not "
+#~ "whitespace.\n"
+#~ "                               Disables quote and backslash processing\n"
+#~ "  -a, --arg-file=FILE          Read arguments from FILE, not standard "
+#~ "input\n"
+#~ "  -d, --delimiter=CHARACTER    Input items are separated by CHARACTER, "
+#~ "not by\n"
+#~ "                               blank space. Disables quote and backslash\n"
+#~ "                               processing\n"
+#~ "  -E END                       If END occurs as a line of input, the rest "
+#~ "of\n"
+#~ "                               the input is ignored.\n"
+#~ "  -e [END], --eof[=END]        Equivalent to -E END if END is specified.\n"
+#~ "                               Otherwise, there is no end-of-file string\n"
+#~ "  --help                       Print a summary of the options to xargs.\n"
+#~ "  -I R                         same as --replace=R (R must be specified)\n"
+#~ "  -i,--replace=[R]             Replace R in initial arguments with names\n"
+#~ "                               read from standard input. If R is\n"
+#~ "                               unspecified, assume {}\n"
+#~ "  -L,-l, --max-lines=MAX-LINES Use at most MAX-LINES nonblank input lines "
+#~ "per\n"
+#~ "                               command line\n"
+#~ "  -l                           Use at most one nonblank input line per\n"
+#~ "                               command line\n"
+#~ "  -n, --max-args=MAX-ARGS      Use at most MAX-ARGS arguments per "
+#~ "command\n"
+#~ "                               line\n"
+#~ "  -P, --max-procs=MAX-PROCS    Run up to max-procs processes at a time\n"
+#~ "  -p, --interactive            Prompt before running commands\n"
+#~ "  --process-slot-var=VAR       Set environment variable VAR in child\n"
+#~ "                               processes\n"
+#~ "  -r, --no-run-if-empty        If there are no arguments, run no "
+#~ "command.\n"
+#~ "                               If this option is not given, COMMAND will "
+#~ "be\n"
+#~ "                               run at least once.\n"
+#~ "  -s, --max-chars=MAX-CHARS    Limit commands to MAX-CHARS at most\n"
+#~ "  --show-limits                Show limits on command-line length.\n"
+#~ "  -t, --verbose                Print commands before executing them\n"
+#~ "  --version                    Print the version number\n"
+#~ "  -x, --exit                   Exit if the size (see -s) is exceeded\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Tùy chọn dài yêu cầu đối số thì tùy chọn dạng ngắn cũng vậy.\n"
+#~ "Các đối số không cần tham số được biểu diễn bởi [dấu ngoặc vuông]\n"
+#~ "  -0, --null                   Các mục được ngăn cách bởi null, không "
+#~ "phải khoảng trắng.\n"
+#~ "                               Tắt xử lý dấu trích dẫn và dấu gạch ngược\n"
+#~ "  -a, --arg-file=TẬP-TIN       Đọc các đối số từ TẬP-TIN, không từ đầu "
+#~ "vào tiêu chuẩn\n"
+#~ "  -d, --delimiter=KÝ-TỰ        Các mục được ngăn cách bởi, not by KÝ-TỰ, "
+#~ "không phải\n"
+#~ "                               khoảng trắng. Tắt xử lý dấu trích dẫn và "
+#~ "dấu\n"
+#~ "                               gạch ngược\n"
+#~ "  -E CUỐI                      Nếu CUỐI xảy ra như là một dòng của đầu "
+#~ "vào, điểm cuối của\n"
+#~ "                               đầu vào bị bỏ qua.\n"
+#~ "  -e [CUỐI], --eof[=CUỐI]      Tương đương với -E CUỐI nếu CUỐI được đưa "
+#~ "ra.\n"
+#~ "                               Nếu không, ở đây không có chuỗi kết thúc "
+#~ "tập tin\n"
+#~ "  --help                       Hiển thị dạng tổng quát các tùy chọn cho "
+#~ "đối số.\n"
+#~ "  -I R                         giống với --replace=R (R phải được chỉ "
+#~ "ra)\n"
+#~ "  -i,--replace=[R]             Thay thế R trong các tham số khởi tạo với "
+#~ "các tên\n"
+#~ "                               đọc từ đầu vào tiêu chuẩn. Nếu R không "
+#~ "được\n"
+#~ "                               chỉ định, coi là {}\n"
+#~ "  -L,-l, --max-lines=MAX-LINES Dùng tối đa là MAX-LINES dòng không trống "
+#~ "cho mỗi\n"
+#~ "                               dòng lệnh\n"
+#~ "  -l                           Dùng tối đa là một dòng không trống cho "
+#~ "mỗi\n"
+#~ "                               dòng lệnh\n"
+#~ "  -n, --max-args=MAX-ARGS      Dùng tối đa là MAX-ARGS tham số cho mỗi\n"
+#~ "                               dòng lệnh\n"
+#~ "  -P, --max-procs=MAX-PROCS    Chạy cùng lúc tối đa max-procs tiến trình\n"
+#~ "  -p, --interactive            Hỏi trước khi chạy lệnh\n"
+#~ "  --process-slot-var=VAR       Đặt biến môi trường VAR trong tiến\n"
+#~ "                               trình con\n"
+#~ "  -r, --no-run-if-empty        Nếu không có đối số nào, không chạy lệnh.\n"
+#~ "                               Nếu tùy chọn này không được đưa ra, LỆNH "
+#~ "sẽ chạy\n"
+#~ "                               ít nhất một lần.\n"
+#~ "  -s, --max-chars=MAX-CHARS    Giới hạn lệnh độ dài tối đa là MAX-CHARS\n"
+#~ "  --show-limits                Hiển thị giới hạn độ dài dòng lệnh.\n"
+#~ "  -t, --verbose                Hiển thị lệnh trước khi thực thi nó\n"
+#~ "  --version                    Hiển thị phiên bản của phần mềm\n"
+#~ "  -x, --exit                   Thoát nếu kích thước (xem -s) bị vượt quá\n"
+
+#~ msgid "cannot get current directory"
+#~ msgstr "không thể lấy thư mục hiện có"
+
+#~ msgid "Built using GNU gnulib version %s\n"
+#~ msgstr "Xây dựng dùng gnulib của GNU phiên bản %s\n"
+
+#~ msgid ""
+#~ "Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
+#~ "       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
+#~ "       [-L max-lines] [-l[max-lines]] [--max-lines[=max-lines]]\n"
+#~ "       [-I replace-str] [-i[replace-str]] [--replace[=replace-str]]\n"
+#~ "       [-n max-args] [--max-args=max-args]\n"
+#~ "       [-s max-chars] [--max-chars=max-chars]\n"
+#~ "       [-P max-procs]  [--max-procs=max-procs] [--show-limits]\n"
+#~ "       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=file]\n"
+#~ "       [--version] [--help] [command [initial-arguments]]\n"
+#~ msgstr ""
+#~ "Cách dùng: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=phân-"
+#~ "cách]\n"
+#~ "      [-E eof-str] [-e[eof-str]]  [--eof[=chuỗi-eof]]\n"
+#~ "      [-L max-lines] [-l[max-lines]] [--max-lines[=số-dòng-tối-đa]]\n"
+#~ "      [-I replace-str] [-i[replace-str]] [--replace[=chuỗi-thay-thế]]\n"
+#~ "      [-n max-args] [--max-args=đối-số-tối-đa]\n"
+#~ "      [-s max-chars] [--max-chars=ký-tự-tối-đa]\n"
+#~ "      [-P max-procs]  [--max-procs=số-tiến-trình-tối-đa] [--show-limits]\n"
+#~ "      [--verbose] [--exit] [--no-run-if-empty] [--arg-file=tập-tin]\n"
+#~ "      [--version] [--help] [lệnh [đối số khởi đầu]]\n"

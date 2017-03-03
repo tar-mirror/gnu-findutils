@@ -1,16 +1,17 @@
 /* code -- bigram- and front-encode filenames for locate
-   Copyright (C) 1994, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2005, 2007, 2008, 2010, 2011 Free Software
+   Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -32,7 +33,7 @@
    followed by a (partially bigram-encoded) ASCII remainder.
    The output lines have no terminating byte; the start of the next line
    is indicated by its first byte having a value <= 30.
-   
+
    The encoding of the output bytes is:
 
    0-28		likeliest differential counts + offset (14) to make nonnegative
@@ -43,17 +44,27 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.org>.  */
 
+/* config.h should always be included first. */
 #include <config.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <string.h>
+
+/* system headers. */
 #include <errno.h>
 #include <stdbool.h>
-
-
-#ifdef STDC_HEADERS
+#include <stdio.h>
 #include <stdlib.h>
-#endif
+#include <string.h>
+#include <sys/types.h>
+
+/* gnulib headers. */
+#include "closeout.h"
+#include "error.h"
+#include "gettext.h"
+#include "progname.h"
+#include "xalloc.h"
+
+/* find headers. */
+#include "findutils-version.h"
+#include "locatedb.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -70,21 +81,11 @@
 # define N_(String) String
 #endif
 
-#include "locatedb.h"
-#include "closeout.h"
-#include "xalloc.h"
-#include "gnulib-version.h"
-#include "progname.h"
-#include "error.h"
-#include "findutils-version.h"
 
 #ifndef ATTRIBUTE_NORETURN
 # define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
 #endif
 
-
-/* The name this program was run with.  */
-extern const char *program_name;
 
 /* The 128 most common bigrams in the file list, padded with NULs
    if there are fewer.  */
@@ -136,22 +137,22 @@ or     %s most_common_bigrams < file-list > locate-database\n"),
 
 
 static void inerr (const char *filename) ATTRIBUTE_NORETURN;
-static void outerr(void)                 ATTRIBUTE_NORETURN;
+static void outerr (void)                 ATTRIBUTE_NORETURN;
 
 static void
-inerr(const char *filename) 
+inerr (const char *filename)
 {
-  error(1, errno, "%s", filename);
+  error (EXIT_FAILURE, errno, "%s", filename);
   /*NOTREACHED*/
-  abort();
+  abort ();
 }
 
 static void
-outerr(void) 
+outerr (void)
 {
-  error(1, errno, _("write error"));
+  error (EXIT_FAILURE, errno, _("write error"));
   /*NOTREACHED*/
-  abort();
+  abort ();
 }
 
 
@@ -167,28 +168,31 @@ main (int argc, char **argv)
   FILE *fp;			/* Most common bigrams file.  */
   int line_len;			/* Length of input line.  */
 
-  set_program_name(argv[0]);
-  atexit (close_stdout);
+  set_program_name (argv[0]);
+  if (atexit (close_stdout))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
 
   bigram[2] = '\0';
 
   if (argc != 2)
     {
-      usage(stderr);
+      usage (stderr);
       return 2;
     }
-  
-  if (0 == strcmp(argv[1], "--help"))
+
+  if (0 == strcmp (argv[1], "--help"))
     {
-      usage(stdout);
+      usage (stdout);
       return 0;
     }
-  else if (0 == strcmp(argv[1], "--version"))
+  else if (0 == strcmp (argv[1], "--version"))
     {
-      display_findutils_version("code");
+      display_findutils_version ("code");
       return 0;
     }
-  
+
   fp = fopen (argv[1], "r");
   if (fp == NULL)
     {
@@ -196,7 +200,7 @@ main (int argc, char **argv)
       perror (argv[1]);
       return 1;
     }
-  
+
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);
@@ -208,13 +212,13 @@ main (int argc, char **argv)
   /* Copy the list of most common bigrams to the output,
      padding with NULs if there are <128 of them.  */
   if (NULL == fgets (bigrams, 257, fp))
-    inerr(argv[1]);
-  
+    inerr (argv[1]);
+
   if (256 != fwrite (bigrams, 1, 256, stdout))
-     outerr();
+     outerr ();
 
   if (EOF == fclose (fp))
-     inerr(argv[1]);
+     inerr (argv[1]);
 
   while ((line_len = getline (&path, &pathsize, stdin)) > 0)
     {

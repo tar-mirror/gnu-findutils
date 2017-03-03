@@ -1,16 +1,17 @@
 /* bigram -- list bigrams for locate
-   Copyright (C) 1994, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2007, 2009, 2010, 2011 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -29,25 +30,43 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
+/* config.h must always be included first. */
 #include <config.h>
+
+/* system headers. */
+#include <errno.h>
 #include <stdio.h>
-
-#if defined HAVE_STRING_H || defined STDC_HEADERS
+#include <locale.h>
 #include <string.h>
-#else
-#include <strings.h>
-#endif
-
-#ifdef STDC_HEADERS
 #include <stdlib.h>
-#endif
 #include <sys/types.h>
 
-#include <xalloc.h>
+/* gnulib headers. */
 #include "closeout.h"
+#include "gettext.h"
+#include "progname.h"
+#include "xalloc.h"
+#include "error.h"
 
-/* The name this program was run with.  */
-char *program_name;
+/* find headers would go here but we don't need any. */
+
+
+/* We use gettext because for example xmalloc may issue an error message. */
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#define textdomain(Domain)
+#define bindtextdomain(Package, Directory)
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop(String)
+#else
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
+#endif
+
 
 /* Return the length of the longest common prefix of strings S1 and S2. */
 
@@ -69,10 +88,23 @@ main (int argc, char **argv)
   size_t pathsize, oldpathsize;	/* Amounts allocated for them.  */
   int line_len;			/* Length of input line.  */
 
-  program_name = argv[0];
+  if (argv[0])
+    set_program_name (argv[0]);
+  else
+    set_program_name ("bigram");
+
+#ifdef HAVE_SETLOCALE
+  setlocale (LC_ALL, "");
+#endif
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
   (void) argc;
-  atexit (close_stdout);
-  
+  if (atexit (close_stdout))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
+
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);

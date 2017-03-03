@@ -1,5 +1,5 @@
 /* Test of <stat-time.h>.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,33 +22,34 @@
 
 #include <fcntl.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define ASSERT(expr) \
-  do									     \
-    {									     \
-      if (!(expr))							     \
-        {								     \
-          fprintf (stderr, "%s:%d: assertion failed\n", __FILE__, __LINE__); \
-          abort ();							     \
-        }								     \
-    }									     \
-  while (0)
+#include "macros.h"
+
+#define BASE "test-stat-time.t"
+#include "nap.h"
 
 enum { NFILES = 4 };
+
+static int
+force_unlink (const char *filename)
+{
+  /* This chmod is necessary on mingw, where unlink() of a read-only file
+     fails with EPERM.  */
+  chmod (filename, 0600);
+  return unlink (filename);
+}
 
 static void
 cleanup (int sig)
 {
   /* Remove temporary files.  */
-  unlink ("t-stt-stamp1");
-  unlink ("t-stt-testfile");
-  unlink ("t-stt-stamp2");
-  unlink ("t-stt-renamed");
-  unlink ("t-stt-stamp3");
+  force_unlink ("t-stt-stamp1");
+  force_unlink ("t-stt-testfile");
+  force_unlink ("t-stt-stamp2");
+  force_unlink ("t-stt-renamed");
+  force_unlink ("t-stt-stamp3");
 
   if (sig != 0)
     _exit (1);
@@ -87,13 +88,13 @@ prepare_test (struct stat *statinfo, struct timespec *modtimes)
   int i;
 
   create_file ("t-stt-stamp1");
-  sleep (2);
+  nap ();
   create_file ("t-stt-testfile");
-  sleep (2);
+  nap ();
   create_file ("t-stt-stamp2");
-  sleep (2);
+  nap ();
   ASSERT (chmod ("t-stt-testfile", 0400) == 0);
-  sleep (2);
+  nap ();
   create_file ("t-stt-stamp3");
 
   do_stat ("t-stt-stamp1",  &statinfo[0]);
@@ -114,13 +115,26 @@ test_mtime (const struct stat *statinfo, struct timespec *modtimes)
   int i;
 
   /* Use the struct stat fields directly. */
-  ASSERT (statinfo[0].st_mtime < statinfo[2].st_mtime); /* mtime(stamp1) < mtime(stamp2) */
-  ASSERT (statinfo[2].st_mtime < statinfo[3].st_mtime); /* mtime(stamp2) < mtime(stamp3) */
-  ASSERT (statinfo[2].st_mtime < statinfo[1].st_ctime); /* mtime(stamp2) < ctime(renamed) */
+  /* mtime(stamp1) < mtime(stamp2) */
+  ASSERT (statinfo[0].st_mtime < statinfo[2].st_mtime
+          || (statinfo[0].st_mtime == statinfo[2].st_mtime
+              && (get_stat_mtime_ns (&statinfo[0])
+                  < get_stat_mtime_ns (&statinfo[2]))));
+  /* mtime(stamp2) < mtime(stamp3) */
+  ASSERT (statinfo[2].st_mtime < statinfo[3].st_mtime
+          || (statinfo[2].st_mtime == statinfo[3].st_mtime
+              && (get_stat_mtime_ns (&statinfo[2])
+                  < get_stat_mtime_ns (&statinfo[3]))));
 
   /* Now check the result of the access functions. */
-  ASSERT (modtimes[0].tv_sec < modtimes[2].tv_sec); /* mtime(stamp1) < mtime(stamp2) */
-  ASSERT (modtimes[2].tv_sec < modtimes[3].tv_sec); /* mtime(stamp2) < mtime(stamp3) */
+  /* mtime(stamp1) < mtime(stamp2) */
+  ASSERT (modtimes[0].tv_sec < modtimes[2].tv_sec
+          || (modtimes[0].tv_sec == modtimes[2].tv_sec
+              && modtimes[0].tv_nsec < modtimes[2].tv_nsec));
+  /* mtime(stamp2) < mtime(stamp3) */
+  ASSERT (modtimes[2].tv_sec < modtimes[3].tv_sec
+          || (modtimes[2].tv_sec == modtimes[3].tv_sec
+              && modtimes[2].tv_nsec < modtimes[3].tv_nsec));
 
   /* verify equivalence */
   for (i = 0; i < NFILES; ++i)
@@ -129,31 +143,58 @@ test_mtime (const struct stat *statinfo, struct timespec *modtimes)
       ts = get_stat_mtime (&statinfo[i]);
       ASSERT (ts.tv_sec == statinfo[i].st_mtime);
     }
-
-  ASSERT (statinfo[2].st_mtime < statinfo[1].st_ctime); /* mtime(stamp2) < ctime(renamed) */
 }
+
+#if (defined _WIN32 || defined __WIN32__) && !defined __CYGWIN__
+/* Skip the ctime tests on native Windows platforms, because their
+   st_ctime is either the same as st_mtime (plus or minus an offset)
+   or set to the file _creation_ time, and is not influenced by rename
+   or chmod.  */
+# define test_ctime(ignored) ((void) 0)
+#else
+static void
+test_ctime (const struct stat *statinfo)
+{
+  /* On some buggy NFS clients, mtime and ctime are disproportionately
+     skewed from one another.  Skip this test in that case.  */
+  if (statinfo[0].st_mtime != statinfo[0].st_ctime)
+    return;
+
+  /* mtime(stamp2) < ctime(renamed) */
+  ASSERT (statinfo[2].st_mtime < statinfo[1].st_ctime
+          || (statinfo[2].st_mtime == statinfo[1].st_ctime
+              && (get_stat_mtime_ns (&statinfo[2])
+                  < get_stat_ctime_ns (&statinfo[1]))));
+}
+#endif
 
 static void
 test_birthtime (const struct stat *statinfo,
-		const struct timespec *modtimes,
-		struct timespec *birthtimes)
+                const struct timespec *modtimes,
+                struct timespec *birthtimes)
 {
   int i;
 
-  /* Collect the birth times.. */
+  /* Collect the birth times.  */
   for (i = 0; i < NFILES; ++i)
     {
       birthtimes[i] = get_stat_birthtime (&statinfo[i]);
       if (birthtimes[i].tv_nsec < 0)
-	return;
+        return;
     }
 
-  ASSERT (modtimes[0].tv_sec < birthtimes[1].tv_sec); /* mtime(stamp1) < birthtime(renamed) */
-  ASSERT (birthtimes[1].tv_sec < modtimes[2].tv_sec); /* birthtime(renamed) < mtime(stamp2) */
+  /* mtime(stamp1) < birthtime(renamed) */
+  ASSERT (modtimes[0].tv_sec < birthtimes[1].tv_sec
+          || (modtimes[0].tv_sec == birthtimes[1].tv_sec
+              && modtimes[0].tv_nsec < birthtimes[1].tv_nsec));
+  /* birthtime(renamed) < mtime(stamp2) */
+  ASSERT (birthtimes[1].tv_sec < modtimes[2].tv_sec
+          || (birthtimes[1].tv_sec == modtimes[2].tv_sec
+              && birthtimes[1].tv_nsec < modtimes[2].tv_nsec));
 }
 
 int
-main ()
+main (void)
 {
   struct stat statinfo[NFILES];
   struct timespec modtimes[NFILES];
@@ -175,6 +216,7 @@ main ()
   cleanup (0);
   prepare_test (statinfo, modtimes);
   test_mtime (statinfo, modtimes);
+  test_ctime (statinfo);
   test_birthtime (statinfo, modtimes, birthtimes);
 
   cleanup (0);

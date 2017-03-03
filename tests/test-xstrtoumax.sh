@@ -1,43 +1,46 @@
 #!/bin/sh
+: ${srcdir=.}
+. "$srcdir/init.sh"; path_prepend_ .
 
-tmpfiles=""
-trap 'rm -fr $tmpfiles' 1 2 3 15
-
-tmpfiles="t-xstrtoumax.tmp t-xstrtoumax.xo"
-: > t-xstrtoumax.tmp
 too_big=99999999999999999999999999999999999999999999999999999999999999999999
 result=0
 
 # test xstrtoumax
-./test-xstrtoumax${EXEEXT} 1 >> t-xstrtoumax.tmp 2>&1 || result=1
-./test-xstrtoumax${EXEEXT} -1 >> t-xstrtoumax.tmp 2>&1 && result=1
-./test-xstrtoumax${EXEEXT} 1k >> t-xstrtoumax.tmp 2>&1 || result=1
-./test-xstrtoumax${EXEEXT} ${too_big}h >> t-xstrtoumax.tmp 2>&1 && result=1
-./test-xstrtoumax${EXEEXT} $too_big >> t-xstrtoumax.tmp 2>&1 && result=1
-./test-xstrtoumax${EXEEXT} x >> t-xstrtoumax.tmp 2>&1 && result=1
-./test-xstrtoumax${EXEEXT} 9x >> t-xstrtoumax.tmp 2>&1 && result=1
-./test-xstrtoumax${EXEEXT} 010 >> t-xstrtoumax.tmp 2>&1 || result=1
-./test-xstrtoumax${EXEEXT} MiB >> t-xstrtoumax.tmp 2>&1 || result=1
+test-xstrtoumax 1 >> out 2>&1 || result=1
+test-xstrtoumax -1 >> out 2>&1 && result=1
+test-xstrtoumax 1k >> out 2>&1 || result=1
+test-xstrtoumax ${too_big}h >> out 2>&1 && result=1
+test-xstrtoumax $too_big >> out 2>&1 && result=1
+test-xstrtoumax x >> out 2>&1 && result=1
+test-xstrtoumax 9x >> out 2>&1 && result=1
+test-xstrtoumax 010 >> out 2>&1 || result=1
+test-xstrtoumax MiB >> out 2>&1 || result=1
+
+# Find out how to remove carriage returns from output. Solaris /usr/ucb/tr
+# does not understand '\r'.
+if echo solaris | tr -d '\r' | grep solais > /dev/null; then
+  cr='\015'
+else
+  cr='\r'
+fi
 
 # normalize output
-sed -e 's/^[^:]*: //' < t-xstrtoumax.tmp > t-xstrtoumax.xo
-mv t-xstrtoumax.xo t-xstrtoumax.tmp
+LC_ALL=C tr -d "$cr" < out > k
+mv k out
 
 # compare expected output
-cat > t-xstrtoumax.xo <<EOF
+cat > exp <<EOF
 1->1 ()
-invalid X argument \`-1'
+invalid X argument '-1'
 1k->1024 ()
-invalid suffix in X argument \`${too_big}h'
-X argument \`$too_big' too large
-invalid X argument \`x'
-invalid suffix in X argument \`9x'
+invalid suffix in X argument '${too_big}h'
+X argument '$too_big' too large
+invalid X argument 'x'
+invalid suffix in X argument '9x'
 010->8 ()
 MiB->1048576 ()
 EOF
 
-diff t-xstrtoumax.xo t-xstrtoumax.tmp || result=1
+compare exp out || result=1
 
-rm -fr $tmpfiles
-
-exit $result
+Exit $result
