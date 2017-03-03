@@ -40,7 +40,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.28, for `find' version 4.2.28.
+   This is edition 4.2.29, for `find' version 4.2.29.
 
 * Menu:
 
@@ -1429,7 +1429,13 @@ it forces left-alignment of the field.
 unrecognised character (i.e. not a known directive or `printf' field
 width and precision specifier), is discarded (but the unrecognised
 character is printed), and a warning message is printed to the standard
-error output (because it was probably a typo).
+error output (because it was probably a typo).  Don't rely on this
+behaviour, because other directives may be added in the future.
+
+   A `%' at the end of the format argument causes undefined behaviour
+since there is no following character.  In some locales, it may hide
+your door keys, while in others it may remove the final page from the
+novel you are reading.
 
 * Menu:
 
@@ -3018,9 +3024,8 @@ explicitly by the use of options on the command line:
      Do not issue warning messages.
 
    These options take effect at the point on the command line where they
-are specified.  Therefore if you specify `-nowarn' at the end of the
-command line, you will not see warning messages for any problems
-occurring before that.  The warning messages affected by the above
+are specified.  Therefore it's not useful to specify `-nowarn' at the
+end of the command line.  The warning messages affected by the above
 options are triggered by:
 
    - Use of the `-d' option which is deprecated; please use `-depth'
@@ -3033,8 +3038,8 @@ options are triggered by:
      (for example `-type' or `-print') on the command line.
 
    The default behaviour above is designed to work in that way so that
-existing shell scripts which use such constructs don't generate
-spurious errors, but people will be made aware of the problem.
+existing shell scripts don't generate spurious errors, but people will
+be made aware of the problem.
 
    Some warning messages are issued for less common or more serious
 problems, and consequently cannot be turned off:
@@ -3187,6 +3192,8 @@ databases returning each match of PATTERN.
 `-S'
      Print some summary information for each `locate' database.  No
      search is performed unless non-option arguments are given.
+     Although the BSD version of locate also has this option, the
+     format of the output is different.
 
 `--help'
      Print a summary of the command line usage for `locate' and exit.
@@ -5122,6 +5129,7 @@ which would not normally be included in the search (defeating the
 
 * Menu:
 
+* Problems with -exec and filenames::
 * Changing the Current Working Directory::
 * Race Conditions with -exec::
 * Race Conditions with -print and -print0::
@@ -5131,9 +5139,38 @@ which would not normally be included in the search (defeating the
    (1) This is more or less the definition of the term "race condition"
 
 
-File: find.info,  Node: Changing the Current Working Directory,  Next: Race Conditions with -exec,  Up: Security Considerations for find
+File: find.info,  Node: Problems with -exec and filenames,  Next: Changing the Current Working Directory,  Up: Security Considerations for find
 
-9.2.1 Changing the Current Working Directory
+9.2.1 Problems with -exec and filenames
+---------------------------------------
+
+It is safe in many cases to use the `-execdir' action with any file
+name.  Because `-execdir' prefixes the arguments it passes to programs
+with `./', you will not accidentally pass an argument which is
+interpreted as an option.  For example the file `-f' would be passed to
+`rm' as `./-f', which is harmless.
+
+   However, your degree of safety does depend on the nature of the
+program you are running.  For example constructs such as these two
+commands
+
+     find -exec sh -c "something {}" \;
+     find -execdir sh -c "something {}" \;
+
+   are very dangerous.  The reason for this is that the `{}' is
+expanded to a filename which might contain a semicolon or other
+characters special to the shell.  If for example someone creates the
+file `/tmp/foo; rm -rf $HOME' then the two commands above could delete
+someone's home directory.
+
+   So for this reason do not run any command which will pass untrusted
+data (such as the names of files) to commands which interpret arguments
+as commands to be further interpreted (for example `sh').
+
+
+File: find.info,  Node: Changing the Current Working Directory,  Next: Race Conditions with -exec,  Prev: Problems with -exec and filenames,  Up: Security Considerations for find
+
+9.2.2 Changing the Current Working Directory
 --------------------------------------------
 
 As `find' searches the filesystem, it finds subdirectories and then
@@ -5170,7 +5207,7 @@ of your system.
 
 File: find.info,  Node: O_NOFOLLOW,  Next: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
 
-9.2.1.1 O_NOFOLLOW
+9.2.2.1 O_NOFOLLOW
 ..................
 
 If your system supports the O_NOFOLLOW flag (1) to the `open(2)' system
@@ -5211,7 +5248,7 @@ system and version number; when this happens you will see
 
 File: find.info,  Node: Systems without O_NOFOLLOW,  Prev: O_NOFOLLOW,  Up: Changing the Current Working Directory
 
-9.2.1.2 Systems without O_NOFOLLOW
+9.2.2.2 Systems without O_NOFOLLOW
 ..................................
 
 The strategy for preventing this type of problem on systems that lack
@@ -5251,7 +5288,7 @@ parent.  No operations would have been performed within that directory.
 
 File: find.info,  Node: Race Conditions with -exec,  Next: Race Conditions with -print and -print0,  Prev: Changing the Current Working Directory,  Up: Security Considerations for find
 
-9.2.2 Race Conditions with -exec
+9.2.3 Race Conditions with -exec
 --------------------------------
 
 The `-exec' action causes another program to be run.  It passes to the
@@ -5303,7 +5340,7 @@ by untrusted users.  For similar reasons, `-execdir' does not allow
 
 File: find.info,  Node: Race Conditions with -print and -print0,  Prev: Race Conditions with -exec,  Up: Security Considerations for find
 
-9.2.3 Race Conditions with -print and -print0
+9.2.4 Race Conditions with -print and -print0
 ---------------------------------------------
 
 The `-print' and `-print0' actions can be used to produce a list of
@@ -5728,91 +5765,92 @@ Node: Print File Name47920
 Node: Print File Information48937
 Node: Escapes51932
 Node: Format Directives52683
-Node: Name Directives53828
-Node: Ownership Directives54814
-Node: Size Directives55831
-Node: Location Directives56597
-Node: Time Directives57716
-Node: Time Formats58619
-Node: Time Components59055
-Node: Date Components59561
-Node: Combined Time Formats60384
-Node: Formatting Flags61101
-Node: Run Commands61713
-Node: Single File62071
-Node: Multiple Files63994
-Node: Unsafe File Name Handling67848
-Node: Safe File Name Handling69411
-Node: Unusual Characters in File Names70987
-Node: Limiting Command Size74023
-Node: Interspersing File Names76316
-Node: Querying78771
-Node: Delete Files80301
-Node: Adding Tests80705
-Node: Databases83345
-Node: Database Locations84063
-Node: Database Formats85071
-Node: New Database Format85975
-Node: Sample Database87642
-Node: Old Database Format88290
-Node: Newline Handling90350
-Node: File Permissions91796
-Node: Mode Structure92365
-Node: Symbolic Modes95506
-Node: Setting Permissions96603
-Node: Copying Permissions99151
-Node: Changing Special Permissions99965
-Node: Conditional Executability101509
-Node: Multiple Changes102041
-Node: Umask and Protection103698
-Node: Numeric Modes104796
-Node: Reference106488
-Node: Invoking find106836
-Node: Warning Messages109168
-Node: Invoking locate110944
-Node: Invoking updatedb116729
-Node: Invoking xargs120414
-Node: Regular Expressions125444
-Node: findutils-default regular expression syntax126639
-Node: awk regular expression syntax129145
-Node: egrep regular expression syntax131030
-Node: emacs regular expression syntax133241
-Node: gnu-awk regular expression syntax135770
-Node: grep regular expression syntax138110
-Node: posix-awk regular expression syntax140836
-Node: posix-basic regular expression syntax143107
-Node: posix-egrep regular expression syntax145746
-Node: posix-extended regular expression syntax148119
-Node: Environment Variables150594
-Node: Common Tasks152538
-Node: Viewing And Editing152963
-Node: Archiving153969
-Node: Cleaning Up155601
-Node: Strange File Names157390
-Node: Fixing Permissions159040
-Node: Classifying Files159604
-Node: Worked Examples160322
-Node: Deleting Files160959
-Node: Updating A Timestamp File173979
-Node: Security Considerations180709
-Node: Levels of Risk182243
-Ref: Levels of Risk-Footnote-1185041
-Node: Security Considerations for find185220
-Ref: Security Considerations for find-Footnote-1187504
-Node: Changing the Current Working Directory187577
-Node: O_NOFOLLOW189304
-Ref: O_NOFOLLOW-Footnote-1190948
-Node: Systems without O_NOFOLLOW191050
-Node: Race Conditions with -exec193154
-Node: Race Conditions with -print and -print0196065
-Node: Security Considerations for xargs196985
-Node: Security Considerations for locate199055
-Node: Security Summary199752
-Node: Error Messages200509
-Node: Error Messages From find201521
-Node: Error Messages From xargs206378
-Node: Error Messages From locate208138
-Node: Error Messages From updatedb209370
-Node: Primary Index209773
+Node: Name Directives54145
+Node: Ownership Directives55131
+Node: Size Directives56148
+Node: Location Directives56914
+Node: Time Directives58033
+Node: Time Formats58936
+Node: Time Components59372
+Node: Date Components59878
+Node: Combined Time Formats60701
+Node: Formatting Flags61418
+Node: Run Commands62030
+Node: Single File62388
+Node: Multiple Files64311
+Node: Unsafe File Name Handling68165
+Node: Safe File Name Handling69728
+Node: Unusual Characters in File Names71304
+Node: Limiting Command Size74340
+Node: Interspersing File Names76633
+Node: Querying79088
+Node: Delete Files80618
+Node: Adding Tests81022
+Node: Databases83662
+Node: Database Locations84380
+Node: Database Formats85388
+Node: New Database Format86292
+Node: Sample Database87959
+Node: Old Database Format88607
+Node: Newline Handling90667
+Node: File Permissions92113
+Node: Mode Structure92682
+Node: Symbolic Modes95823
+Node: Setting Permissions96920
+Node: Copying Permissions99468
+Node: Changing Special Permissions100282
+Node: Conditional Executability101826
+Node: Multiple Changes102358
+Node: Umask and Protection104015
+Node: Numeric Modes105113
+Node: Reference106805
+Node: Invoking find107153
+Node: Warning Messages109485
+Node: Invoking locate111173
+Node: Invoking updatedb117064
+Node: Invoking xargs120749
+Node: Regular Expressions125779
+Node: findutils-default regular expression syntax126974
+Node: awk regular expression syntax129480
+Node: egrep regular expression syntax131365
+Node: emacs regular expression syntax133576
+Node: gnu-awk regular expression syntax136105
+Node: grep regular expression syntax138445
+Node: posix-awk regular expression syntax141171
+Node: posix-basic regular expression syntax143442
+Node: posix-egrep regular expression syntax146081
+Node: posix-extended regular expression syntax148454
+Node: Environment Variables150929
+Node: Common Tasks152873
+Node: Viewing And Editing153298
+Node: Archiving154304
+Node: Cleaning Up155936
+Node: Strange File Names157725
+Node: Fixing Permissions159375
+Node: Classifying Files159939
+Node: Worked Examples160657
+Node: Deleting Files161294
+Node: Updating A Timestamp File174314
+Node: Security Considerations181044
+Node: Levels of Risk182578
+Ref: Levels of Risk-Footnote-1185376
+Node: Security Considerations for find185555
+Ref: Security Considerations for find-Footnote-1187877
+Node: Problems with -exec and filenames187950
+Node: Changing the Current Working Directory189213
+Node: O_NOFOLLOW190982
+Ref: O_NOFOLLOW-Footnote-1192626
+Node: Systems without O_NOFOLLOW192728
+Node: Race Conditions with -exec194832
+Node: Race Conditions with -print and -print0197743
+Node: Security Considerations for xargs198663
+Node: Security Considerations for locate200733
+Node: Security Summary201430
+Node: Error Messages202187
+Node: Error Messages From find203199
+Node: Error Messages From xargs208056
+Node: Error Messages From locate209816
+Node: Error Messages From updatedb211048
+Node: Primary Index211451
 
 End Tag Table

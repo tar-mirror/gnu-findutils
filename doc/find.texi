@@ -1516,10 +1516,17 @@ The format flag @samp{-} does work; it forces left-alignment of the
 field.
 
 @samp{%%} is a literal percent sign.  A @samp{%} character followed by
-an unrecognised character (i.e. not a known directive or @code{printf} field
-width and precision specifier), is discarded (but the unrecognised
-character is printed), and a warning message is printed to the
-standard error output (because it was probably a typo).
+an unrecognised character (i.e. not a known directive or @code{printf}
+field width and precision specifier), is discarded (but the
+unrecognised character is printed), and a warning message is printed
+to the standard error output (because it was probably a typo).  Don't
+rely on this behaviour, because other directives may be added in the
+future.
+
+A @samp{%} at the end of the format argument causes undefined
+behaviour since there is no following character.  In some locales, it
+may hide your door keys, while in others it may remove the final page
+from the novel you are reading.
 
 @menu
 * Name Directives::
@@ -2668,10 +2675,9 @@ Do not issue warning messages.
 @end table
 
 These options take effect at the point on the command line where they
-are specified.  Therefore if you specify @samp{-nowarn} at the end of
-the command line, you will not see warning messages for any problems
-occurring before that.  The warning messages affected by the above
-options are triggered by:
+are specified.  Therefore it's not useful to specify @samp{-nowarn} at
+the end of the command line.  The warning messages affected by the
+above options are triggered by:
 
 @itemize @minus
 @item
@@ -2687,8 +2693,8 @@ Specifying an option (for example @samp{-mindepth}) after a non-option
 
 
 The default behaviour above is designed to work in that way so that
-existing shell scripts which use such constructs don't generate
-spurious errors, but people will be made aware of the problem.
+existing shell scripts don't generate spurious errors, but people will
+be made aware of the problem.
 
 Some warning messages are issued for less common or more serious
 problems, and consequently cannot be turned off:
@@ -2846,7 +2852,9 @@ compatibility with BSD's @code{locate}.
 @item --statistics
 @itemx -S
 Print some summary information for each @code{locate} database.  No
-search is performed unless non-option arguments are given.
+search is performed unless non-option arguments are given.  Although
+the BSD version of locate also has this option, the format of the
+output is different.
 
 @item --help
 Print a summary of the command line usage for @code{locate} and exit.
@@ -4085,11 +4093,39 @@ filesystem which would not normally be included in the search
 (defeating the @code{-prune} action for example).
 
 @menu
+* Problems with -exec and filenames::
 * Changing the Current Working Directory::
 * Race Conditions with -exec::
 * Race Conditions with -print and -print0::
 @end menu
 
+@node Problems with -exec and filenames
+@subsection Problems with -exec and filenames
+
+It is safe in many cases to use the @samp{-execdir} action with any
+file name.  Because @samp{-execdir} prefixes the arguments it passes
+to programs with @samp{./}, you will not accidentally pass an argument
+which is interpreted as an option.  For example the file @file{-f}
+would be passed to @code{rm} as @file{./-f}, which is harmless.
+
+However, your degree of safety does depend on the nature of the
+program you are running.  For example constructs such as these two commands
+
+@example
+find -exec sh -c "something @{@}" \;
+find -execdir sh -c "something @{@}" \;
+@end example
+
+are very dangerous.  The reason for this is that the @samp{@{@}} is
+expanded to a filename which might contain a semicolon or other
+characters special to the shell.  If for example someone creates the
+file @file{/tmp/foo; rm -rf $HOME} then the two commands above could
+delete someone's home directory.
+
+So for this reason do not run any command which will pass untrusted
+data (such as the names of files) to commands which interpret
+arguments as commands to be further interpreted (for example
+@samp{sh}).
 
 @node Changing the Current Working Directory
 @subsection Changing the Current Working Directory
