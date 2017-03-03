@@ -1,5 +1,5 @@
 /* xargs -- build and execute command lines from standard input
-   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1217,7 +1217,7 @@ Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n\
        [-I replace-str] [-i[replace-str]] [--replace[=replace-str]]\n\
        [-n max-args] [--max-args=max-args]\n\
        [-s max-chars] [--max-chars=max-chars]\n\
-       [-P max-procs]  [--max-procs=max-procs] [[--show-limits]\n\
+       [-P max-procs]  [--max-procs=max-procs] [--show-limits]\n\
        [--verbose] [--exit] [--no-run-if-empty] [--arg-file=file]\n\
        [--version] [--help] [command [initial-arguments]]\n"),
 	   program_name);

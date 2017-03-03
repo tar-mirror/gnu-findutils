@@ -46,6 +46,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/findlib.m4 \
 	$(top_srcdir)/gnulib/m4/atexit.m4 \
 	$(top_srcdir)/gnulib/m4/canonicalize.m4 \
 	$(top_srcdir)/gnulib/m4/closeout.m4 \
+	$(top_srcdir)/gnulib/m4/codeset.m4 \
 	$(top_srcdir)/gnulib/m4/d-ino.m4 \
 	$(top_srcdir)/gnulib/m4/dirname.m4 \
 	$(top_srcdir)/gnulib/m4/dos.m4 \

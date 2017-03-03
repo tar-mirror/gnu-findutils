@@ -1,7 +1,7 @@
 /* regexprops.c -- document the properties of the regular expressions 
                    understood by gnulib.
 
-   Copyright 2005 Free Software Foundation, Inc.
+   Copyright 2005, 2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -320,7 +320,7 @@ static int describe_regex_syntax(int options)
       literal("The character @samp{$} only represents the end of a string when it appears:");
       beginenum();
       enum_item("At the end of a regular expression");
-      enum_item("Before an close-group, signified by ");
+      enum_item("Before a close-group, signified by ");
       if (options & RE_NO_BK_PARENS)
 	{
 	  literal("@samp{)}");

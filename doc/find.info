@@ -40,7 +40,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.29, for `find' version 4.2.29.
+   This is edition 4.2.30, for `find' version 4.2.30.
 
 * Menu:
 
@@ -1426,7 +1426,7 @@ even numeric ones, are printed with %s.  The format flag `-' does work;
 it forces left-alignment of the field.
 
    `%%' is a literal percent sign.  A `%' character followed by an
-unrecognised character (i.e. not a known directive or `printf' field
+unrecognised character (i.e., not a known directive or `printf' field
 width and precision specifier), is discarded (but the unrecognised
 character is printed), and a warning message is printed to the standard
 error output (because it was probably a typo).  Don't rely on this
@@ -1776,7 +1776,7 @@ File: find.info,  Node: Single File,  Next: Multiple Files,  Up: Run Commands
 Here is how to run a command on one file at a time.
 
  -- Action: -execdir command ;
-     Execute COMMAND; true if zero sftatus is returned.  `find' takes
+     Execute COMMAND; true if zero status is returned.  `find' takes
      all arguments after `-exec' to be part of the command until an
      argument consisting of `;' is reached.  It replaces the string
      `{}' by the current file name being processed everywhere it occurs
@@ -1818,10 +1818,10 @@ File: find.info,  Node: Multiple Files,  Next: Querying,  Prev: Single File,  Up
 3.3.2 Multiple Files
 --------------------
 
-Sometimes you need to process files one of the time.  But usually this
-is not necessary, and, it is faster to run a command on as many files
-as possible at a time, rather than once per file.  Doing this saves on
-the time it takes to start up the command each time.
+Sometimes you need to process files one at a time.  But usually this is
+not necessary, and, it is faster to run a command on as many files as
+possible at a time, rather than once per file.  Doing this saves on the
+time it takes to start up the command each time.
 
    The `-execdir' and `-exec' actions have variants that build command
 lines containing as many matched files as possible.
@@ -3215,7 +3215,7 @@ of `find' and then uses utilities for optimizing the database for
 performance.  `updatedb' is often run periodically as a `cron' job and
 configured with environment variables or command options.  Typically,
 operating systems have a shell script that "exports" configurations for
-variable definitions and uses another schell script that "sources" the
+variable definitions and uses another shell script that "sources" the
 configuration file into the environment and then executes `updatedb' in
 the environment.
 
@@ -3225,7 +3225,7 @@ of `find' and then uses utilities for optimizing the database for
 performance.  `updatedb' is often run periodically as a `cron' job and
 configured with environment variables or command options.  Typically,
 operating systems have a shell script that "exports" configurations for
-variable definitions and uses another schell script that "sources" the
+variable definitions and uses another shell script that "sources" the
 configuration file into the environment and then executes `updatedb' in
 the environment.
 
@@ -3529,7 +3529,7 @@ appears:
 appears:
   1. At the end of a regular expression
 
-  2. Before an close-group, signified by `\)'
+  2. Before a close-group, signified by `\)'
 
   3. Before the alternation operator `\|'
 
@@ -3738,7 +3738,7 @@ appears:
 appears:
   1. At the end of a regular expression
 
-  2. Before an close-group, signified by `\)'
+  2. Before a close-group, signified by `\)'
 
   3. Before the alternation operator `\|'
 
@@ -3896,7 +3896,7 @@ appears:
 appears:
   1. At the end of a regular expression
 
-  2. Before an close-group, signified by `\)'
+  2. Before a close-group, signified by `\)'
 
   3. Before a newline
 
@@ -4050,7 +4050,7 @@ appears:
 appears:
   1. At the end of a regular expression
 
-  2. Before an close-group, signified by `\)'
+  2. Before a close-group, signified by `\)'
 
   3. Before the alternation operator `\|'
 
@@ -4808,7 +4808,7 @@ most secure alternative is `-execdir ... +', but this is not as
 portable as the insecure action `-exec ... +'.
 
    The `-delete' action is not completely portable, but the only other
-possibillity which is as secure (`-execdir') is no more portable.  The
+possibility which is as secure (`-execdir') is no more portable.  The
 most efficient portable alternative is `-exec ...+', but this is
 insecure and isn't supported by versions of GNU findutils prior to
 4.2.12.
@@ -5765,92 +5765,92 @@ Node: Print File Name47920
 Node: Print File Information48937
 Node: Escapes51932
 Node: Format Directives52683
-Node: Name Directives54145
-Node: Ownership Directives55131
-Node: Size Directives56148
-Node: Location Directives56914
-Node: Time Directives58033
-Node: Time Formats58936
-Node: Time Components59372
-Node: Date Components59878
-Node: Combined Time Formats60701
-Node: Formatting Flags61418
-Node: Run Commands62030
-Node: Single File62388
+Node: Name Directives54146
+Node: Ownership Directives55132
+Node: Size Directives56149
+Node: Location Directives56915
+Node: Time Directives58034
+Node: Time Formats58937
+Node: Time Components59373
+Node: Date Components59879
+Node: Combined Time Formats60702
+Node: Formatting Flags61419
+Node: Run Commands62031
+Node: Single File62389
 Node: Multiple Files64311
-Node: Unsafe File Name Handling68165
-Node: Safe File Name Handling69728
-Node: Unusual Characters in File Names71304
-Node: Limiting Command Size74340
-Node: Interspersing File Names76633
-Node: Querying79088
-Node: Delete Files80618
-Node: Adding Tests81022
-Node: Databases83662
-Node: Database Locations84380
-Node: Database Formats85388
-Node: New Database Format86292
-Node: Sample Database87959
-Node: Old Database Format88607
-Node: Newline Handling90667
-Node: File Permissions92113
-Node: Mode Structure92682
-Node: Symbolic Modes95823
-Node: Setting Permissions96920
-Node: Copying Permissions99468
-Node: Changing Special Permissions100282
-Node: Conditional Executability101826
-Node: Multiple Changes102358
-Node: Umask and Protection104015
-Node: Numeric Modes105113
-Node: Reference106805
-Node: Invoking find107153
-Node: Warning Messages109485
-Node: Invoking locate111173
-Node: Invoking updatedb117064
-Node: Invoking xargs120749
-Node: Regular Expressions125779
-Node: findutils-default regular expression syntax126974
-Node: awk regular expression syntax129480
-Node: egrep regular expression syntax131365
-Node: emacs regular expression syntax133576
-Node: gnu-awk regular expression syntax136105
-Node: grep regular expression syntax138445
-Node: posix-awk regular expression syntax141171
-Node: posix-basic regular expression syntax143442
-Node: posix-egrep regular expression syntax146081
-Node: posix-extended regular expression syntax148454
-Node: Environment Variables150929
-Node: Common Tasks152873
-Node: Viewing And Editing153298
-Node: Archiving154304
-Node: Cleaning Up155936
-Node: Strange File Names157725
-Node: Fixing Permissions159375
-Node: Classifying Files159939
-Node: Worked Examples160657
-Node: Deleting Files161294
-Node: Updating A Timestamp File174314
-Node: Security Considerations181044
-Node: Levels of Risk182578
-Ref: Levels of Risk-Footnote-1185376
-Node: Security Considerations for find185555
-Ref: Security Considerations for find-Footnote-1187877
-Node: Problems with -exec and filenames187950
-Node: Changing the Current Working Directory189213
-Node: O_NOFOLLOW190982
-Ref: O_NOFOLLOW-Footnote-1192626
-Node: Systems without O_NOFOLLOW192728
-Node: Race Conditions with -exec194832
-Node: Race Conditions with -print and -print0197743
-Node: Security Considerations for xargs198663
-Node: Security Considerations for locate200733
-Node: Security Summary201430
-Node: Error Messages202187
-Node: Error Messages From find203199
-Node: Error Messages From xargs208056
-Node: Error Messages From locate209816
-Node: Error Messages From updatedb211048
-Node: Primary Index211451
+Node: Unsafe File Name Handling68163
+Node: Safe File Name Handling69726
+Node: Unusual Characters in File Names71302
+Node: Limiting Command Size74338
+Node: Interspersing File Names76631
+Node: Querying79086
+Node: Delete Files80616
+Node: Adding Tests81020
+Node: Databases83660
+Node: Database Locations84378
+Node: Database Formats85386
+Node: New Database Format86290
+Node: Sample Database87957
+Node: Old Database Format88605
+Node: Newline Handling90665
+Node: File Permissions92111
+Node: Mode Structure92680
+Node: Symbolic Modes95821
+Node: Setting Permissions96918
+Node: Copying Permissions99466
+Node: Changing Special Permissions100280
+Node: Conditional Executability101824
+Node: Multiple Changes102356
+Node: Umask and Protection104013
+Node: Numeric Modes105111
+Node: Reference106803
+Node: Invoking find107151
+Node: Warning Messages109483
+Node: Invoking locate111171
+Node: Invoking updatedb117062
+Node: Invoking xargs120745
+Node: Regular Expressions125775
+Node: findutils-default regular expression syntax126970
+Node: awk regular expression syntax129475
+Node: egrep regular expression syntax131360
+Node: emacs regular expression syntax133571
+Node: gnu-awk regular expression syntax136099
+Node: grep regular expression syntax138439
+Node: posix-awk regular expression syntax141164
+Node: posix-basic regular expression syntax143435
+Node: posix-egrep regular expression syntax146073
+Node: posix-extended regular expression syntax148446
+Node: Environment Variables150921
+Node: Common Tasks152865
+Node: Viewing And Editing153290
+Node: Archiving154296
+Node: Cleaning Up155928
+Node: Strange File Names157717
+Node: Fixing Permissions159367
+Node: Classifying Files159931
+Node: Worked Examples160649
+Node: Deleting Files161286
+Node: Updating A Timestamp File174305
+Node: Security Considerations181035
+Node: Levels of Risk182569
+Ref: Levels of Risk-Footnote-1185367
+Node: Security Considerations for find185546
+Ref: Security Considerations for find-Footnote-1187868
+Node: Problems with -exec and filenames187941
+Node: Changing the Current Working Directory189204
+Node: O_NOFOLLOW190973
+Ref: O_NOFOLLOW-Footnote-1192617
+Node: Systems without O_NOFOLLOW192719
+Node: Race Conditions with -exec194823
+Node: Race Conditions with -print and -print0197734
+Node: Security Considerations for xargs198654
+Node: Security Considerations for locate200724
+Node: Security Summary201421
+Node: Error Messages202178
+Node: Error Messages From find203190
+Node: Error Messages From xargs208047
+Node: Error Messages From locate209807
+Node: Error Messages From updatedb211039
+Node: Primary Index211442
 
 End Tag Table
