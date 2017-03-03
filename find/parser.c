@@ -1,5 +1,5 @@
 /* parser.c -- convert the command line args into an expression tree.
-   Copyright (C) 1990, 91, 92, 93, 94, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,17 +13,23 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
+
 
 #include "defs.h"
 #include <ctype.h>
 #include <pwd.h>
 #include <grp.h>
-#include "modechange.h"
+#include <fnmatch.h>
+#include "../gnulib/lib/modechange.h"
 #include "modetype.h"
-#include "xstrtol.h"
+#include "../gnulib/lib/xstrtol.h"
+#include "../gnulib/lib/xalloc.h"
+#include "buildcmd.h"
+#include "nextelem.h"
+
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -34,7 +40,8 @@
 #ifdef gettext_noop
 # define N_(String) gettext_noop (String)
 #else
-# define N_(String) (String)
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
 #endif
 
 #if !defined (isascii) || defined (STDC_HEADERS)
@@ -44,8 +51,8 @@
 #define isascii(c) 1
 #endif
 
-#define ISDIGIT(c) (isascii (c) && isdigit (c))
-#define ISUPPER(c) (isascii (c) && isupper (c))
+#define ISDIGIT(c) (isascii ((unsigned char)c) && isdigit ((unsigned char)c))
+#define ISUPPER(c) (isascii ((unsigned char)c) && isupper ((unsigned char)c))
 
 #ifndef HAVE_ENDGRENT
 #define endgrent()
@@ -64,9 +71,12 @@ static boolean parse_cnewer PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_comma PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_ctime PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_daystart PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_delete PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_d PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_depth PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_empty PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_exec PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_execdir PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_false PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_fls PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_fprintf PARAMS((char *argv[], int *arg_ptr));
@@ -82,6 +92,7 @@ static boolean parse_iname PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_inum PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_ipath PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_iregex PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_iwholename PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_links PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_lname PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_ls PARAMS((char *argv[], int *arg_ptr));
@@ -95,7 +106,9 @@ static boolean parse_newer PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_noleaf PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_nogroup PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_nouser PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_nowarn PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_ok PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_okdir PARAMS((char *argv[], int *arg_ptr));
 boolean parse_open PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_or PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_path PARAMS((char *argv[], int *arg_ptr));
@@ -106,6 +119,7 @@ static boolean parse_printf PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_prune PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_regex PARAMS((char *argv[], int *arg_ptr));
 static boolean insert_regex PARAMS((char *argv[], int *arg_ptr, boolean ignore_case));
+static boolean parse_samefile PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_size PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_true PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_type PARAMS((char *argv[], int *arg_ptr));
@@ -113,14 +127,19 @@ static boolean parse_uid PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_used PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_user PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_version PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_wholename PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_xdev PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_ignore_race PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_noignore_race PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_warn PARAMS((char *argv[], int *arg_ptr));
 static boolean parse_xtype PARAMS((char *argv[], int *arg_ptr));
+static boolean parse_quit PARAMS((char *argv[], int *arg_ptr));
 
 static boolean insert_regex PARAMS((char *argv[], int *arg_ptr, boolean ignore_case));
 static boolean insert_type PARAMS((char *argv[], int *arg_ptr, boolean (*which_pred )()));
 static boolean insert_fprintf PARAMS((FILE *fp, boolean (*func )(), char *argv[], int *arg_ptr));
 static struct segment **make_segment PARAMS((struct segment **segment, char *format, int len, int kind));
-static boolean insert_exec_ok PARAMS((boolean (*func )(), char *argv[], int *arg_ptr));
+static boolean insert_exec_ok PARAMS((const char *action, boolean (*func )(), char *argv[], int *arg_ptr));
 static boolean get_num_days PARAMS((char *str, uintmax_t *num_days, enum comparison_type *comp_type));
 static boolean insert_time PARAMS((char *argv[], int *arg_ptr, PFB pred));
 static boolean get_num PARAMS((char *str, uintmax_t *num, enum comparison_type *comp_type));
@@ -131,8 +150,21 @@ static FILE *open_output_file PARAMS((char *path));
 char *find_pred_name PARAMS((PFB pred_func));
 #endif /* DEBUG */
 
+
+
+enum arg_type
+  {
+    ARG_OPTION,			/* regular options like -maxdepth */
+    ARG_POSITIONAL_OPTION,	/* options whose position is important (-follow) */
+    ARG_TEST,			/* a like -name */
+    ARG_PUNCTUATION,		/* like -o or ( */
+    ARG_ACTION			/* like -print */
+  };
+
+
 struct parser_table
 {
+  enum arg_type type;
   char *parser_name;
   PFB parser_func;
 };
@@ -142,84 +174,99 @@ struct parser_table
 
 static struct parser_table const parse_table[] =
 {
-  {"!", parse_negate},
-  {"not", parse_negate},	/* GNU */
-  {"(", parse_open},
-  {")", parse_close},
-  {",", parse_comma},		/* GNU */
-  {"a", parse_and},
-  {"amin", parse_amin},		/* GNU */
-  {"and", parse_and},		/* GNU */
-  {"anewer", parse_anewer},	/* GNU */
-  {"atime", parse_atime},
-  {"cmin", parse_cmin},		/* GNU */
-  {"cnewer", parse_cnewer},	/* GNU */
+  {ARG_PUNCTUATION,        "!",                     parse_negate},
+  {ARG_PUNCTUATION,        "not",                   parse_negate},	/* GNU */
+  {ARG_PUNCTUATION,        "(",                     parse_open},
+  {ARG_PUNCTUATION,        ")",                     parse_close},
+  {ARG_PUNCTUATION,        ",",                     parse_comma},	/* GNU */
+  {ARG_PUNCTUATION,        "a",                     parse_and},
+  {ARG_TEST,               "amin",                  parse_amin},	/* GNU */
+  {ARG_PUNCTUATION,        "and",                   parse_and},		/* GNU */
+  {ARG_TEST,               "anewer",                parse_anewer},	/* GNU */
+  {ARG_TEST,               "atime",                 parse_atime},
+  {ARG_TEST,               "cmin",                  parse_cmin},	/* GNU */
+  {ARG_TEST,               "cnewer",                parse_cnewer},	/* GNU */
 #ifdef UNIMPLEMENTED_UNIX
   /* It's pretty ugly for find to know about archive formats.
      Plus what it could do with cpio archives is very limited.
      Better to leave it out.  */
-  {"cpio", parse_cpio},		/* Unix */
-#endif
-  {"ctime", parse_ctime},
-  {"daystart", parse_daystart},	/* GNU */
-  {"depth", parse_depth},
-  {"empty", parse_empty},	/* GNU */
-  {"exec", parse_exec},
-  {"false", parse_false},	/* GNU */
-  {"fls", parse_fls},		/* GNU */
-  {"follow", parse_follow},	/* GNU, Unix */
-  {"fprint", parse_fprint},	/* GNU */
-  {"fprint0", parse_fprint0},	/* GNU */
-  {"fprintf", parse_fprintf},	/* GNU */
-  {"fstype", parse_fstype},	/* GNU, Unix */
-  {"gid", parse_gid},		/* GNU */
-  {"group", parse_group},
-  {"help", parse_help},		/* GNU */
-  {"-help", parse_help},	/* GNU */
-  {"ilname", parse_ilname},	/* GNU */
-  {"iname", parse_iname},	/* GNU */
-  {"inum", parse_inum},		/* GNU, Unix */
-  {"ipath", parse_ipath},	/* GNU */
-  {"iregex", parse_iregex},	/* GNU */
-  {"links", parse_links},
-  {"lname", parse_lname},	/* GNU */
-  {"ls", parse_ls},		/* GNU, Unix */
-  {"maxdepth", parse_maxdepth},	/* GNU */
-  {"mindepth", parse_mindepth},	/* GNU */
-  {"mmin", parse_mmin},		/* GNU */
-  {"mount", parse_xdev},	/* Unix */
-  {"mtime", parse_mtime},
-  {"name", parse_name},
-#ifdef UNIMPLEMENTED_UNIX
-  {"ncpio", parse_ncpio},	/* Unix */
-#endif
-  {"newer", parse_newer},
-  {"noleaf", parse_noleaf},	/* GNU */
-  {"nogroup", parse_nogroup},
-  {"nouser", parse_nouser},
-  {"o", parse_or},
-  {"or", parse_or},		/* GNU */
-  {"ok", parse_ok},
-  {"path", parse_path},		/* GNU, HP-UX */
-  {"perm", parse_perm},
-  {"print", parse_print},
-  {"print0", parse_print0},	/* GNU */
-  {"printf", parse_printf},	/* GNU */
-  {"prune", parse_prune},
-  {"regex", parse_regex},	/* GNU */
-  {"size", parse_size},
-  {"true", parse_true},		/* GNU */
-  {"type", parse_type},
-  {"uid", parse_uid},		/* GNU */
-  {"used", parse_used},		/* GNU */
-  {"user", parse_user},
-  {"version", parse_version},	/* GNU */
-  {"-version", parse_version},	/* GNU */
-  {"xdev", parse_xdev},
-  {"xtype", parse_xtype},	/* GNU */
-  {0, 0}
+  {ARG_UNIMPLEMENTED,      "cpio",                  parse_cpio},        /* Unix */
+#endif						    
+  {ARG_TEST,               "ctime",                 parse_ctime},
+  {ARG_POSITIONAL_OPTION,  "daystart",              parse_daystart},	/* GNU */
+  {ARG_ACTION,             "delete",                parse_delete},	/* GNU, Mac OS, FreeBSD */
+  {ARG_OPTION,             "d",                     parse_d},		/* Mac OS X, FreeBSD, NetBSD, OpenBSD, but deprecated  in favour of -depth */
+  {ARG_OPTION,             "depth",                 parse_depth},
+  {ARG_TEST,               "empty",                 parse_empty},	/* GNU */
+  {ARG_ACTION,             "exec",                  parse_exec},
+  {ARG_ACTION,             "execdir",               parse_execdir},     /* *BSD, GNU */
+  {ARG_TEST,               "false",                 parse_false},	/* GNU */
+  {ARG_ACTION,             "fls",                   parse_fls},		/* GNU */
+  {ARG_POSITIONAL_OPTION,  "follow",                parse_follow},	/* GNU, Unix */
+  {ARG_ACTION,             "fprint",                parse_fprint},	/* GNU */
+  {ARG_ACTION,             "fprint0",               parse_fprint0},	/* GNU */
+  {ARG_ACTION,             "fprintf",               parse_fprintf},	/* GNU */
+  {ARG_TEST,               "fstype",                parse_fstype},	/* GNU, Unix */
+  {ARG_TEST,               "gid",                   parse_gid},		/* GNU */
+  {ARG_TEST,               "group",                 parse_group},
+  {ARG_TEST,               "help",                  parse_help},        /* GNU */
+  {ARG_TEST,               "-help",                 parse_help},	/* GNU */
+  {ARG_OPTION,             "ignore_readdir_race",   parse_ignore_race},	/* GNU */
+  {ARG_TEST,               "ilname",                parse_ilname},	/* GNU */
+  {ARG_TEST,               "iname",                 parse_iname},	/* GNU */
+  {ARG_TEST,               "inum",                  parse_inum},	/* GNU, Unix */
+  {ARG_TEST,               "ipath",                 parse_ipath},	/* GNU, deprecated in favour of iwholename */
+  {ARG_TEST,               "iregex",                parse_iregex},	/* GNU */
+  {ARG_TEST,               "iwholename",            parse_iwholename},  /* GNU */
+  {ARG_TEST,               "links",                 parse_links},
+  {ARG_TEST,               "lname",                 parse_lname},	/* GNU */
+  {ARG_ACTION,             "ls",                    parse_ls},		/* GNU, Unix */
+  {ARG_OPTION,             "maxdepth",              parse_maxdepth},	/* GNU */
+  {ARG_OPTION,             "mindepth",              parse_mindepth},	/* GNU */
+  {ARG_TEST,               "mmin",                  parse_mmin},	/* GNU */
+  {ARG_OPTION,             "mount",                 parse_xdev},	/* Unix */
+  {ARG_TEST,               "mtime",                 parse_mtime},
+  {ARG_TEST,               "name",                  parse_name},
+#ifdef UNIMPLEMENTED_UNIX	                    
+  {ARG_UNIMPLEMENTED,      "ncpio",                 parse_ncpio},	/* Unix */
+#endif				                    
+  {ARG_TEST,               "newer",                 parse_newer},
+  {ARG_OPTION,             "noleaf",                parse_noleaf},	/* GNU */
+  {ARG_TEST,               "nogroup",               parse_nogroup},
+  {ARG_TEST,               "nouser",                parse_nouser},
+  {ARG_OPTION,             "noignore_readdir_race", parse_noignore_race},/* GNU */
+  {ARG_OPTION,             "nowarn",                parse_nowarn},       /* GNU */
+  {ARG_PUNCTUATION,        "o",                     parse_or},
+  {ARG_PUNCTUATION,        "or",                    parse_or},		 /* GNU */
+  {ARG_ACTION,             "ok",                    parse_ok},
+  {ARG_ACTION,             "okdir",                 parse_okdir},        /* GNU (-execdir is BSD) */
+  {ARG_TEST,               "path",                  parse_path},	 /* GNU, HP-UX, GNU prefers wholename */
+  {ARG_TEST,               "perm",                  parse_perm},
+  {ARG_ACTION,             "print",                 parse_print},
+  {ARG_ACTION,             "print0",                parse_print0},	/* GNU */
+  {ARG_ACTION,             "printf",                parse_printf},	/* GNU */
+  {ARG_TEST,               "prune",                 parse_prune},
+  {ARG_ACTION,             "quit",                  parse_quit},	/* GNU */
+  {ARG_TEST,               "regex",                 parse_regex},	/* GNU */
+  {ARG_TEST,               "samefile",              parse_samefile},    /* GNU */
+  {ARG_TEST,               "size",                  parse_size},
+  {ARG_TEST,               "true",                  parse_true},	/* GNU */
+  {ARG_TEST,               "type",                  parse_type},
+  {ARG_TEST,               "uid",                   parse_uid},		/* GNU */
+  {ARG_TEST,               "used",                  parse_used},	/* GNU */
+  {ARG_TEST,               "user",                  parse_user},
+  {ARG_TEST,               "version",               parse_version},	/* GNU */
+  {ARG_TEST,               "-version",              parse_version},	/* GNU */
+  {ARG_OPTION,             "warn",                  parse_warn},        /* GNU */
+  {ARG_TEST,               "wholename",             parse_wholename},   /* GNU, replaces -path */
+  {ARG_OPTION,             "xdev",                  parse_xdev},
+  {ARG_TEST,               "xtype",                 parse_xtype},	/* GNU */
+  {0, 0, 0}
 };
 
+
+static const char *first_nonoption_arg = NULL;
+
 /* Return a pointer to the parser function to invoke for predicate
    SEARCH_NAME.
    Return NULL if SEARCH_NAME is not a valid predicate name. */
@@ -228,13 +275,68 @@ PFB
 find_parser (char *search_name)
 {
   int i;
-
+  const char *original_arg = search_name;
+  
   if (*search_name == '-')
     search_name++;
   for (i = 0; parse_table[i].parser_name != 0; i++)
-    if (strcmp (parse_table[i].parser_name, search_name) == 0)
-      return (parse_table[i].parser_func);
-  return (NULL);
+    {
+      if (strcmp (parse_table[i].parser_name, search_name) == 0)
+	{
+	  /* If this is an option, but we have already had a 
+	   * non-option argument, the user may be under the 
+	   * impression that the behaviour of the option 
+	   * argument is conditional on some preceding 
+	   * tests.  This might typically be the case with,
+	   * for example, -maxdepth.
+	   *
+	   * The options -daystart and -follow are exempt 
+	   * from this treatment, since their positioning
+	   * in the command line does have an effect on 
+	   * subsequent tests but not previous ones.  That
+	   * might be intentional on the part of the user.
+	   */
+	  if (parse_table[i].type != ARG_POSITIONAL_OPTION)
+	    {
+	      /* Something other than -follow/-daystart.
+	       * If this is an option, check if it followed
+	       * a non-option and if so, issue a warning.
+	       */
+	      if (parse_table[i].type == ARG_OPTION)
+		{
+		  if ((first_nonoption_arg != NULL)
+		      && options.warnings )
+		    {
+		      /* option which folows a non-option */
+		      error (0, 0,
+			     _("warning: you have specified the %s "
+			       "option after a non-option argument %s, "
+			       "but options are not positional (%s affects "
+			       "tests specified before it as well as those "
+			       "specified after it).  Please specify options "
+			       "before other arguments.\n"),
+			     original_arg,
+			     first_nonoption_arg,
+			     original_arg);
+		    }
+		}
+	      else
+		{
+		  /* Not an option or a positional option,
+		   * so remember we've seen it in order to 
+		   * use it in a possible future warning message.
+		   */
+		  if (first_nonoption_arg == NULL)
+		    {
+		      first_nonoption_arg = original_arg;
+		    }
+		}
+	    }
+	  
+	  return (parse_table[i].parser_func);
+	}
+    }
+  return NULL;
 }
 
 /* The parsers are responsible to continue scanning ARGV for
@@ -259,7 +361,7 @@ parse_amin (char **argv, int *arg_ptr)
     return (false);
   if (!get_num_days (argv[*arg_ptr], &num, &c_type))
     return (false);
-  t = cur_day_start + DAYSECS - num * 60;
+  t = options.cur_day_start + DAYSECS - num * 60;
   our_pred = insert_primary (pred_amin);
   our_pred->args.info.kind = c_type;
   our_pred->args.info.negative = t < 0;
@@ -273,6 +375,9 @@ parse_and (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = get_new_pred ();
   our_pred->pred_func = pred_and;
 #ifdef	DEBUG
@@ -280,7 +385,7 @@ parse_and (char **argv, int *arg_ptr)
 #endif	/* DEBUG */
   our_pred->p_type = BI_OP;
   our_pred->p_prec = AND_PREC;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -292,7 +397,7 @@ parse_anewer (char **argv, int *arg_ptr)
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
-  if ((*xstat) (argv[*arg_ptr], &stat_newer))
+  if ((*options.xstat) (argv[*arg_ptr], &stat_newer))
     error (1, errno, "%s", argv[*arg_ptr]);
   our_pred = insert_primary (pred_anewer);
   our_pred->args.time = stat_newer.st_mtime;
@@ -311,6 +416,9 @@ parse_close (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = get_new_pred ();
   our_pred->pred_func = pred_close;
 #ifdef	DEBUG
@@ -318,7 +426,7 @@ parse_close (char **argv, int *arg_ptr)
 #endif	/* DEBUG */
   our_pred->p_type = CLOSE_PAREN;
   our_pred->p_prec = NO_PREC;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -334,7 +442,7 @@ parse_cmin (char **argv, int *arg_ptr)
     return (false);
   if (!get_num_days (argv[*arg_ptr], &num, &c_type))
     return (false);
-  t = cur_day_start + DAYSECS - num * 60;
+  t = options.cur_day_start + DAYSECS - num * 60;
   our_pred = insert_primary (pred_cmin);
   our_pred->args.info.kind = c_type;
   our_pred->args.info.negative = t < 0;
@@ -351,7 +459,7 @@ parse_cnewer (char **argv, int *arg_ptr)
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
-  if ((*xstat) (argv[*arg_ptr], &stat_newer))
+  if ((*options.xstat) (argv[*arg_ptr], &stat_newer))
     error (1, errno, "%s", argv[*arg_ptr]);
   our_pred = insert_primary (pred_cnewer);
   our_pred->args.time = stat_newer.st_mtime;
@@ -364,6 +472,9 @@ parse_comma (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+
   our_pred = get_new_pred ();
   our_pred->pred_func = pred_comma;
 #ifdef	DEBUG
@@ -371,7 +482,7 @@ parse_comma (char **argv, int *arg_ptr)
 #endif /* DEBUG */
   our_pred->p_type = BI_OP;
   our_pred->p_prec = COMMA_PREC;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -386,29 +497,69 @@ parse_daystart (char **argv, int *arg_ptr)
 {
   struct tm *local;
 
-  if (full_days == false)
+  (void) argv;
+  (void) arg_ptr;
+
+  if (options.full_days == false)
     {
-      cur_day_start += DAYSECS;
-      local = localtime (&cur_day_start);
-      cur_day_start -= (local
+      options.cur_day_start += DAYSECS;
+      local = localtime (&options.cur_day_start);
+      options.cur_day_start -= (local
 			? (local->tm_sec + local->tm_min * 60
 			   + local->tm_hour * 3600)
-			: cur_day_start % DAYSECS);
-      full_days = true;
+			: options.cur_day_start % DAYSECS);
+      options.full_days = true;
     }
+  return true;
+}
+
+static boolean
+parse_delete (argv, arg_ptr)
+  char *argv[];
+  int *arg_ptr;
+{
+  struct predicate *our_pred;
+  (void) argv;
+  (void) arg_ptr;
+  
+  our_pred = insert_primary (pred_delete);
+  our_pred->side_effects = true;
+  our_pred->no_default_print = true;
+  /* -delete implies -depth */
+  options.do_dir_first = false;
   return (true);
 }
 
 static boolean
 parse_depth (char **argv, int *arg_ptr)
 {
-  do_dir_first = false;
+  (void) argv;
+  (void) arg_ptr;
+
+  options.do_dir_first = false;
   return (true);
+}
+ 
+static boolean
+parse_d (char **argv, int *arg_ptr)
+{
+  (void) argv;
+  (void) arg_ptr;
+  
+  if (options.warnings)
+    {
+      error (0, 0,
+	     _("warning: the -d option is deprecated; please use -depth instead, because the latter is a POSIX-compliant feature."));
+    }
+  return parse_depth(argv, arg_ptr);
 }
  
 static boolean
 parse_empty (char **argv, int *arg_ptr)
 {
+  (void) argv;
+  (void) arg_ptr;
+
   insert_primary (pred_empty);
   return (true);
 }
@@ -416,16 +567,25 @@ parse_empty (char **argv, int *arg_ptr)
 static boolean
 parse_exec (char **argv, int *arg_ptr)
 {
-  return (insert_exec_ok (pred_exec, argv, arg_ptr));
+  return (insert_exec_ok ("-exec", pred_exec, argv, arg_ptr));
+}
+
+static boolean
+parse_execdir (char **argv, int *arg_ptr)
+{
+  return (insert_exec_ok ("-execdir", pred_execdir, argv, arg_ptr));
 }
 
 static boolean
 parse_false (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
+  
+  (void) argv;
+  (void) arg_ptr;
 
   our_pred = insert_primary (pred_false);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -465,10 +625,11 @@ parse_fprintf (char **argv, int *arg_ptr)
 static boolean
 parse_follow (char **argv, int *arg_ptr)
 {
-  dereference = true;
-  xstat = stat;
-  no_leaf_check = true;
-  return (true);
+  (void) argv;
+  (void) arg_ptr;
+
+  set_follow_state(SYMLINK_ALWAYS_DEREF);
+  return true;
 }
 
 static boolean
@@ -482,9 +643,9 @@ parse_fprint (char **argv, int *arg_ptr)
   our_pred->args.stream = open_output_file (argv[*arg_ptr]);
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   (*arg_ptr)++;
-  return (true);
+  return true;
 }
 
 static boolean
@@ -498,7 +659,7 @@ parse_fprint0 (char **argv, int *arg_ptr)
   our_pred->args.stream = open_output_file (argv[*arg_ptr]);
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   (*arg_ptr)++;
   return (true);
 }
@@ -552,30 +713,39 @@ parse_group (char **argv, int *arg_ptr)
 static boolean
 parse_help (char **argv, int *arg_ptr)
 {
+  (void) argv;
+  (void) arg_ptr;
+  
   printf (_("\
 Usage: %s [path...] [expression]\n"), program_name);
-  puts (_("\
+  puts (_("\n\
 default path is the current directory; default expression is -print\n\
-expression may consist of:\n\
+expression may consist of: operators, options, tests, and actions:\n"));
+  puts (_("\
 operators (decreasing precedence; -and is implicit where no others are given):\n\
-      ( EXPR ) ! EXPR -not EXPR EXPR1 -a EXPR2 EXPR1 -and EXPR2\n"));
+      ( EXPR )   ! EXPR   -not EXPR   EXPR1 -a EXPR2   EXPR1 -and EXPR2\n\
+      EXPR1 -o EXPR2   EXPR1 -or EXPR2   EXPR1 , EXPR2\n"));
   puts (_("\
-      EXPR1 -o EXPR2 EXPR1 -or EXPR2 EXPR1 , EXPR2\n\
-options (always true): -daystart -depth -follow --help\n\
-      -maxdepth LEVELS -mindepth LEVELS -mount -noleaf --version -xdev\n\
-tests (N can be +N or -N or N): -amin N -anewer FILE -atime N -cmin N\n"));
+positional options (always true): -daystart -follow\n\
+normal options (always true, specified before other expressions):\n\
+      -depth --help -maxdepth LEVELS -mindepth LEVELS -mount -noleaf\n\
+      --version -xdev -ignore_readdir_race -noignore_readdir_race\n"));
   puts (_("\
+tests (N can be +N or -N or N): -amin N -anewer FILE -atime N -cmin N\n\
       -cnewer FILE -ctime N -empty -false -fstype TYPE -gid N -group NAME\n\
-      -ilname PATTERN -iname PATTERN -inum N -ipath PATTERN -iregex PATTERN\n\
-      -links N -lname PATTERN -mmin N -mtime N -name PATTERN -newer FILE\n"));
+      -ilname PATTERN -iname PATTERN -inum N -iwholename PATTERN -iregex PATTERN\n\
+      -links N -lname PATTERN -mmin N -mtime N -name PATTERN -newer FILE"));
   puts (_("\
       -nouser -nogroup -path PATTERN -perm [+-]MODE -regex PATTERN\n\
-      -size N[bckw] -true -type [bcdpfls] -uid N -used N -user NAME\n\
-      -xtype [bcdpfls]\n"));
+      -wholename PATTERN -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n\
+      -used N -user NAME -xtype [bcdpfls]\n"));
   puts (_("\
 actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n\
-      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"));
-  puts (_("\nReport bugs to <bug-findutils@gnu.org>."));
+      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -delete\n\
+      -quit\n"));
+  puts (_("Report (and track progress on fixing) bugs via the findutils bug-reporting\n\
+page at http://savannah.gnu.org/ or, if you have no web access, by sending\n\
+email to <bug-findutils@gnu.org>."));
   exit (0);
 }
 
@@ -592,6 +762,29 @@ parse_ilname (char **argv, int *arg_ptr)
   return (true);
 }
 
+
+/* sanity check the fnmatch() function to make sure
+ * it really is the GNU version. 
+ */
+static boolean 
+fnmatch_sanitycheck()
+{
+  /* fprintf(stderr, "Performing find sanity check..."); */
+  if (0 != fnmatch("foo", "foo", 0)
+      || 0 == fnmatch("Foo", "foo", 0)
+      || 0 != fnmatch("Foo", "foo", FNM_CASEFOLD))
+    {
+      error (1, 0, _("sanity check of the fnmatch() library function failed."));
+      /* fprintf(stderr, "FAILED\n"); */
+      return false;
+    }
+
+  /* fprintf(stderr, "OK\n"); */
+  return true;
+}
+
+
+
 static boolean
 parse_iname (char **argv, int *arg_ptr)
 {
@@ -599,8 +792,11 @@ parse_iname (char **argv, int *arg_ptr)
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
+
+  fnmatch_sanitycheck();
+  
   our_pred = insert_primary (pred_iname);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   our_pred->args.str = argv[*arg_ptr];
   (*arg_ptr)++;
   return (true);
@@ -612,15 +808,32 @@ parse_inum (char **argv, int *arg_ptr)
   return (insert_num (argv, arg_ptr, pred_inum));
 }
 
+/* -ipath is deprecated (at RMS's request) in favour of 
+ * -iwholename.   See the node "GNU Manuals" in standards.texi
+ * for the rationale for this (basically, GNU prefers the use 
+ * of the phrase "file name" to "path name"
+ */
 static boolean
 parse_ipath (char **argv, int *arg_ptr)
+{
+  error (0, 0,
+	 _("warning: the predicate -ipath is deprecated; please use -iwholename instead."));
+  
+  return parse_iwholename(argv, arg_ptr);
+}
+
+static boolean
+parse_iwholename (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
+
+  fnmatch_sanitycheck();
+  
   our_pred = insert_primary (pred_ipath);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   our_pred->args.str = argv[*arg_ptr];
   (*arg_ptr)++;
   return (true);
@@ -643,8 +856,14 @@ parse_lname (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
+
+  fnmatch_sanitycheck();
+  
   our_pred = insert_primary (pred_lname);
   our_pred->args.str = argv[*arg_ptr];
   (*arg_ptr)++;
@@ -655,6 +874,9 @@ static boolean
 parse_ls (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
+
+  (void) &argv;
+  (void) &arg_ptr;
 
   our_pred = insert_primary (pred_ls);
   our_pred->side_effects = true;
@@ -668,15 +890,15 @@ parse_maxdepth (char **argv, int *arg_ptr)
   int depth_len;
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
-    return (false);
+    return false;
   depth_len = strspn (argv[*arg_ptr], "0123456789");
   if ((depth_len == 0) || (argv[*arg_ptr][depth_len] != '\0'))
-    return (false);
-  maxdepth = atoi (argv[*arg_ptr]);
-  if (maxdepth < 0)
-    return (false);
+    return false;
+  options.maxdepth = atoi (argv[*arg_ptr]);
+  if (options.maxdepth < 0)
+    return false;
   (*arg_ptr)++;
-  return (true);
+  return true;
 }
 
 static boolean
@@ -685,15 +907,15 @@ parse_mindepth (char **argv, int *arg_ptr)
   int depth_len;
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
-    return (false);
+    return false;
   depth_len = strspn (argv[*arg_ptr], "0123456789");
   if ((depth_len == 0) || (argv[*arg_ptr][depth_len] != '\0'))
-    return (false);
-  mindepth = atoi (argv[*arg_ptr]);
-  if (mindepth < 0)
-    return (false);
+    return false;
+  options.mindepth = atoi (argv[*arg_ptr]);
+  if (options.mindepth < 0)
+    return false;
   (*arg_ptr)++;
-  return (true);
+  return true;
 }
 
 static boolean
@@ -708,7 +930,7 @@ parse_mmin (char **argv, int *arg_ptr)
     return (false);
   if (!get_num_days (argv[*arg_ptr], &num, &c_type))
     return (false);
-  t = cur_day_start + DAYSECS - num * 60;
+  t = options.cur_day_start + DAYSECS - num * 60;
   our_pred = insert_primary (pred_mmin);
   our_pred->args.info.kind = c_type;
   our_pred->args.info.negative = t < 0;
@@ -728,10 +950,13 @@ parse_name (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
   our_pred = insert_primary (pred_name);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   our_pred->args.str = argv[*arg_ptr];
   (*arg_ptr)++;
   return (true);
@@ -742,6 +967,9 @@ parse_negate (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) &argv;
+  (void) &arg_ptr;
+
   our_pred = get_new_pred_chk_op ();
   our_pred->pred_func = pred_negate;
 #ifdef	DEBUG
@@ -749,7 +977,7 @@ parse_negate (char **argv, int *arg_ptr)
 #endif	/* DEBUG */
   our_pred->p_type = UNI_OP;
   our_pred->p_prec = NEGATE_PREC;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -759,9 +987,12 @@ parse_newer (char **argv, int *arg_ptr)
   struct predicate *our_pred;
   struct stat stat_newer;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
-  if ((*xstat) (argv[*arg_ptr], &stat_newer))
+  if ((*options.xstat) (argv[*arg_ptr], &stat_newer))
     error (1, errno, "%s", argv[*arg_ptr]);
   our_pred = insert_primary (pred_newer);
   our_pred->args.time = stat_newer.st_mtime;
@@ -772,7 +1003,10 @@ parse_newer (char **argv, int *arg_ptr)
 static boolean
 parse_noleaf (char **argv, int *arg_ptr)
 {
-  no_leaf_check = true;
+  (void) &argv;
+  (void) &arg_ptr;
+  
+  options.no_leaf_check = true;
   return true;
 }
 
@@ -797,6 +1031,9 @@ parse_nogroup (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) &argv;
+  (void) &arg_ptr;
+  
   our_pred = insert_primary (pred_nogroup);
 #ifdef CACHE_IDS
   if (gid_unused == NULL)
@@ -829,6 +1066,9 @@ static boolean
 parse_nouser (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
+  (void) argv;
+  (void) arg_ptr;
+  
 
   our_pred = insert_primary (pred_nouser);
 #ifdef CACHE_IDS
@@ -859,9 +1099,25 @@ parse_nouser (char **argv, int *arg_ptr)
 }
 
 static boolean
+parse_nowarn (char **argv, int *arg_ptr)
+{
+  (void) argv;
+  (void) arg_ptr;
+  
+  options.warnings = false;
+  return true;;
+}
+
+static boolean
 parse_ok (char **argv, int *arg_ptr)
 {
-  return (insert_exec_ok (pred_ok, argv, arg_ptr));
+  return (insert_exec_ok ("-ok", pred_ok, argv, arg_ptr));
+}
+
+static boolean
+parse_okdir (char **argv, int *arg_ptr)
+{
+  return (insert_exec_ok ("-okdir", pred_okdir, argv, arg_ptr));
 }
 
 boolean
@@ -869,6 +1125,9 @@ parse_open (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = get_new_pred_chk_op ();
   our_pred->pred_func = pred_open;
 #ifdef	DEBUG
@@ -876,7 +1135,7 @@ parse_open (char **argv, int *arg_ptr)
 #endif	/* DEBUG */
   our_pred->p_type = OPEN_PAREN;
   our_pred->p_prec = NO_PREC;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -885,6 +1144,9 @@ parse_or (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = get_new_pred ();
   our_pred->pred_func = pred_or;
 #ifdef	DEBUG
@@ -892,19 +1154,33 @@ parse_or (char **argv, int *arg_ptr)
 #endif	/* DEBUG */
   our_pred->p_type = BI_OP;
   our_pred->p_prec = OR_PREC;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
+/* -path is deprecated (at RMS's request) in favour of 
+ * -iwholename.   See the node "GNU Manuals" in standards.texi
+ * for the rationale for this (basically, GNU prefers the use 
+ * of the phrase "file name" to "path name".
+ *
+ * We do not issue a warning that this usage is deprecated
+ * since HPUX find supports this predicate also.
+ */
 static boolean
 parse_path (char **argv, int *arg_ptr)
+{
+  return parse_wholename(argv, arg_ptr);
+}
+
+static boolean
+parse_wholename (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
   our_pred = insert_primary (pred_path);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   our_pred->args.str = argv[*arg_ptr];
   (*arg_ptr)++;
   return (true);
@@ -964,13 +1240,16 @@ parse_print (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = insert_primary (pred_print);
   /* -print has the side effect of printing.  This prevents us
      from doing undesired multiple printing when the user has
      already specified -print. */
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -979,13 +1258,16 @@ parse_print0 (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = insert_primary (pred_print0);
   /* -print0 has the side effect of printing.  This prevents us
      from doing undesired multiple printing when the user has
      already specified -print0. */
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -1002,13 +1284,27 @@ parse_prune (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = insert_primary (pred_prune);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   /* -prune has a side effect that it does not descend into
      the current directory. */
   our_pred->side_effects = true;
   return (true);
 }
+
+static boolean 
+parse_quit  (char **argv, int *arg_ptr)
+{
+  struct predicate *our_pred = insert_primary (pred_quit);
+  (void) argv;
+  (void) arg_ptr;
+  our_pred->need_stat = our_pred->need_type = false;
+  return true;
+}
+
 
 static boolean
 parse_regex (char **argv, int *arg_ptr)
@@ -1026,26 +1322,24 @@ insert_regex (char **argv, int *arg_ptr, boolean ignore_case)
   if ((argv == NULL) || (argv[*arg_ptr] == NULL))
     return (false);
   our_pred = insert_primary (pred_regex);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   re = (struct re_pattern_buffer *)
     xmalloc (sizeof (struct re_pattern_buffer));
   our_pred->args.regex = re;
   re->allocated = 100;
   re->buffer = (unsigned char *) xmalloc (re->allocated);
   re->fastmap = NULL;
-
+  
   if (ignore_case)
     {
-      unsigned i;
-      
-      re->translate = xmalloc (256);
-      /* Map uppercase characters to corresponding lowercase ones.  */
-      for (i = 0; i < 256; i++)
-        re->translate[i] = ISUPPER (i) ? tolower (i) : i;
+      re_syntax_options |= RE_ICASE;
     }
   else
-    re->translate = NULL;
-
+    {
+      re_syntax_options &= ~RE_ICASE;
+    }
+  re->translate = NULL;
+  
   error_message = re_compile_pattern (argv[*arg_ptr], strlen (argv[*arg_ptr]),
 				      re);
   if (error_message)
@@ -1085,6 +1379,16 @@ parse_size (char **argv, int *arg_ptr)
       argv[*arg_ptr][len - 1] = '\0';
       break;
 
+    case 'M':			/* Megabytes */
+      blksize = 1024*1024;
+      argv[*arg_ptr][len - 1] = '\0';
+      break;
+
+    case 'G':			/* Gigabytes */
+      blksize = 1024*1024*1024;
+      argv[*arg_ptr][len - 1] = '\0';
+      break;
+
     case 'w':
       blksize = 2;
       argv[*arg_ptr][len - 1] = '\0';
@@ -1115,13 +1419,38 @@ parse_size (char **argv, int *arg_ptr)
   return (true);
 }
 
+
+static boolean
+parse_samefile (char **argv, int *arg_ptr)
+{
+  struct predicate *our_pred;
+  struct stat st;
+  
+  if ((argv == NULL) || (argv[*arg_ptr] == NULL))
+    return (false);
+  if ((*options.xstat) (argv[*arg_ptr], &st))
+    error (1, errno, "%s", argv[*arg_ptr]);
+  
+  our_pred = insert_primary (pred_samefile);
+  our_pred->args.fileid.ino = st.st_ino;
+  our_pred->args.fileid.dev = st.st_dev;
+  our_pred->need_type = false;
+  our_pred->need_stat = true;
+  (*arg_ptr)++;
+  return (true);
+}
+
+
 static boolean
 parse_true (char **argv, int *arg_ptr)
 {
   struct predicate *our_pred;
 
+  (void) argv;
+  (void) arg_ptr;
+  
   our_pred = insert_primary (pred_true);
-  our_pred->need_stat = false;
+  our_pred->need_stat = our_pred->need_type = false;
   return (true);
 }
 
@@ -1189,22 +1518,83 @@ static boolean
 parse_version (char **argv, int *arg_ptr)
 {
   extern char *version_string;
-
+  int features = 0;
+  
+  (void) argv;
+  (void) arg_ptr;
+  
   fflush (stderr);
   printf (_("GNU find version %s\n"), version_string);
+  printf (_("Features enabled: "));
+  
+#if CACHE_IDS
+  printf("CACHE_IDS ");
+  ++features;
+#endif
+#if DEBUG
+  printf("DEBUG ");
+  ++features;
+#endif
+#if DEBUG_STAT
+  printf("DEBUG_STAT ");
+  ++features;
+#endif
+#if defined(USE_STRUCT_DIRENT_D_TYPE) && defined(HAVE_STRUCT_DIRENT_D_TYPE)
+  printf("D_TYPE ");
+  ++features;
+#endif
+  if (0 == features)
+    {
+      /* For the moment, leave this as English in case someone wants
+	 to parse these strings. */
+      printf("none");
+    }
+  printf("\n");
+  
   exit (0);
 }
 
 static boolean
 parse_xdev (char **argv, int *arg_ptr)
 {
-  stay_on_filesystem = true;
+  (void) argv;
+  (void) arg_ptr;
+  options.stay_on_filesystem = true;
+  return true;
+}
+
+static boolean
+parse_ignore_race (char **argv, int *arg_ptr)
+{
+  (void) argv;
+  (void) arg_ptr;
+  options.ignore_readdir_race = true;
+  return true;
+}
+
+static boolean
+parse_noignore_race (char **argv, int *arg_ptr)
+{
+  (void) argv;
+  (void) arg_ptr;
+  options.ignore_readdir_race = false;
+  return true;
+}
+
+static boolean
+parse_warn (char **argv, int *arg_ptr)
+{
+  (void) argv;
+  (void) arg_ptr;
+  options.warnings = true;
   return true;
 }
 
 static boolean
 parse_xtype (char **argv, int *arg_ptr)
 {
+  (void) argv;
+  (void) arg_ptr;
   return insert_type (argv, arg_ptr, pred_xtype);
 }
 
@@ -1255,6 +1645,21 @@ insert_type (char **argv, int *arg_ptr, boolean (*which_pred) (/* ??? */))
       return (false);
     }
   our_pred = insert_primary (which_pred);
+
+  /* Figure out if we will need to stat the file, because if we don't
+   * need to follow symlinks, we can avoid a stat call by using 
+   * struct dirent.d_type.
+   */
+  if (which_pred == pred_xtype)
+    {
+      our_pred->need_stat = true;
+      our_pred->need_type = false;
+    }
+  else
+    {
+      our_pred->need_stat = false; /* struct dirent is enough */
+      our_pred->need_type = true;
+    }
   our_pred->args.type = type_cell;
   (*arg_ptr)++;			/* Move on to next argument. */
   return (true);
@@ -1360,7 +1765,7 @@ insert_fprintf (FILE *fp, boolean (*func) (/* ??? */), char **argv, int *arg_ptr
 	  if (*scan2 == '.')
 	    for (scan2++; ISDIGIT (*scan2); scan2++)
 	      /* Do nothing. */ ;
-	  if (strchr ("abcdfFgGhHiklmnpPstuU", *scan2))
+	  if (strchr ("abcdDfFgGhHiklmMnpPstuUyY", *scan2))
 	    {
 	      segmentp = make_segment (segmentp, format, scan2 - format,
 				       (int) *scan2);
@@ -1390,6 +1795,7 @@ insert_fprintf (FILE *fp, boolean (*func) (/* ??? */), char **argv, int *arg_ptr
 
   if (scan > format)
     make_segment (segmentp, format, scan - format, KIND_PLAIN);
+  our_pred->need_type = false;
   our_pred->need_stat = fprintf_stat_needed;
   return (true);
 }
@@ -1421,21 +1827,19 @@ make_segment (struct segment **segment, char *format, int len, int kind)
 
     case 'a':			/* atime in `ctime' format */
     case 'A':			/* atime in user-specified strftime format */
-    case 'b':			/* size in 512-byte blocks */
     case 'c':			/* ctime in `ctime' format */
     case 'C':			/* ctime in user-specified strftime format */
     case 'F':			/* filesystem type */
-    case 'G':			/* GID number */
     case 'g':			/* group name */
     case 'i':			/* inode number */
-    case 'k':			/* size in 1K blocks */
     case 'l':			/* object of symlink */
-    case 'n':			/* number of links */
+    case 'M':			/* mode in `ls -l' format (eg., "drwxr-xr-x") */
     case 's':			/* size in bytes */
     case 't':			/* mtime in `ctime' format */
     case 'T':			/* mtime in user-specified strftime format */
-    case 'U':			/* UID number */
     case 'u':			/* user name */
+    case 'y':			/* file type */
+    case 'Y':			/* symlink pointed file type */
       fprintf_stat_needed = true;
       /* FALLTHROUGH */
     case 'f':			/* basename of path */
@@ -1446,6 +1850,21 @@ make_segment (struct segment **segment, char *format, int len, int kind)
       *fmt++ = 's';
       break;
 
+      /* Numeric items that one might expect to honour 
+       * #, 0, + flags but which do not.
+       */
+    case 'G':			/* GID number */
+    case 'U':			/* UID number */
+    case 'b':			/* size in 512-byte blocks */
+    case 'D':                   /* Filesystem device on which the file exits */
+    case 'k':			/* size in 1K blocks */
+    case 'n':			/* number of links */
+      fprintf_stat_needed = true;
+      *fmt++ = 's';
+      break;
+      
+      /* Numeric items that DO honour #, 0, + flags.
+       */
     case 'd':			/* depth in search tree (0 = ARGV element) */
       *fmt++ = 'd';
       break;
@@ -1459,10 +1878,195 @@ make_segment (struct segment **segment, char *format, int len, int kind)
 
   return (&(*segment)->next);
 }
+
+static void 
+check_path_safety(const char *action)
+{
+  const char *path = getenv("PATH");
+  char *s;
+  s = next_element(path, 1);
+  while ((s = next_element ((char *) NULL, 1)) != NULL)
+    {
+      if (0 == strcmp(s, "."))
+	{
+	  error(1, 0, _("The current directory is included in the PATH environment variable, which is insecure in combination with the %s action of find.  Please remove the current directory from your $PATH (that is, remove \".\" or leading or trailing colons)"),
+		action);
+	}
+    }
+}
 
+
+/* handles both exec and ok predicate */
+#if defined(NEW_EXEC)
 /* handles both exec and ok predicate */
 static boolean
-insert_exec_ok (boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
+new_insert_exec_ok (const char *action,
+		    boolean (*func) (/* ??? */),
+		    char **argv, int *arg_ptr)
+{
+  int start, end;		/* Indexes in ARGV of start & end of cmd. */
+  int i;			/* Index into cmd args */
+  int saw_braces;		/* True if previous arg was '{}'. */
+  boolean allow_plus;		/* True if + is a valid terminator */
+  int brace_count;		/* Number of instances of {}. */
+  const char *prefix;
+  size_t pfxlen;
+  
+  struct predicate *our_pred;
+  struct exec_val *execp;	/* Pointer for efficiency. */
+
+  if ((argv == NULL) || (argv[*arg_ptr] == NULL))
+    return (false);
+
+  our_pred = insert_primary (func);
+  our_pred->side_effects = true;
+  our_pred->no_default_print = true;
+  execp = &our_pred->args.exec_vec;
+
+  if ((func != pred_okdir) && (func != pred_ok))
+    allow_plus = true;
+  else
+    allow_plus = false;
+  
+  if ((func == pred_execdir) || (func == pred_okdir))
+    {
+      check_path_safety(action);
+      execp->use_current_dir = true;
+    }
+  else
+    {
+      execp->use_current_dir = false;
+    }
+  
+  our_pred->args.exec_vec.multiple = 0;
+
+  /* Count the number of args with path replacements, up until the ';'. 
+   * Also figure out if the command is terminated by ";" or by "+".
+   */
+  start = *arg_ptr;
+  for (end = start, saw_braces=0, brace_count=0;
+       (argv[end] != NULL)
+       && ((argv[end][0] != ';') || (argv[end][1] != '\0'));
+       end++)
+    {
+      /* For -exec and -execdir, "{} +" can terminate the command. */
+      if ( allow_plus
+	   && argv[end][0] == '+' && argv[end][1] == 0
+	   && saw_braces)
+	{
+	  our_pred->args.exec_vec.multiple = 1;
+	  break;
+	}
+      
+      saw_braces = 0;
+      if (strstr (argv[end], "{}"))
+	{
+	  saw_braces = 1;
+	  ++brace_count;
+	  
+	  if (0 == end && (func == pred_execdir || func == pred_okdir))
+	    {
+	      /* The POSIX standard says that {} replacement should
+	       * occur even in the utility name.  This is insecure
+	       * since it means we will be executing a command whose
+	       * name is chosen according to whatever find finds in
+	       * the filesystem.  That can be influenced by an
+	       * attacker.  Hence for -execdir and -okdir this is not
+	       * allowed.  We can specify this as those options are 
+	       * not defined by POSIX.
+	       */
+	      error(1, 0, _("You may not use {} within the utility name for -execdir and -okdir, because this is a potential security problem."));
+	    }
+	}
+    }
+  
+  /* Fail if no command given or no semicolon found. */
+  if ((end == start) || (argv[end] == NULL))
+    {
+      *arg_ptr = end;
+      free(our_pred);
+      return false;
+    }
+
+  if (our_pred->args.exec_vec.multiple && brace_count > 1)
+    {
+	
+      const char *suffix;
+      if (func == pred_execdir)
+	suffix = "dir";
+      else
+	suffix = "";
+
+      error(1, 0,
+	    _("Only one instance of {} is supported with -exec%s ... +"),
+	    suffix);
+    }
+
+  /* execp->ctl   = xmalloc(sizeof struct buildcmd_control); */
+  bc_init_controlinfo(&execp->ctl);
+  execp->ctl.exec_callback = launch;
+
+  if (our_pred->args.exec_vec.multiple)
+    {
+      /* "+" terminator, so we can just append our arguments after the
+       * command and initial arguments.
+       */
+      execp->replace_vec = NULL;
+      execp->ctl.replace_pat = NULL;
+      execp->ctl.rplen = 0;
+      execp->ctl.lines_per_exec = 0; /* no limit */
+      execp->ctl.args_per_exec = 0; /* no limit */
+      
+      /* remember how many arguments there are */
+      execp->ctl.initial_argc = (end-start) - 1;
+
+      /* execp->state = xmalloc(sizeof struct buildcmd_state); */
+      bc_init_state(&execp->ctl, &execp->state, execp);
+  
+      /* Gather the initial arguments.  Skip the {}. */
+      for (i=start; i<end-1; ++i)
+	{
+	  bc_push_arg(&execp->ctl, &execp->state,
+		      argv[i], strlen(argv[i])+1,
+		      NULL, 0,
+		      1);
+	}
+    }
+  else
+    {
+      /* Semicolon terminator - more than one {} is supported, so we
+       * have to do brace-replacement.
+       */
+      execp->num_args = end - start;
+      
+      execp->ctl.replace_pat = "{}";
+      execp->ctl.rplen = strlen(execp->ctl.replace_pat);
+      execp->ctl.lines_per_exec = 0; /* no limit */
+      execp->ctl.args_per_exec = 0; /* no limit */
+      execp->replace_vec = xmalloc(sizeof(char*)*execp->num_args);
+
+
+      /* execp->state = xmalloc(sizeof(*(execp->state))); */
+      bc_init_state(&execp->ctl, &execp->state, execp);
+
+      /* Remember the (pre-replacement) arguments for later. */
+      for (i=0; i<execp->num_args; ++i)
+	{
+	  execp->replace_vec[i] = argv[i+start];
+	}
+    }
+  
+  if (argv[end] == NULL)
+    *arg_ptr = end;
+  else
+    *arg_ptr = end + 1;
+  
+  return true;
+}
+#else
+/* handles both exec and ok predicate */
+static boolean
+old_insert_exec_ok (boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
 {
   int start, end;		/* Indexes in ARGV of start & end of cmd. */
   int num_paths;		/* Number of args with path replacements. */
@@ -1493,6 +2097,8 @@ insert_exec_ok (boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
   our_pred->side_effects = true;
   our_pred->no_default_print = true;
   execp = &our_pred->args.exec_vec;
+  execp->usercontext = our_pred;
+  execp->use_current_dir = false;
   execp->paths =
     (struct path_arg *) xmalloc (sizeof (struct path_arg) * (num_paths + 1));
   execp->vec = (char **) xmalloc (sizeof (char *) * (end - start + 1));
@@ -1528,6 +2134,22 @@ insert_exec_ok (boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
     *arg_ptr = end + 1;
   return (true);
 }
+#endif
+
+
+
+static boolean
+insert_exec_ok (const char *action,
+		boolean (*func) (/* ??? */), char **argv, int *arg_ptr)
+{
+#if defined(NEW_EXEC)
+  return new_insert_exec_ok(action, func, argv, arg_ptr);
+#else
+  return old_insert_exec_ok(func, argv, arg_ptr);
+#endif
+}
+
+
 
 /* Get a number of days and comparison type.
    STR is the ASCII representation.
@@ -1579,26 +2201,47 @@ insert_time (char **argv, int *arg_ptr, PFB pred)
     return (false);
   if (!get_num_days (argv[*arg_ptr], &num_days, &c_type))
     return (false);
-  t = (cur_day_start - num_days * DAYSECS
-       + ((c_type == COMP_GT) ? DAYSECS - 1 : 0));
+
+  /* Figure out the timestamp value we are looking for. */
+  t = ( options.cur_day_start - num_days * DAYSECS
+		   + ((c_type == COMP_GT) ? DAYSECS - 1 : 0));
+
+  if (1)
+    {
+      /* We introduce a scope in which 'val' can be declared, for the 
+       * benefit of compilers that are really C89 compilers
+       * which support intmax_t because config.h #defines it
+       */
+      intmax_t val = ( (intmax_t)options.cur_day_start - num_days * DAYSECS
+		       + ((c_type == COMP_GT) ? DAYSECS - 1 : 0));
+      t = val;
+      
+      /* Check for possibility of an overflow */
+      if ( (intmax_t)t != val ) 
+	{
+	  error (1, 0, "arithmetic overflow while converting %s days to a number of seconds", argv[*arg_ptr]);
+	}
+    }
+  
   our_pred = insert_primary (pred);
   our_pred->args.info.kind = c_type;
   our_pred->args.info.negative = t < 0;
   our_pred->args.info.l_val = t;
   (*arg_ptr)++;
 #ifdef	DEBUG
-  printf (_("inserting %s\n"), our_pred->p_name);
-  printf (_("    type: %s    %s  "),
+  fprintf (stderr, _("inserting %s\n"), our_pred->p_name);
+  fprintf (stderr, _("    type: %s    %s  "),
 	  (c_type == COMP_GT) ? "gt" :
 	  ((c_type == COMP_LT) ? "lt" : ((c_type == COMP_EQ) ? "eq" : "?")),
 	  (c_type == COMP_GT) ? " >" :
 	  ((c_type == COMP_LT) ? " <" : ((c_type == COMP_EQ) ? ">=" : " ?")));
   t = our_pred->args.info.l_val;
-  printf ("%ju %s", (uintmax_t) our_pred->args.info.l_val, ctime (&t));
+  fprintf (stderr, "%ju %s", (uintmax_t) our_pred->args.info.l_val, ctime (&t));
   if (c_type == COMP_EQ)
     {
       t = our_pred->args.info.l_val += DAYSECS;
-      printf ("                 <  %ju %s",
+      fprintf (stderr,
+	       "                 <  %ju %s",
 	      (uintmax_t) our_pred->args.info.l_val, ctime (&t));
       our_pred->args.info.l_val -= DAYSECS;
     }
@@ -1619,8 +2262,6 @@ insert_time (char **argv, int *arg_ptr, PFB pred)
 static boolean
 get_num (char *str, uintmax_t *num, enum comparison_type *comp_type)
 {
-  int len_num;			/* Length of field. */
-
   if (str == NULL)
     return (false);
   switch (str[0])
@@ -1669,13 +2310,13 @@ insert_num (char **argv, int *arg_ptr, PFB pred)
   our_pred->args.info.l_val = num;
   (*arg_ptr)++;
 #ifdef	DEBUG
-  printf (_("inserting %s\n"), our_pred->p_name);
-  printf (_("    type: %s    %s  "),
+  fprintf (stderr, _("inserting %s\n"), our_pred->p_name);
+  fprintf (stderr, _("    type: %s    %s  "),
 	  (c_type == COMP_GT) ? "gt" :
 	  ((c_type == COMP_LT) ? "lt" : ((c_type == COMP_EQ) ? "eq" : "?")),
 	  (c_type == COMP_GT) ? " >" :
 	  ((c_type == COMP_LT) ? " <" : ((c_type == COMP_EQ) ? " =" : " ?")));
-  printf ("%ju\n", our_pred->args.info.l_val);
+  fprintf (stderr, "%ju\n", our_pred->args.info.l_val);
 #endif	/* DEBUG */
   return (true);
 }

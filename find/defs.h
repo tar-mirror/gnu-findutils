@@ -1,5 +1,5 @@
 /* defs.h -- data types and declarations.
-   Copyright (C) 1990, 91, 92, 93, 94, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,17 +13,12 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
+#ifndef INC_DEFS_H
+#define INC_DEFS_H 1
 
-#include <gnulib/config.h>
-#undef VERSION
-#undef PACKAGE_VERSION
-#undef PACKAGE_TARNAME
-#undef PACKAGE_STRING
-#undef PACKAGE_NAME
-#undef PACKAGE
 #include <config.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -84,6 +79,14 @@ extern int errno;
 int lstat PARAMS((const char *__path, struct stat *__statbuf));
 int stat PARAMS((const char *__path, struct stat *__statbuf));
 
+int optionl_stat PARAMS((const char *name, struct stat *p));
+int optionp_stat PARAMS((const char *name, struct stat *p));
+int optionh_stat PARAMS((const char *name, struct stat *p));
+
+int get_statinfo PARAMS((const char *pathname, const char *name, struct stat *p));
+
+
+
 #ifndef S_ISUID
 # define S_ISUID 0004000
 #endif
@@ -127,10 +130,15 @@ int stat PARAMS((const char *__path, struct stat *__statbuf));
 #define MODE_RWX	(S_IXUSR | S_IXGRP | S_IXOTH | MODE_RW)
 #define MODE_ALL	(S_ISUID | S_ISGID | S_ISVTX | MODE_RWX)
 
+#if 1
+#include <stdbool.h>
+typedef bool boolean;
+#else
 /* Not char because of type promotion; NeXT gcc can't handle it.  */
 typedef int boolean;
 #define		true    1
 #define		false	0
+#endif
 
 /* Pointer to function returning boolean. */
 typedef boolean (*PFB)();
@@ -187,6 +195,15 @@ struct perm_val
   mode_t val;
 };
 
+/* dir_id is used to support loop detection in find.c and 
+ * also to support the -samefile test.
+ */
+struct dir_id
+{
+  ino_t ino;
+  dev_t dev;
+};
+
 struct size_val
 {
   enum comparison_type kind;
@@ -194,17 +211,36 @@ struct size_val
   uintmax_t size;
 };
 
+#define NEW_EXEC 1
+/*
+#undef NEW_EXEC 
+*/
+
+#if !defined(NEW_EXEC)
 struct path_arg
 {
   short offset;			/* Offset in `vec' of this arg. */
   short count;			/* Number of path replacements in this arg. */
   char *origarg;		/* Arg with "{}" intact. */
 };
+#endif
+
+#include "buildcmd.h"
 
 struct exec_val
 {
+#if defined(NEW_EXEC)
+  /* new-style */
+  boolean multiple;		/* -exec {} \+ denotes multiple argument. */
+  struct buildcmd_control ctl;
+  struct buildcmd_state   state;
+  char **replace_vec;		/* Command arguments (for ";" style) */
+  int num_args;
+  boolean use_current_dir;      /* If nonzero, don't chdir to start dir */
+#else
   struct path_arg *paths;	/* Array of args with path replacements. */
   char **vec;			/* Array of args to pass to program. */
+#endif
 };
 
 /* The format string for a -printf or -fprintf is chopped into one or
@@ -258,6 +294,9 @@ struct predicate
   /* True if this predicate node requires a stat system call to execute. */
   boolean need_stat;
 
+  /* True if this predicate node requires knowledge of the file type. */
+  boolean need_type;
+
   /* Information needed by the predicate processor.
      Next to each member are listed the predicates that use it. */
   union
@@ -272,6 +311,7 @@ struct predicate
     gid_t gid;			/* group */
     time_t time;		/* newer */
     struct perm_val perm;	/* perm */
+    struct dir_id   fileid;	/* samefile */
     mode_t type;		/* type */
     FILE *stream;		/* fprint fprint0 */
     struct format_val printf_vec; /* printf fprintf */
@@ -288,6 +328,11 @@ struct predicate
   struct predicate *pred_left;
   struct predicate *pred_right;
 };
+
+/* find.c. */
+int get_info PARAMS((const char *pathname, const char *name, struct stat *p, struct predicate *pred_ptr));
+int following_links(void);
+
 
 /* find library function declarations.  */
 
@@ -316,16 +361,27 @@ char *xgetcwd PARAMS((void));
 #define VOID char
 #endif
 
-VOID *xmalloc PARAMS((size_t n));
-VOID *xrealloc PARAMS((VOID *p, size_t n));
-
-/* xstrdup.c */
-char *xstrdup PARAMS((char *string));
-
 /* find global function declarations.  */
 
+/* find.c */
+/* SymlinkOption represents the choice of 
+ * -P, -L or -P (default) on the command line.
+ */
+enum SymlinkOption 
+  {
+    SYMLINK_NEVER_DEREF,	/* Option -P */
+    SYMLINK_ALWAYS_DEREF,	/* Option -L */
+    SYMLINK_DEREF_ARGSONLY	/* Option -H */
+  };
+extern enum SymlinkOption symlink_handling; /* defined in find.c. */
+
+void set_follow_state PARAMS((enum SymlinkOption opt));
+void cleanup(void);
+
 /* fstype.c */
-char *filesystem_type PARAMS((char *path, char *relpath, struct stat *statp));
+char *filesystem_type PARAMS((const struct stat *statp));
+char * get_mounted_filesystems (void);
+dev_t * get_mounted_devices PARAMS((size_t *));
 
 /* parser.c */
 PFB find_parser PARAMS((char *search_name));
@@ -343,8 +399,10 @@ boolean pred_cmin PARAMS((char *pathname, struct stat *stat_buf, struct predicat
 boolean pred_cnewer PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_comma PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_ctime PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
+boolean pred_delete PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_empty PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_exec PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
+boolean pred_execdir PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_false PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_fls PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_fprint PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
@@ -368,6 +426,7 @@ boolean pred_newer PARAMS((char *pathname, struct stat *stat_buf, struct predica
 boolean pred_nogroup PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_nouser PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_ok PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
+boolean pred_okdir PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_open PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_or PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_path PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
@@ -375,7 +434,9 @@ boolean pred_perm PARAMS((char *pathname, struct stat *stat_buf, struct predicat
 boolean pred_print PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_print0 PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_prune PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
+boolean pred_quit PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_regex PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
+boolean pred_samefile PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_size PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_true PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_type PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
@@ -383,10 +444,19 @@ boolean pred_uid PARAMS((char *pathname, struct stat *stat_buf, struct predicate
 boolean pred_used PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_user PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
 boolean pred_xtype PARAMS((char *pathname, struct stat *stat_buf, struct predicate *pred_ptr));
+
+int launch PARAMS((const struct buildcmd_control *ctl,
+		   struct buildcmd_state *buildstate));
+
+
 char *find_pred_name PARAMS((PFB pred_func));
+
+
+
 #ifdef DEBUG
-void print_tree PARAMS((struct predicate *node, int indent));
-void print_list PARAMS((struct predicate *node));
+void print_tree PARAMS((FILE*, struct predicate *node, int indent));
+void print_list PARAMS((FILE*, struct predicate *node));
+void print_optlist PARAMS((FILE *fp, struct predicate *node));
 #endif /* DEBUG */
 
 /* tree.c */
@@ -394,6 +464,7 @@ struct predicate *
 get_expr PARAMS((struct predicate **input, short int prev_prec));
 boolean opt_expr PARAMS((struct predicate **eval_treep));
 boolean mark_stat PARAMS((struct predicate *tree));
+boolean mark_type PARAMS((struct predicate *tree));
 
 /* util.c */
 struct predicate *get_new_pred PARAMS((void));
@@ -404,25 +475,85 @@ void usage PARAMS((char *msg));
 extern char *program_name;
 extern struct predicate *predicates;
 extern struct predicate *last_pred;
-extern boolean do_dir_first;
-extern int maxdepth;
-extern int mindepth;
-extern int curdepth;
-extern int output_block_size;
-extern time_t start_time;
-extern time_t cur_day_start;
-extern boolean full_days;
-extern boolean no_leaf_check;
-extern boolean stay_on_filesystem;
-extern boolean stop_at_current_level;
-extern boolean have_stat;
-extern char *rel_pathname;
+
+struct options
+{
+  /* If true, process directory before contents.  True unless -depth given. */
+  boolean do_dir_first;
+  
+  /* If >=0, don't descend more than this many levels of subdirectories. */
+  int maxdepth;
+  
+  /* If >=0, don't process files above this level. */
+  int mindepth;
+  
+  /* If true, do not assume that files in directories with nlink == 2
+     are non-directories. */
+  boolean no_leaf_check;
+  
+  /* If true, don't cross filesystem boundaries. */
+  boolean stay_on_filesystem;
+  
+  /* If true, we ignore the problem where we find that a directory entry 
+   * no longer exists by the time we get around to processing it.
+   */
+  boolean ignore_readdir_race;
+  
+/* If true, we issue warning messages
+ */
+  boolean warnings;
+  time_t start_time;		/* Time at start of execution.  */
+  
+  /* Seconds between 00:00 1/1/70 and either one day before now
+     (the default), or the start of today (if -daystart is given). */
+  time_t cur_day_start;
+  
+  /* If true, cur_day_start has been adjusted to the start of the day. */
+  boolean full_days;
+  
+  int output_block_size;	/* Output block size.  */
+  
+  enum SymlinkOption symlink_handling;
+  
+  
+  /* Pointer to the function used to stat files. */
+  int (*xstat) (const char *name, struct stat *statbuf);
+};
+extern struct options options;
+
+
+struct state
+{
+  /* Current depth; 0 means current path is a command line arg. */
+  int curdepth;
+  
+  /* If true, we have called stat on the current path. */
+  boolean have_stat;
+  
+  /* If true, we know the type of the current path. */
+  boolean have_type;
+  mode_t type;			/* this is the actual type */
+  
+  /* The file being operated on, relative to the current directory.
+     Used for stat, readlink, remove, and opendir.  */
+  char *rel_pathname;
+
+  /* Length of current path. */
+  int path_length;
+
+  /* If true, don't descend past current directory.
+     Can be set by -prune, -maxdepth, and -xdev/-mount. */
+  boolean stop_at_current_level;
+  
+  /* Status value to return to system. */
+  int exit_status;
+};
+extern struct state state;
+
 extern char const *starting_dir;
 extern int starting_desc;
 #if ! defined HAVE_FCHDIR && ! defined fchdir
 # define fchdir(fd) (-1)
 #endif
-extern int exit_status;
-extern int path_length;
-extern int (*xstat) ();
-extern boolean dereference;
+
+#endif

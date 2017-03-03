@@ -1,12 +1,14 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(find/pred.c)
-AM_CONFIG_HEADER(config.h)
+AC_INIT
+AC_CONFIG_SRCDIR([find/pred.c])
+AC_CONFIG_HEADERS([config.h])
 AC_CANONICAL_HOST
+AC_CONFIG_MACRO_DIR(gnulib/m4)
 
 dnl Set of available languages.
-ALL_LINGUAS="da de es et fr gl id it ko nl pl pt_BR ru sv tr"
+ALL_LINGUAS="da de es et fr gl id it ko nl pl pt_BR ru sv tr sk"
 
-AM_INIT_AUTOMAKE(findutils, 4.1.20)
+AM_INIT_AUTOMAKE(findutils, 4.2.15)
 
 AC_SUBST(INCLUDES)dnl
 AC_ARG_ENABLE(id-cache,
@@ -17,58 +19,75 @@ AC_ARG_ENABLE(id-cache,
    are running NIS or Hesiod, which make password and group calls
    very expensive.]))
 
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING(--enable-debug,Enable debugging output which is likely to be interesting to people debugging findutils),
+	[ac_cv_debug=$enableval],[ac_cv_debug=no])
+
+AC_ARG_ENABLE(d_type-optimization,
+	AS_HELP_STRING(--enable-d_type-optimization,Make use of the file type data returned in struct dirent.d_type by readdir()),
+	[ac_cv_d_type=$enableval],[ac_cv_d_type=yes])
+
+dnl This one has no default, because otherwise we would have to say 
+dnl both --enable-d_type-optimisation=no and --enable-d_type-optimization=no
+dnl to turn it off.
+AC_ARG_ENABLE(d_type-optimisation,
+	AS_HELP_STRING(--enable-d_type-optimisation,Synonym for --enable-d_type-optimization),
+	[ac_cv_d_type=$enableval],[])
+
+
+AC_MSG_CHECKING([whether debug output should be produced])
+if test x$ac_cv_debug = xno; then
+   AC_MSG_RESULT([no])
+else
+   AC_MSG_RESULT([yes])
+   AC_DEFINE(DEBUG, 1, [Define if you want to see find's innards])
+   AC_DEFINE(DEBUG_STAT, 1, [Define if you want to see a message every time find calls the stat() system call])
+fi
+
+
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
+
 AC_AIX
-AC_MINIX
+
+
+dnl AC_MINIX
+dnl for gnulib
+gl_EARLY
+dnl gl_EARLY calls AC_GNU_SOURCE anyway.
+
+
 AC_ISC_POSIX
-AC_PROG_CC_STDC
 AM_C_PROTOTYPES
+
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+dnl AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
 AC_SYS_LARGEFILE
 
+
+gl_INIT
+
 dnl Try to get a POSIX.1 environment.
 
-dnl Checks for libraries.
-AC_CHECK_LIB(sun, getpwnam)
+dnl Checks for libraries.  If getpwnam() isn't present in the 
+dnl C library, try -lsun.
+AC_CHECK_FUNC(getpwnam, [],
+[AC_CHECK_LIB(sun, getpwnam)])
 
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h string.h limits.h unistd.h errno.h stdlib.h stddef.h)
-AC_CHECK_HEADERS(unistd.h inttypes.h fcntl.h locale.h)
-AC_CHECK_HEADERS(sys/param.h)
+AC_CHECK_HEADERS(unistd.h sys/types.h inttypes.h fcntl.h locale.h stdint.h)
+AC_CHECK_HEADERS(sys/param.h mntent.h sys/mnttab.h sys/mntio.h sys/mkdev.h)
 AC_HEADER_MAJOR
 AC_HEADER_DIRENT
 AC_HEADER_STAT
 AC_HEADER_SYS_WAIT
 
-AC_MSG_CHECKING(how to get filesystem type)
-fstype=no
-# The order of these tests is important.
-AC_TRY_CPP([#include <sys/statvfs.h>
-#include <sys/fstyp.h>], AC_DEFINE(FSTYPE_STATVFS, 1, [Define to use SVR4 statvfs to get filesystem type.]) fstype=SVR4)
-if test $fstype = no; then
-AC_TRY_CPP([#include <sys/statfs.h>
-#include <sys/fstyp.h>], AC_DEFINE(FSTYPE_USG_STATFS, 1, [Define to use SVR3.2 statfs to get filesystem type.]) fstype=SVR3)
-fi
-if test $fstype = no; then
-AC_TRY_CPP([#include <sys/statfs.h>
-#include <sys/vmount.h>], AC_DEFINE(FSTYPE_AIX_STATFS, 1, [Define to use AIX3 statfs to get filesystem type.]) fstype=AIX)
-fi
-if test $fstype = no; then  
-AC_TRY_CPP([#include <mntent.h>], AC_DEFINE(FSTYPE_MNTENT, 1, [Define to use 4.3BSD getmntent to get filesystem type.]) fstype=4.3BSD)
-fi
-if test $fstype = no; then  
-AC_EGREP_HEADER(f_type;, sys/mount.h, AC_DEFINE(FSTYPE_STATFS, 1, [Define to use 4.4BSD and OSF1 statfs to get filesystem type.]) fstype=4.4BSD/OSF1)
-fi
-if test $fstype = no; then  
-AC_TRY_CPP([#include <sys/mount.h>
-#include <sys/fs_types.h>], AC_DEFINE(FSTYPE_GETMNT, 1, [Define to use Ultrix getmnt to get filesystem type.]) fstype=Ultrix)
-fi
-AC_MSG_RESULT($fstype)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -81,35 +100,99 @@ AC_CHECK_TYPE(dev_t, unsigned long)
 AC_TYPE_MODE_T
 AC_STRUCT_ST_BLOCKS
 AC_CHECK_MEMBERS([struct stat.st_rdev])
+
+AC_MSG_CHECKING([whether we should use struct dirent.d_type, if available])
+if test x$ac_cv_d_type = xno; then
+   AC_MSG_RESULT([no])
+else
+   AC_MSG_RESULT([yes])
+   AC_DEFINE(USE_STRUCT_DIRENT_D_TYPE, 1,
+   [Defined if you specify --enable-d_type-optimisation to configure.])
+   AC_CHECK_MEMBERS([struct dirent.d_type],[
+   AC_DEFINE(HAVE_STRUCT_DIRENT_D_TYPE, 1,
+   [Define to 1 if your 'struct dirent' has a d_type member])],
+   [],[
+#include <sys/types.h>
+#include <dirent.h>])
+fi
+
+
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 
-dnl Checks for library functions.
-
+dnl Checks for library functions that are provided by gnulib.
 AC_FUNC_STRFTIME
-AC_REPLACE_FUNCS(memcmp memset stpcpy strdup strftime strspn strstr \
-     strtol strtoul waitpid)
-
-AC_CHECK_FUNCS(fchdir getcwd strerror endgrent endpwent)
+AC_REPLACE_FUNCS(memcmp memset stpcpy strdup strstr strtol strtoul)
+AC_CHECK_FUNCS(fchdir getcwd strerror endgrent endpwent setlocale)
 AC_FUNC_VPRINTF
 AC_FUNC_ALLOCA
-AC_FUNC_GETMNTENT
 AC_FUNC_CLOSEDIR_VOID
 
-gl_XALLOC
+dnl We don't just use AC_FUNC_GETMNTENT directly because it 
+dnl will try to use -lsun on platforms which have getmntent() in the 
+dnl C library, for example UNICOS.
+AC_CHECK_FUNC(getmntent, [], [AC_FUNC_GETMNTENT])
+AC_CHECK_FUNCS(getmntent)
+AC_CHECK_FUNCS(setmntent endmntent)
+
+
+dnl Checks for library functions that are provided by findlib.
+FINDLIB_REPLACE_FUNCS(waitpid strspn)
+FINDLIB_REPLACE_FUNCS(forcefindlib)
+
+dnl gl_XALLOC
+gl_FUNC_ALLOCA
+
+dnl Use gl_INCLUDED_REGEX so that findutils will build on systems like
+dnl Solaris, which lacks those functions in libc (see GNU Savannah bug
+dnl #11710)
+gl_INCLUDED_REGEX([gnulib/lib/regex.c]) 
+
+AC_PREREQ(2.59)
+
+# Define intmax_t to 'signed long' or 'signed long long'
+# if it is not already defined in <stdint.h> or <inttypes.h>.
+dnl Derived from gnulib's uintmax_t which was from Paul Eggert.
+AC_DEFUN([jy_AC_TYPE_INTMAX_T],
+[
+  if test $ac_cv_header_inttypes_h = no && test $ac_cv_header_stdint_h = no; then
+    AC_REQUIRE([gl_AC_TYPE_LONG_LONG])
+    test $ac_cv_type_long_long = yes \
+      && ac_type='long long' \
+      || ac_type='long'
+    AC_DEFINE_UNQUOTED(intmax_t, $ac_type,
+      [Define to signed long or signed long long
+       if <stdint.h> and <inttypes.h> don't define.])
+  else
+    AC_DEFINE(HAVE_INTMAX_T, 1,
+      [Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>.])
+  fi
+])
+
+jy_AC_TYPE_INTMAX_T
+jy_SORTZ
+
+
+AC_CHECK_MEMBER(struct dirent.d_type,,,[		   
+#include <sys/types.h>
+#include <dirent.h>])
+
 
 dnl internationalization macros
-AM_GNU_GETTEXT
+AM_GNU_GETTEXT([external])
 
 # This is necessary so that .o files in LIBOBJS are also built via
 # the ANSI2KNR-filtering rules.
 #LIBOBJS=`echo $LIBOBJS|sed 's/\.o /\$U.o /g;s/\.o$/\$U.o/'`
-AC_CONFIG_SUBDIRS(gnulib)
-AC_OUTPUT(
-	Makefile 
+##AC_CONFIG_SUBDIRS(gnulib)
+AC_CONFIG_FILES(gnulib/Makefile gnulib/lib/Makefile gnulib/m4/Makefile)
+AC_CONFIG_FILES(m4/Makefile)
+AC_CONFIG_FILES([Makefile 
 	find/Makefile find/testsuite/Makefile
 	xargs/Makefile xargs/testsuite/Makefile
 	locate/Makefile locate/testsuite/Makefile
-	intl/Makefile po/Makefile.in po/Makefile
+	 po/Makefile.in po/Makefile
 	doc/Makefile lib/Makefile
-	)
+	])
+AC_OUTPUT
+dnl intl/Makefile

@@ -7,13 +7,17 @@ EXTRA_DIST = config/unix.exp \
 	inputs/eof.xi \
 	inputs/eofstr.xi \
 	inputs/files.xi \
+	inputs/foobar.xi \
 	inputs/files0.xi \
 	inputs/quotes.xi \
+	inputs/lines.xi \
+	inputs/blank.xi \
 	xargs.gnu/0n3.exp \
 	xargs.gnu/0n3.xo \
 	xargs.gnu/nothing.exp \
 	xargs.gnu/nothing.xo \
 	xargs.gnu/r.exp \
+	xargs.gnu/r.xo \
 	xargs.posix/hithere.exp \
 	xargs.posix/hithere.xo \
 	xargs.posix/n3.exp \
@@ -27,6 +31,8 @@ EXTRA_DIST = config/unix.exp \
 	xargs.posix/s48.exp \
 	xargs.posix/s48.xo \
 	xargs.posix/s6.exp \
+	xargs.posix/l2.exp \
+	xargs.posix/l2.xo \
 	xargs.sysv/eEOF.exp \
 	xargs.sysv/eEOF.xo \
 	xargs.sysv/eof.exp \
@@ -38,9 +44,12 @@ EXTRA_DIST = config/unix.exp \
 	xargs.sysv/l1n4.exp \
 	xargs.sysv/l1n4.xo \
 	xargs.sysv/l2.exp \
-	xargs.sysv/l2.xo
+	xargs.sysv/l2.xo \
+	xargs.sysv/trace.exp \
+	xargs.sysv/trace.xe \
+	xargs.sysv/trace.xo
 
-DIST_SUBDIRS = config inputs xargs.gnu xargs.posix xargs.sysv
+# DIST_SUBDIRS = config inputs xargs.gnu xargs.posix xargs.sysv
 
 CLEANFILES = *.log *.sum site.exp site.bak
 

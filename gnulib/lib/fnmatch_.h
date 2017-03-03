@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2001, 2002
+/* Copyright (C) 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -20,23 +20,6 @@
 
 # ifdef	__cplusplus
 extern "C" {
-# endif
-
-# if defined __cplusplus || (defined __STDC__ && __STDC__) || defined WINDOWS32
-#  if !defined __GLIBC__ || !defined __P
-#   undef	__P
-#   define __P(protos)	protos
-#  endif
-# else /* Not C++ or ANSI C.  */
-#  undef	__P
-#  define __P(protos)	()
-/* We can get away without defining `const' here only because in this file
-   it is used only inside the prototype for `fnmatch', which is elided in
-   non-ANSI C where `const' is problematical.  */
-# endif /* C++ or ANSI C.  */
-
-# ifndef __const
-#  define __const const
 # endif
 
 /* We #undef these before defining them because some losing systems
@@ -70,8 +53,8 @@ extern "C" {
 
 /* Match NAME against the filename pattern PATTERN,
    returning zero if it matches, FNM_NOMATCH if not.  */
-extern int fnmatch __P ((__const char *__pattern, __const char *__name,
-			 int __flags));
+extern int fnmatch (const char *__pattern, const char *__name,
+		    int __flags);
 
 # ifdef	__cplusplus
 }

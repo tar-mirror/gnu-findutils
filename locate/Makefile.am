@@ -1,9 +1,10 @@
 # The default database to build and search.
-AUTOMAKE_OPTIONS = ../lib/ansi2knr
+AUTOMAKE_OPTIONS = std-options
 LOCATE_DB = $(localstatedir)/locatedb
 localedir = $(datadir)/locale
 
-bin_PROGRAMS = locate
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = frcode code bigram
+bin_PROGRAMS = locate 
 libexec_PROGRAMS = frcode code bigram
 bin_SCRIPTS = updatedb
 man_MANS = locate.1 updatedb.1 locatedb.5
@@ -32,10 +33,12 @@ updatedb: updatedb.sh
 	-e "s,@""frcode""@,$${frcode}," \
 	-e "s,@""bigram""@,$${bigram}," \
 	-e "s,@""code""@,$${code}," \
+	-e "s,@""SORT""@,$(SORT)," \
+	-e "s,@""SORT_SUPPORTS_Z""@,$(SORT_SUPPORTS_Z)," \
 	$(srcdir)/updatedb.sh > $@
 	chmod +x $@
 
 install-data-hook:
-	$(top_srcdir)/mkinstalldirs $(localstatedir)
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(localstatedir)
 
 SUBDIRS = testsuite

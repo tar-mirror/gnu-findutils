@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
 
@@ -45,13 +45,6 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
-#include <gnulib/config.h>
-#undef VERSION
-#undef PACKAGE_VERSION
-#undef PACKAGE_TARNAME
-#undef PACKAGE_STRING
-#undef PACKAGE_NAME
-#undef PACKAGE
 #include <config.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -77,11 +70,13 @@
 #ifdef gettext_noop
 # define N_(String) gettext_noop (String)
 #else
-# define N_(String) (String)
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
 #endif
 
 #include "locatedb.h"
 #include <getline.h>
+#include "closeout.h"
 
 char *xmalloc PARAMS((size_t));
 
@@ -124,6 +119,20 @@ prefix_length (char *s1, char *s2)
   return s1 - start;
 }
 
+extern char *version_string;
+
+static void
+usage (stream)
+     FILE *stream;
+{
+  fprintf (stream, _("\
+Usage: %s [--version | --help]\n\
+or     %s most_common_bigrams < file-list > locate-database\n"),
+	   program_name, program_name);
+  fputs (_("\nReport bugs to <bug-findutils@gnu.org>.\n"), stream);
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -137,22 +146,33 @@ main (int argc, char **argv)
   int line_len;			/* Length of input line.  */
 
   program_name = argv[0];
+  atexit (close_stdout);
 
   bigram[2] = '\0';
 
   if (argc != 2)
     {
-      fprintf (stderr, _("Usage: %s most_common_bigrams < list > coded_list\n"),
-	       argv[0]);
-      exit (2);
+      usage(stderr);
+      return 2;
     }
-
+  
+  if (0 == strcmp(argv[1], "--help"))
+    {
+      usage(stdout);
+      return 0;
+    }
+  else if (0 == strcmp(argv[1], "--version"))
+    {
+      printf (_("GNU findutils version %s\n"), version_string);
+      return 0;
+    }
+  
   fp = fopen (argv[1], "r");
   if (fp == NULL)
     {
       fprintf (stderr, "%s: ", argv[0]);
       perror (argv[1]);
-      exit (1);
+      return 1;
     }
 
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
@@ -229,5 +249,5 @@ main (int argc, char **argv)
   free (path);
   free (oldpath);
 
-  exit (0);
+  return 0;
 }

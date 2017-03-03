@@ -1,5 +1,5 @@
 /* util.c -- functions for initializing new tree elements, and other things.
-   Copyright (C) 1990, 91, 92, 93, 94, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,11 +13,12 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
 
 #include "defs.h"
+#include "../gnulib/lib/xalloc.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -28,7 +29,8 @@
 #ifdef gettext_noop
 # define N_(String) gettext_noop (String)
 #else
-# define N_(String) (String)
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
 #endif
 
 
@@ -66,6 +68,7 @@ get_new_pred (void)
   last_pred->side_effects = false;
   last_pred->no_default_print = false;
   last_pred->need_stat = true;
+  last_pred->need_type = true;
   last_pred->args.str = NULL;
   last_pred->pred_next = NULL;
   last_pred->pred_left = NULL;
@@ -99,6 +102,7 @@ get_new_pred_chk_op (void)
 	new_pred->p_type = BI_OP;
 	new_pred->p_prec = AND_PREC;
 	new_pred->need_stat = false;
+	new_pred->need_type = false;
 	new_pred->args.str = NULL;
 
       default:
@@ -145,6 +149,6 @@ usage (char *msg)
   if (msg)
     fprintf (stderr, "%s: %s\n", program_name, msg);
   fprintf (stderr, _("\
-Usage: %s [path...] [expression]\n"), program_name);
+Usage: %s [-H] [-L] [-P] [path...] [expression]\n"), program_name);
   exit (1);
 }

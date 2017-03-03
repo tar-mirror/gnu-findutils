@@ -14,26 +14,31 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 # USA.
 
 # csh original by James Woods; sh conversion by David MacKenzie.
 
 usage="\
-Usage: updatedb [--localpaths='dir1 dir2...'] [--netpaths='dir1 dir2...']
+Usage: $0 [--findoptions='-option1 -option2...']
+       [--localpaths='dir1 dir2...'] [--netpaths='dir1 dir2...']
        [--prunepaths='dir1 dir2...'] [--prunefs='fs1 fs2...']
        [--output=dbfile] [--netuser=user] [--localuser=user] 
        [--old-format] [--version] [--help]
 
-  Report bugs to <bug-findutils@gnu.org>.
-       "
-
+Report bugs to <bug-findutils@gnu.org>."
+changeto=/
 old=no
 for arg
 do
-  opt=`echo $arg|sed 's/^\([^=]*\).*/\1/'`
-  val=`echo $arg|sed 's/^[^=]*=\(.*\)/\1/'`
+  # If we are unable to fork, the back-tick operator will 
+  # fail (and the shell will emit an error message).  When 
+  # this happens, we exit with error value 71 (EX_OSERR).
+  # Alternative candidate - 75, EX_TEMPFAIL.
+  opt=`echo $arg|sed 's/^\([^=]*\).*/\1/'`  || exit 71
+  val=`echo $arg|sed 's/^[^=]*=\(.*\)/\1/'` || exit 71
   case "$opt" in
+    --findoptions) FINDOPTIONS="$val" ;;
     --localpaths) SEARCHPATHS="$val" ;;
     --netpaths) NETPATHS="$val" ;;
     --prunepaths) PRUNEPATHS="$val" ;;
@@ -42,6 +47,7 @@ do
     --netuser) NETUSER="$val" ;;
     --localuser) LOCALUSER="$val" ;;
     --old-format) old=yes ;;
+    --changecwd)  changeto="$val" ;;
     --version) echo "GNU updatedb version @VERSION@"; exit 0 ;;
     --help) echo "$usage"; exit 0 ;;
     *) echo "updatedb: invalid option $opt
@@ -50,8 +56,40 @@ $usage" >&2
   esac
 done
 
+if test "$old" = yes; then
+    echo "Warning: future versions of findutils will shortly discontinue support for the old locate database format." >&2
+
+    sort="@SORT@"
+    print_option="-print"
+    frcode_options=""
+else
+    if @SORT_SUPPORTS_Z@
+    then
+        sort="@SORT@ -z"
+        print_option="-print0"
+        frcode_options="-0"
+    else
+        sort="@SORT@"
+        print_option="-print"
+        frcode_options=""
+    fi
+fi
+
+getuid() {
+    # format of "id" output is ...
+    # uid=1(daemon) gid=1(other)
+    # for `id's that don't understand -u
+    id | cut -d'(' -f 1 | cut -d'=' -f2
+}
+
 # You can set these in the environment, or use command-line options,
 # to override their defaults:
+
+# Any global options for find?
+: ${FINDOPTIONS=}
+
+# What shell shoud we use?  We should use a POSIX-ish sh.
+: ${SHELL="/bin/sh"}
 
 # Non-network directories to put in the database.
 : ${SEARCHPATHS="/"}
@@ -60,7 +98,7 @@ done
 : ${NETPATHS=}
 
 # Directories to not put in the database, which would otherwise be.
-: ${PRUNEPATHS="/tmp /usr/tmp /var/tmp /afs"}
+: ${PRUNEPATHS="/tmp /usr/tmp /var/tmp /afs /amd /sfs"}
 
 # The same, in the form of a regex that find can use.
 test -z "$PRUNEREGEX" &&
@@ -83,20 +121,29 @@ export TMPDIR
 : ${NETUSER=daemon}
 
 # The directory containing the subprograms.
-: ${LIBEXECDIR=@libexecdir@}
+if test -n "$LIBEXECDIR" ; then
+    : LIBEXECDIR already set, do nothing
+else
+    : ${LIBEXECDIR=@libexecdir@}
+fi
 
 # The directory containing find.
-: ${BINDIR=@bindir@}
+if test -n "$BINDIR" ; then
+    : BINDIR already set, do nothing
+else
+    : ${BINDIR=@bindir@}
+fi
 
 # The names of the utilities to run to build the database.
-: ${find=${BINDIR}/@find@}
-: ${frcode=${LIBEXECDIR}/@frcode@}
-: ${bigram=${LIBEXECDIR}/@bigram@}
-: ${code=${LIBEXECDIR}/@code@}
+: ${find:=${BINDIR}/@find@}
+: ${frcode:=${LIBEXECDIR}/@frcode@}
+: ${bigram:=${LIBEXECDIR}/@bigram@}
+: ${code:=${LIBEXECDIR}/@code@}
+
 
 PATH=/bin:/usr/bin:${BINDIR}; export PATH
 
-: ${PRUNEFS="nfs NFS proc"}
+: ${PRUNEFS="nfs NFS proc afs proc smbfs autofs iso9660 ncpfs coda devpts ftpfs devfs mfs sysfs shfs"}
 
 if test -n "$PRUNEFS"; then
 prunefs_exp=`echo $PRUNEFS |sed -e 's/\([^ ][^ ]*\)/-o -fstype \1/g' \
@@ -109,34 +156,51 @@ fi
 # Sort case insensitively for users' convenience.
 
 rm -f $LOCATE_DB.n
-trap 'rm -f $LOCATE_DB.n; exit' 1 15
+trap 'rm -f $LOCATE_DB.n; exit' HUP TERM
 
 if test $old = no; then
 
 # FIXME figure out how to sort null-terminated strings, and use -print0.
-{
+if {
+cd "$changeto"
 if test -n "$SEARCHPATHS"; then
   if [ "$LOCALUSER" != "" ]; then
-    su $LOCALUSER -c \
-    "$find $SEARCHPATHS \
+    # : A1
+    su $LOCALUSER -s $SHELL -c \
+    "$find $SEARCHPATHS $FINDOPTIONS \
      \\( $prunefs_exp \
-     -type d -regex '$PRUNEREGEX' \\) -prune -o -print"
+     -type d -regex '$PRUNEREGEX' \\) -prune -o $print_option"
   else
-    $find $SEARCHPATHS \
+    # : A2
+    $find $SEARCHPATHS $FINDOPTIONS \
      \( $prunefs_exp \
-     -type d -regex "$PRUNEREGEX" \) -prune -o -print
+     -type d -regex "$PRUNEREGEX" \) -prune -o $print_option
   fi
 fi
 
 if test -n "$NETPATHS"; then
-if [ "`id -u`" = 0 ]; then
-    su $NETUSER -c \
-     "$find $NETPATHS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o -print"
+myuid=`getuid` 
+if [ "$myuid" = 0 ]; then
+    # : A3
+    su $NETUSER -s $SHELL -c \
+     "$find $NETPATHS $FINDOPTIONS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o $print_option" ||
+    exit $?
   else
-    $find $NETPATHS \( -type d -regex "$PRUNEREGEX" -prune \) -o -print
+    # : A4
+    $find $NETPATHS $FINDOPTIONS \( -type d -regex "$PRUNEREGEX" -prune \) -o $print_option ||
+    exit $?
   fi
 fi
-} | sort -f | $frcode > $LOCATE_DB.n
+} | $sort -f | $frcode $frcode_options > $LOCATE_DB.n
+then
+    # OK so far
+    true
+else
+    rv=$?
+    echo "Failed to generate $LOCATE_DB.n" >&2
+    rm -f $LOCATE_DB.n
+    exit $rv
+fi
 
 # To avoid breaking locate while this script is running, put the
 # results in a temp file, then rename it atomically.
@@ -151,48 +215,56 @@ fi
 
 else # old
 
-if ! bigrams=`tempfile -p updatedb`; then
+if ! bigrams=`mktemp -t updatedbXXXXXXXXX`; then
     echo tempfile failed
     exit 1
 fi
 
-if ! filelist=`tempfile -p updatedb`; then
+if ! filelist=`mktemp -t updatedbXXXXXXXXX`; then
     echo tempfile failed
     exit 1
 fi
 
 rm -f $LOCATE_DB.n
-trap 'rm -f $bigrams $filelist $LOCATE_DB.n; exit' 1 15
+trap 'rm -f $bigrams $filelist $LOCATE_DB.n; exit' HUP TERM
 
-# Alphabetize subdirectories before file entries using tr.  James says:
+# Alphabetize subdirectories before file entries using tr.  James Woods says:
 # "to get everything in monotonic collating sequence, to avoid some
 # breakage i'll have to think about."
 {
+cd "$changeto"
 if test -n "$SEARCHPATHS"; then
   if [ "$LOCALUSER" != "" ]; then
-    su $LOCALUSER -c \
-    "$find $SEARCHPATHS \
+    # : A5
+    su $LOCALUSER -s $SHELL -c \
+    "$find $SEARCHPATHS $FINDOPTIONS \
      \( $prunefs_exp \
-     -type d -regex '$PRUNEREGEX' \) -prune -o -print"
+     -type d -regex '$PRUNEREGEX' \) -prune -o $print_option" || exit $?
   else
-    $find $SEARCHPATHS \
+    # : A6
+    $find $SEARCHPATHS $FINDOPTIONS \
      \( $prunefs_exp \
-     -type d -regex "$PRUNEREGEX" \) -prune -o -print
+     -type d -regex "$PRUNEREGEX" \) -prune -o $print_option || exit $?
   fi
 fi
 
 if test -n "$NETPATHS"; then
-  if [ "`id -u`" = 0 ]; then
-    su $NETUSER -c \
-     "$find $NETPATHS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o -print"
+  myuid=`getuid`
+  if [ "$myuid" = 0 ]; then
+    # : A7
+    su $NETUSER -s $SHELL -c \
+     "$find $NETPATHS $FINDOPTIONS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o $print_option" ||
+    exit $?
   else
-    $find $NETPATHS \( -type d -regex "$PRUNEREGEX" -prune \) -o -print
+    # : A8
+    $find $NETPATHS $FINDOPTIONS \( -type d -regex "$PRUNEREGEX" -prune \) -o $print_option ||
+    exit $?
   fi
 fi
-} | tr / '\001' | sort -f | tr '\001' / > $filelist
+} | tr / '\001' | $sort -f | tr '\001' / > $filelist
 
 # Compute the (at most 128) most common bigrams in the file list.
-$bigram < $filelist | sort | uniq -c | sort -nr |
+$bigram $bigram_opts < $filelist | sort | uniq -c | sort -nr |
   awk '{ if (NR <= 128) print $2 }' | tr -d '\012' > $bigrams
 
 # Code the file list.

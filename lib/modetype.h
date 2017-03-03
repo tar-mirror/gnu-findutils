@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
 
@@ -22,6 +22,9 @@
    test macros.  To make storing file types more convenient, define
    them; the values don't need to correspond to what the kernel uses,
    because of the way we use them. */
+#ifndef INC_MODETYPE_H
+#define INC_MODETYPE_H 1
+
 #ifndef S_IFMT			/* Doesn't have traditional Unix macros. */
 #define S_IFBLK 1
 #define S_IFCHR 2
@@ -87,4 +90,6 @@
 #endif
 #if !defined(S_ISNWK) && defined(S_IFNWK) /* HP/UX */
 #define S_ISNWK(m) (((m) & S_IFMT) == S_IFNWK)
+#endif
+
 #endif

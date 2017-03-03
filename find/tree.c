@@ -1,5 +1,5 @@
 /* tree.c -- helper functions to build and evaluate the expression tree.
-   Copyright (C) 1990, 91, 92, 93, 94, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,11 +13,12 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
 
 #include "defs.h"
+#include "../gnulib/lib/xalloc.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -28,7 +29,8 @@
 #ifdef gettext_noop
 # define N_(String) gettext_noop (String)
 #else
-# define N_(String) (String)
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
 #endif
 
 static struct predicate *scan_rest PARAMS((struct predicate **input,
@@ -59,16 +61,23 @@ static struct predicate *set_new_parent PARAMS((struct predicate *curr, enum pre
 struct predicate *
 get_expr (struct predicate **input, short int prev_prec)
 {
-  struct predicate *next;
+  struct predicate *next = NULL;
 
   if (*input == NULL)
     error (1, 0, _("invalid expression"));
+  
   switch ((*input)->p_type)
     {
     case NO_TYPE:
-    case BI_OP:
-    case CLOSE_PAREN:
       error (1, 0, _("invalid expression"));
+      break;
+
+    case BI_OP:
+      error (1, 0, _("invalid expression; you have used a binary operator with nothing before it."));
+      break;
+
+    case CLOSE_PAREN:
+      error (1, 0, _("invalid expression; you have too many ')'"));
       break;
 
     case PRIMARY_TYPE:
@@ -87,7 +96,7 @@ get_expr (struct predicate **input, short int prev_prec)
       next = get_expr (input, NO_PREC);
       if ((*input == NULL)
 	  || ((*input)->p_type != CLOSE_PAREN))
-	error (1, 0, _("invalid expression"));
+	error (1, 0, _("invalid expression; I was expecting to find a ')' somewhere but did not see one."));
       *input = (*input)->pred_next;	/* move over close */
       break;
 
@@ -143,6 +152,9 @@ scan_rest (struct predicate **input,
 	case PRIMARY_TYPE:
 	case UNI_OP:
 	case OPEN_PAREN:
+	  /* I'm not sure how we get here, so it is not obvious what
+	   * sort of mistakes might give rise to this condition.
+	   */
 	  error (1, 0, _("invalid expression"));
 	  break;
 
@@ -154,14 +166,16 @@ scan_rest (struct predicate **input,
 	  break;
 
 	case CLOSE_PAREN:
-	  return (tree);
+	  return tree;
 
 	default:
-	  error (1, 0, _("oops -- invalid expression type!"));
+	  error (1, 0,
+		 _("oops -- invalid expression type (%d)!"),
+		 (int)(*input)->p_type);
 	  break;
 	}
     }
-  return (tree);
+  return tree;
 }
 
 /* Optimize the ordering of the predicates in the tree.  Rearrange
@@ -228,12 +242,13 @@ opt_expr (struct predicate **eval_treep)
   
 #ifdef DEBUG
   /* Normalized tree. */
-  printf (_("Normalized Eval Tree:\n"));
-  print_tree (*eval_treep, 0);
+  fprintf (stderr, _("Normalized Eval Tree:\n"));
+  print_tree (stderr, *eval_treep, 0);
 #endif
 
   /* Rearrange the predicates. */
   prevp = eval_treep;
+  biop_prec = NO_PREC; /* not COMMA_PREC */
   if ((*prevp) && (*prevp)->p_type == BI_OP)
     biop_prec = (*prevp)->p_prec;
   while ((curr = *prevp) != NULL)
@@ -357,6 +372,7 @@ set_new_parent (struct predicate *curr, enum predicate_precedence high_prec, str
   new_parent->p_type = BI_OP;
   new_parent->p_prec = high_prec;
   new_parent->need_stat = false;
+  new_parent->need_type = false;
 
   switch (high_prec)
     {
@@ -438,7 +454,44 @@ mark_stat (struct predicate *tree)
       return (false);
 
     default:
-      error (1, 0, _("oops -- invalid expression type!"));
+      error (1, 0, _("oops -- invalid expression type in mark_stat!"));
       return (false);
     }
 }
+
+/* Find the first node in expression tree TREE that we will
+   need to know the file type, if any.   Operates in the same 
+   was as mark_stat().
+*/
+boolean
+mark_type (struct predicate *tree)
+{
+  /* The tree is executed in-order, so walk this way (apologies to Aerosmith)
+     to find the first predicate for which the type information is needed. */
+  switch (tree->p_type)
+    {
+    case NO_TYPE:
+    case PRIMARY_TYPE:
+      return tree->need_type;
+
+    case UNI_OP:
+      if (mark_type (tree->pred_right))
+	tree->need_type = true;
+      return false;
+
+    case BI_OP:
+      /* ANDs and ORs are linked along ->left ending in NULL. */
+      if (tree->pred_left != NULL)
+	mark_type (tree->pred_left);
+
+      if (mark_type (tree->pred_right))
+	tree->need_type = true;
+
+      return false;
+
+    default:
+      error (1, 0, _("oops -- invalid expression type in mark_type!"));
+      return (false);
+    }
+}
+

@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
 
@@ -31,13 +31,6 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
-#include <gnulib/config.h>
-#undef VERSION
-#undef PACKAGE_VERSION
-#undef PACKAGE_TARNAME
-#undef PACKAGE_STRING
-#undef PACKAGE_NAME
-#undef PACKAGE
 #include <config.h>
 #include <stdio.h>
 
@@ -54,6 +47,7 @@
 
 #include <getline.h>
 #include <xalloc.h>
+#include "closeout.h"
 
 /* The name this program was run with.  */
 char *program_name;
@@ -79,7 +73,9 @@ main (int argc, char **argv)
   int line_len;			/* Length of input line.  */
 
   program_name = argv[0];
-
+  (void) argc;
+  atexit (close_stdout);
+  
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);
@@ -118,5 +114,5 @@ main (int argc, char **argv)
   free (path);
   free (oldpath);
 
-  exit (0);
+  return 0;
 }

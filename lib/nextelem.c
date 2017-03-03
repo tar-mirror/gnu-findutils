@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
    USA.
 */
 
@@ -21,13 +21,6 @@
    inspired by John P. Rouillard <rouilj@cs.umb.edu>.  */
 
 #ifdef HAVE_CONFIG_H
-#include <gnulib/config.h>
-#undef VERSION
-#undef PACKAGE_VERSION
-#undef PACKAGE_TARNAME
-#undef PACKAGE_STRING
-#undef PACKAGE
-#undef PACKAGE_NAME
 #include <config.h>
 #endif
 
@@ -52,8 +45,7 @@
    return NULL if there are no more elements.  */
 
 char *
-next_element (new_path)
-     char *new_path;
+next_element (const char *new_path, int curdir_ok)
 {
   static char *path = NULL;	/* Freshly allocated copy of NEW_PATH.  */
   static char *end;		/* Start of next element to return.  */
@@ -74,7 +66,7 @@ next_element (new_path)
       if (final_colon)
 	{
 	  final_colon = 0;
-	  return ".";
+	  return curdir_ok ? "." : "";
 	}
       return NULL;
     }
@@ -87,7 +79,7 @@ next_element (new_path)
     {
       /* An empty path element.  */
       *end++ = '\0';
-      return ".";
+      return curdir_ok ? "." : "";
     }
   else if (end == NULL)
     {
