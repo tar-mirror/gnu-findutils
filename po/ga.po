@@ -1,13 +1,13 @@
 # Irish translations for findutils.
 # Copyright (C) 2003 Free Software Foundation, Inc.
-# Kevin Patrick Scannell <scannell@SLU.EDU>, 2003, 2004, 2005, 2006, 2007.
+# Kevin Patrick Scannell <scannell@SLU.EDU>, 2003, 2004, 2005, 2006, 2007, 2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils_stable 4.2.31\n"
+"Project-Id-Version: findutils_stable 4.2.32\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2007-12-08 14:17+0000\n"
-"PO-Revision-Date: 2007-07-20 05:47-0500\n"
+"PO-Revision-Date: 2008-01-20 05:47-0500\n"
 "Last-Translator: Kevin Scannell <kscanne@gmail.com>\n"
 "Language-Team: Irish <gaeilge-gnulinux@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -31,7 +31,7 @@ msgstr "Na hargóintí bailí:"
 
 #: gnulib/lib/closeout.c:73
 msgid "write error"
-msgstr ""
+msgstr "earráid sa scríobh"
 
 #: gnulib/lib/error.c:125
 msgid "Unknown system error"
@@ -133,24 +133,23 @@ msgid "^[nN]"
 msgstr "^[nN]"
 
 #: gnulib/lib/xalloc-die.c:34
-#, fuzzy
 msgid "memory exhausted"
-msgstr "Cuimhne ídithe"
+msgstr "cuimhne ídithe"
 
 #: gnulib/lib/xstrtol-error.c:63
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %s%s argument `%s'"
-msgstr "argóint neamhbhailí `%s' chun `%s'"
+msgstr "argóint neamhbhailí %s%s: `%s'"
 
 #: gnulib/lib/xstrtol-error.c:68
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix in %s%s argument `%s'"
-msgstr "argóint neamhbhailí `%s' chun `%s'"
+msgstr "iarmhír neamhbhailí in argóint %s%s: `%s'"
 
 #: gnulib/lib/xstrtol-error.c:72
-#, fuzzy, c-format
+#, c-format
 msgid "%s%s argument `%s' too large"
-msgstr "tá líne na n-argóintí rófhada"
+msgstr "argóint %s%s rómhór: `%s'"
 
 #: find/find.c:455
 msgid ""
@@ -557,21 +556,21 @@ msgstr "Úsáid: %s [-H] [-L] [-P] [conair...] [slonn]\n"
 
 #: lib/buildcmd.c:179
 msgid "command too long"
-msgstr ""
+msgstr "ordú rófhada"
 
 #: lib/buildcmd.c:241
 msgid "can not fit single argument within argument list size limit"
-msgstr ""
+msgstr "ní féidir argóint aonair a thoilleadh i liosta na n-argóintí"
 
 #: lib/buildcmd.c:246
-#, fuzzy
 msgid "argument list too long"
-msgstr "tá líne na n-argóintí rófhada"
+msgstr "tá liosta na n-argóintí rófhada"
 
 #: lib/regextype.c:113
 #, c-format
 msgid "Unknown regular expression type %s; valid types are %s."
 msgstr ""
+"Cineál anaithnid sloinn ionadaíochta %s; seo iad na cineálacha bailí: %s."
 
 #: locate/code.c:126
 #, c-format
@@ -599,7 +598,7 @@ msgstr "GNU findutils, leagan %s\n"
 #: locate/frcode.c:161
 #, c-format
 msgid "Usage: %s [-0 | --null] [--version] [--help]\n"
-msgstr ""
+msgstr "Úsáid: %s [-0 | --null] [--version] [--help]\n"
 
 #: locate/frcode.c:201 locate/locate.c:1281
 #, c-format

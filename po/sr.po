@@ -655,7 +655,7 @@ msgid "old"
 msgstr ""
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -666,9 +666,6 @@ msgid ""
 "      [--version] [--help]\n"
 "      pattern...\n"
 msgstr ""
-"Употреба: %s [-d путања | --database=путања] [-e | --existing]\n"
-"      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
-"      [--version] [--help] шаблон...\n"
 
 #: xargs/xargs.c:300
 #, c-format
@@ -885,6 +882,21 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Нема претходног регуларног израза"
 
+#~ msgid "Predicate List:\n"
+#~ msgstr "Списак предиката:\n"
+
+#~ msgid "Eval Tree:\n"
+#~ msgstr "Стабло вредновања:\n"
+
+#~ msgid "Optimized Eval Tree:\n"
+#~ msgstr "Оптимизовано стабло вредновања:\n"
+
+#~ msgid "virtual memory exhausted"
+#~ msgstr "виртуелна меморија истрошена"
+
+#~ msgid "error in %s: %s"
+#~ msgstr "грешка у %s: %s"
+
 #~ msgid ""
 #~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
 #~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
@@ -895,22 +907,6 @@ msgstr ""
 #~ "        -fprintf ДАТОТЕКА ФОРМАТ -ok НАРЕДБА ; -print -print0 -printf "
 #~ "ФОРМАТ \n"
 #~ "        -prune -ls -delete -quit\n"
-
-#~ msgid "Predicate List:\n"
-#~ msgstr "Списак предиката:\n"
-
-#~ msgid "Eval Tree:\n"
-#~ msgstr "Стабло вредновања:\n"
-
-#~ msgid "Optimized Eval Tree:\n"
-#~ msgstr "Оптимизовано стабло вредновања:\n"
-
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Оптимизовано стабло вредновања:\n"
-
-#~ msgid "virtual memory exhausted"
-#~ msgstr "виртуелна меморија истрошена"
 
 #~ msgid "inserting %s\n"
 #~ msgstr "умећем %s\n"
@@ -927,8 +923,14 @@ msgstr ""
 #~ msgid "Normalized Eval Tree:\n"
 #~ msgstr "Нормализовано стабло вредновања:\n"
 
-#~ msgid "error in %s: %s"
-#~ msgstr "грешка у %s: %s"
+#~ msgid ""
+#~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"
+#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "      [--version] [--help] pattern...\n"
+#~ msgstr ""
+#~ "Употреба: %s [-d путања | --database=путања] [-e | --existing]\n"
+#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "      [--version] [--help] шаблон...\n"
 
 #~ msgid ""
 #~ "warning: locate database path `%s' contains a trailing colon, which is "

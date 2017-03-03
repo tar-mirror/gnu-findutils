@@ -854,17 +854,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Não há uma expressão regular prévia"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "ações: -exec COMANDO ; -fprint ARQUIVO -fprint0 ARQUIVO -fprintf ARQUIVO "
-#~ "FORMATO\n"
-#~ "      -ok COMANDO ; -print -print0 -printf FORMATO -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Lista dos predicados:\n"
 
@@ -874,30 +863,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Árvore de avaliação otimizada:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Árvore de avaliação otimizada:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s alterado durante a execução de %s"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "memória virtual exaurida"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "inserindo %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    tipo: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "esquerda:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "direita:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Árvore de avaliação normalizada:\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s alterado durante a execução de %s"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. alterado durante a execução de %s"
@@ -916,6 +886,29 @@ msgstr ""
 #~ "      -maxdepth NIVEIS -mindepth NIVEIS -mount -noleaf --version --xdev\n"
 #~ "testes (N pode ser +N ou -N ou N): -amin N -anewer ARQUIVO -atime N -cmin "
 #~ "N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "ações: -exec COMANDO ; -fprint ARQUIVO -fprint0 ARQUIVO -fprintf ARQUIVO "
+#~ "FORMATO\n"
+#~ "      -ok COMANDO ; -print -print0 -printf FORMATO -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "inserindo %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    tipo: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "esquerda:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "direita:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Árvore de avaliação normalizada:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

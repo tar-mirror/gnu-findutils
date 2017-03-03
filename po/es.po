@@ -921,7 +921,7 @@ msgid "old"
 msgstr ""
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -932,9 +932,6 @@ msgid ""
 "      [--version] [--help]\n"
 "      pattern...\n"
 msgstr ""
-"Modo de empleo: %s [-d ruta-de-acceso | --database=ruta-de-acceso]\n"
-"   [-e | --existing] [-i | --ignore-case] [--wholepath] [--basename]\n"
-"   [--limit=N | -l N] [--version] [--help] expr-reg...\n"
 
 #: xargs/xargs.c:300
 #, c-format
@@ -1168,16 +1165,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "No hay ninguna expresión regular anterior"
 
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "acciones: -exec ORDEN ; -fprint FICHERO -fprint0 FICHERO\n"
-#~ "      -fprintf FICHERO FORMATO -fls FICHERO -ok ORDEN ;\n"
-#~ "      -print -print0 -printf FORMATO -prune -ls -delete -quit\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Lista Predicado:\n"
 
@@ -1185,10 +1172,6 @@ msgstr ""
 #~ msgstr "Árbol de Evaluación:\n"
 
 #~ msgid "Optimized Eval Tree:\n"
-#~ msgstr "Árbol de Evaluación Optimizado:\n"
-
-#, fuzzy
-#~ msgid "Optimized command line:\n"
 #~ msgstr "Árbol de Evaluación Optimizado:\n"
 
 # Propongo eliminar la palabra virtual. En un sistema GNU, la memoria virtual
@@ -1215,6 +1198,19 @@ msgstr ""
 #~ msgid "virtual memory exhausted"
 #~ msgstr "memoria agotada"
 
+#~ msgid "error in %s: %s"
+#~ msgstr "error en %s: %s"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
+#~ "delete\n"
+#~ "      -quit\n"
+#~ msgstr ""
+#~ "acciones: -exec ORDEN ; -fprint FICHERO -fprint0 FICHERO\n"
+#~ "      -fprintf FICHERO FORMATO -fls FICHERO -ok ORDEN ;\n"
+#~ "      -print -print0 -printf FORMATO -prune -ls -delete -quit\n"
+
 #~ msgid "inserting %s\n"
 #~ msgstr "insertando %s\n"
 
@@ -1230,8 +1226,14 @@ msgstr ""
 #~ msgid "Normalized Eval Tree:\n"
 #~ msgstr "Árbol de Evaluación Normalizado:\n"
 
-#~ msgid "error in %s: %s"
-#~ msgstr "error en %s: %s"
+#~ msgid ""
+#~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"
+#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "      [--version] [--help] pattern...\n"
+#~ msgstr ""
+#~ "Modo de empleo: %s [-d ruta-de-acceso | --database=ruta-de-acceso]\n"
+#~ "   [-e | --existing] [-i | --ignore-case] [--wholepath] [--basename]\n"
+#~ "   [--limit=N | -l N] [--version] [--help] expr-reg...\n"
 
 #~ msgid ""
 #~ "warning: locate database path `%s' contains a trailing colon, which is "

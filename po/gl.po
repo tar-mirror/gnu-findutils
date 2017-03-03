@@ -851,17 +851,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Non hai unha expresión regular anterior"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "accións: -exec COMANDO ; -fprint FICHEIRO -fprint0 FICHEIRO\n"
-#~ "      -fprint FICHEIRO FORMATO ; -ok COMANDO ; -print -print0\n"
-#~ "      -printf FORMATO -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Lista de Predicados:\n"
 
@@ -871,33 +860,14 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Árbore de Evaluación Optimizado:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Árbore de Evaluación Optimizado:\n"
-
-#~ msgid "virtual memory exhausted"
-#~ msgstr "memoria virtual esgotada"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "inserindo %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    tipo: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "esquerda:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "dereita:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Árbore de Evaluación Normalizado:\n"
-
 #~ msgid "cannot open current directory"
 #~ msgstr "non se pode abri-lo directorio actual"
 
 #~ msgid "cannot return to starting directory"
 #~ msgstr "non se pode voltar ó directorio inicial"
+
+#~ msgid "virtual memory exhausted"
+#~ msgstr "memoria virtual esgotada"
 
 #~ msgid "error in %s: %s"
 #~ msgstr "erro en %s: %s"
@@ -913,6 +883,29 @@ msgstr ""
 #~ "      -maxdepth NIVEIS -mindepth NIVEIS -mount -noleaf --version -xdev\n"
 #~ "tests (N pode ser +N ou -N ou N): -amin N -anewer FICHEIRO -atime N -cmin "
 #~ "N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "accións: -exec COMANDO ; -fprint FICHEIRO -fprint0 FICHEIRO\n"
+#~ "      -fprint FICHEIRO FORMATO ; -ok COMANDO ; -print -print0\n"
+#~ "      -printf FORMATO -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "inserindo %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    tipo: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "esquerda:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "dereita:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Árbore de Evaluación Normalizado:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [--version] [--help]\n"

@@ -1,13 +1,13 @@
-# traditional Chinese translation of findutils.
-# Copyright (C) 2005 Free Software Foundation, Inc.
-# Abel Cheung <abelcheung@gmail.com>, 2005.
+# traditional Chinese translation of findutils_stable.
+# Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+# Abel Cheung <abelcheung@gmail.com>, 2005, 2007.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils 4.2.26\n"
+"Project-Id-Version: findutils_stable 4.2.31\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2007-12-08 14:17+0000\n"
-"PO-Revision-Date: 2005-12-06 11:30+0800\n"
+"PO-Revision-Date: 2007-10-11 05:05+0800\n"
 "Last-Translator: Abel Cheung <abelcheung@gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "MIME-Version: 1.0\n"
@@ -216,7 +216,7 @@ msgstr ""
 msgid ""
 "Symbolic link `%s' is part of a loop in the directory hierarchy; we have "
 "already visited the directory to which it points."
-msgstr ""
+msgstr "符號鏈結 ‘%s’ 組成了目錄迴圈；該符號鏈結指向的目錄已經在之前進入過。"
 
 #: find/find.c:1551
 #, c-format
@@ -236,7 +236,7 @@ msgstr ""
 #: find/find.c:1926
 #, c-format
 msgid "warning: not following the symbolic link %s"
-msgstr ""
+msgstr "警告：不會跟隨符號鏈結 %s"
 
 #: find/find.c:1970
 #, c-format
@@ -246,10 +246,12 @@ msgid ""
 "results may have failed to include directories that should have been "
 "searched."
 msgstr ""
+"警告：%s 的硬鏈結數目有錯誤，這個可能是檔案系統驅動程式的臭蟲。現在會自動啟"
+"用 find 的 -noleaf 選項。較早的結果可能會欠缺了一些應該搜尋的目錄。"
 
 #: find/fstype.c:249
 msgid "unknown"
-msgstr ""
+msgstr "未知"
 
 #: find/parser.c:371
 #, c-format
@@ -259,13 +261,14 @@ msgid ""
 "as those specified after it).  Please specify options before other "
 "arguments.\n"
 msgstr ""
+"警告：%s 選項前面的參數 %s 是測試參數而非選項，而選項的位置對於執行結果沒有影"
+"響（%s 會影響整個指令所有測試參數）。請將所有選項放在測試參數之前。\n"
 
 #: find/parser.c:610
 msgid ""
 "warning: the -d option is deprecated; please use -depth instead, because the "
 "latter is a POSIX-compliant feature."
-msgstr ""
-"警告：-d 選項已經過時，請改用 -depth，因為後者才是符合 POSIX 標準的選項。"
+msgstr "警告：-d 選項已經過時，請改用 -depth，因為後者才符合 POSIX 標準。"
 
 #: find/parser.c:780
 #, c-format
@@ -389,6 +392,9 @@ msgid ""
 "000; that is, at the moment it matches no files but it will soon be changed "
 "to match all files."
 msgstr ""
+"警告：您用的權限模式 %s 作用和 000 完全一樣。-perm /000 表示的意義在日後會和 "
+"-perm 000 一樣，換句話說，目前沒有檔案會符合條件，但將來所有檔案都會符合條"
+"件。"
 
 #: find/parser.c:1526
 msgid "invalid null argument to -size"
@@ -405,9 +411,9 @@ msgid "GNU find version %s\n"
 msgstr "GNU find %s 版本\n"
 
 #: find/parser.c:1691 locate/code.c:165 locate/locate.c:1282 xargs/xargs.c:576
-#, fuzzy, c-format
+#, c-format
 msgid "Built using GNU gnulib version %s\n"
-msgstr "GNU findutils %s 版本\n"
+msgstr "編譯時連結 GNU gnulib 版本 %s\n"
 
 #: find/parser.c:1692
 #, c-format
@@ -422,12 +428,12 @@ msgstr "警告：無效辨認轉義控制序列 (escape sequence) ‘\\%c’"
 #: find/parser.c:1954
 #, c-format
 msgid "error: %s at end of format string"
-msgstr ""
+msgstr "錯誤：格式字串末端出現 %s"
 
 #: find/parser.c:1990
 #, c-format
 msgid "warning: unrecognized format directive `%%%c'"
-msgstr ""
+msgstr "警告：無法辨認格式 ‘%%%c’"
 
 #: find/parser.c:2096
 #, c-format
@@ -454,9 +460,8 @@ msgid "Only one instance of {} is supported with -exec%s ... +"
 msgstr "在 -exec%s ... + 裡面只可以使用一次 {}"
 
 #: find/parser.c:2230
-#, fuzzy
 msgid "The environment is too large for exec()."
-msgstr "執行 exec 時的環境變數太大"
+msgstr "執行 exec() 時的環境變數太大。"
 
 #: find/pred.c:1178
 #, c-format
@@ -484,7 +489,7 @@ msgstr "表達式無效"
 #: find/tree.c:74
 msgid ""
 "invalid expression; you have used a binary operator with nothing before it."
-msgstr ""
+msgstr "表示式無效；二元運算子前面並沒有任何運算元。"
 
 #: find/tree.c:78
 msgid "invalid expression; you have too many ')'"
@@ -556,7 +561,7 @@ msgid ""
 "Report bugs to <bug-findutils@gnu.org>.\n"
 msgstr ""
 "\n"
-"請向 <bug-findutils@gnu.org> 報告錯誤。\n"
+"請向 <bug-findutils@gnu.org> 回報錯誤。\n"
 
 #: locate/code.c:164
 #, c-format
@@ -580,7 +585,7 @@ msgstr "日"
 #: locate/locate.c:472
 #, c-format
 msgid "locate database %s contains a filename longer than locate can handle"
-msgstr ""
+msgstr "locale 資料庫 %s 內含有長度超出了 locate 能處理的檔案名稱"
 
 #: locate/locate.c:567
 #, c-format
@@ -654,7 +659,7 @@ msgid "old"
 msgstr "舊的"
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -671,43 +676,43 @@ msgstr ""
 "      [-P | -H | --nofollow] [-L | --follow] [-m | --mmap ] [ -s | --"
 "stdio ]\n"
 "      [-A | --all] [-p | --print] [-r | --regex ] [--regextype=TYPE]\n"
-"      [-version] [--help]\n"
+"      [--version] [--help]\n"
 "      檔案名稱樣式...\n"
 
 #: xargs/xargs.c:300
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid escape sequence %s in input delimiter specification."
-msgstr "轉義控制序列 (escape sequence) ‘%s’ 不合法。"
+msgstr "分隔字元中的 escape sequence %s 不合法。"
 
 #: xargs/xargs.c:318
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Invalid escape sequence %s in input delimiter specification; character "
 "values must not exceed %lx."
-msgstr "轉義控制序列 (escape sequence) ‘%s’ 不合法：字元值不可以超過 %lx。"
+msgstr "分隔字元中的 escape sequence %s 不合法：字元值不可以超過 %lx。"
 
 #: xargs/xargs.c:324
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Invalid escape sequence %s in input delimiter specification; character "
 "values must not exceed %lo."
-msgstr "轉義控制序列 (escape sequence) ‘%s’ 不合法：字元值不可以超過 %lo。"
+msgstr "分隔字元中的 escape sequence %s 不合法：字元值不可以超過 %lo。"
 
 #: xargs/xargs.c:333
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Invalid escape sequence %s in input delimiter specification; trailing "
 "characters %s not recognised."
-msgstr "轉義控制序列 (escape sequence) ‘%s’ 不合法：無法辨認最後的字元 ‘%s’。"
+msgstr "分隔字元中的 escape sequence %s 不合法：無法辨認最後的字元 ‘%s’。"
 
 #: xargs/xargs.c:378
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Invalid input delimiter specification %s: the delimiter must be either a "
 "single character or an escape sequence starting with \\."
 msgstr ""
-"分隔字元 ‘%s’ 不合法：分隔字元必須是一個 ASCII 字元或以反斜號 \\ 開始的轉義控"
-"制序列 (escape sequence)。"
+"分隔字元 %s 不合法：分隔字元必須是一個 ASCII 字元或以反斜號 \\ 開始的轉義控制"
+"序列 (escape sequence)。"
 
 #: xargs/xargs.c:394
 msgid "environment is too large for exec"
@@ -716,7 +721,7 @@ msgstr "執行 exec 時的環境變數太大"
 #: xargs/xargs.c:536
 #, c-format
 msgid "warning: value %ld for -s option is too large, using %ld instead"
-msgstr ""
+msgstr "警告：-s 選項後的數值 %ld 太大，會改用 %ld"
 
 #: xargs/xargs.c:575
 #, c-format
@@ -729,14 +734,14 @@ msgid "Cannot open input file `%s'"
 msgstr "無法開啟檔案 ‘%s’ 作為輸入資料"
 
 #: xargs/xargs.c:642
-#, fuzzy, c-format
+#, c-format
 msgid "Your environment variables take up %lu bytes\n"
-msgstr "環境變數總共用了 %ld 位元組\n"
+msgstr "環境變數總共用了 %lu 位元組\n"
 
 #: xargs/xargs.c:645
-#, fuzzy, c-format
+#, c-format
 msgid "POSIX lower and upper limits on argument length: %lu, %lu\n"
-msgstr "POSIX 標準中參數長度上下限為：%ld, %ld\n"
+msgstr "POSIX 標準中參數長度上下限為：%lu, %lu\n"
 
 #: xargs/xargs.c:649
 #, c-format
@@ -744,9 +749,9 @@ msgid "Maximum length of command we could actually use: %ld\n"
 msgstr "實際上可用的指令列長度上限：%ld\n"
 
 #: xargs/xargs.c:653
-#, fuzzy, c-format
+#, c-format
 msgid "Size of command buffer we are actually using: %lu\n"
-msgstr "實際上使用的指令列緩衝區大小：%ld\n"
+msgstr "實際上使用的指令列緩衝區大小：%lu\n"
 
 #: xargs/xargs.c:775 xargs/xargs.c:856
 #, c-format
@@ -804,7 +809,7 @@ msgid "%s: value for -%c option should be < %ld\n"
 msgstr "%s: -%c 選項後的數值必須小於 %ld\n"
 
 #: xargs/xargs.c:1215
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
 "       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
@@ -816,15 +821,18 @@ msgid ""
 "       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=file]\n"
 "       [--version] [--help] [command [initial-arguments]]\n"
 msgstr ""
-"用法:  %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
+"用法: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
 "       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
 "       [-L max-lines] [-l[max-lines]] [--max-lines[=max-lines]]\n"
 "       [-I replace-str] [-i[replace-str]] [--replace[=replace-str]]\n"
 "       [-n max-args] [--max-args=max-args]\n"
 "       [-s max-chars] [--max-chars=max-chars]\n"
-"       [-P max-procs]  [--max-procs=max-procs]\n"
+"       [-P max-procs]  [--max-procs=max-procs] [--show-limits]\n"
 "       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=file]\n"
 "       [--version] [--help] [指令 [指令的參數]]\n"
 
 #~ msgid "block size"
 #~ msgstr "區段大小"
+
+#~ msgid "argument to --limit"
+#~ msgstr "--limit 後的參數"

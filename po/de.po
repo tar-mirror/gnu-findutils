@@ -851,17 +851,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Es fehlt ein vorhergehender regulärer Ausdruck."
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "Aktionen: -exec KOMMANDO ; -fprint DATEI -fprint0 DATEI -fprintf DATEI "
-#~ "FORMAT\n"
-#~ "          -ok KOMMANDO ; -print -print0 -printf FORMAT -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Optionsliste:\n"
 
@@ -871,30 +860,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Optimierter Auswertbaum:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Optimierter Auswertbaum:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s wurde während des Ausführens von %s geändert."
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "Der virtuelle Arbeitsspeicher ist erschöpft."
-
-#~ msgid "inserting %s\n"
-#~ msgstr "Füge %s ein.\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "     Typ: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "links:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "rechts:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Normalisierter Auswertbaum:\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s wurde während des Ausführens von %s geändert."
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. wurde während des Ausführens von %s geändert."
@@ -912,6 +882,29 @@ msgstr ""
 #~ "Optionen (immer wahr): -daystart -depth -follow --help\n"
 #~ "      -maxdepth EBENEN -mindepth EBENEN -mount -noleaf --version -xdev\n"
 #~ "Tests (N kann +N, -N oder N sein): -amin N -anewer File -atime N -cmin N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "Aktionen: -exec KOMMANDO ; -fprint DATEI -fprint0 DATEI -fprintf DATEI "
+#~ "FORMAT\n"
+#~ "          -ok KOMMANDO ; -print -print0 -printf FORMAT -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "Füge %s ein.\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "     Typ: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "links:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "rechts:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Normalisierter Auswertbaum:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

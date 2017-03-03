@@ -845,16 +845,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Tidak ada ekspresi reguler sebelumnya"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "aksi: -exec PERINTAH ; -fprint FILE -fprint0 FILE -fprintf FORMAT FILE\n"
-#~ "      -ok PERINTAH ; -print -print0 -printf FORMAT -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Daftar Predikat:\n"
 
@@ -864,30 +854,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Pohon Eval Teroptimisasi:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Pohon Eval Teroptimisasi:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s dirubah selama eksekusi %s"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "Memori virtual habis"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "Menyisipkan %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "   type: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "kiri:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "kanan:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Pohon Eval Ternormalisasi:\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s dirubah selama eksekusi %s"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. dirubah selama eksekusi %s"
@@ -905,6 +876,28 @@ msgstr ""
 #~ "pilihan (selalu benar): -daystart -depth -follow --help\n"
 #~ "       -maxdepth LEVELS -mindepth LEVELS -mount -noleaf --version -xdev\n"
 #~ "tes (N dapat +N atau -N atau N): -amin N -anewer FILE -atime N -cmin N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "aksi: -exec PERINTAH ; -fprint FILE -fprint0 FILE -fprintf FORMAT FILE\n"
+#~ "      -ok PERINTAH ; -print -print0 -printf FORMAT -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "Menyisipkan %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "   type: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "kiri:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "kanan:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Pohon Eval Ternormalisasi:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

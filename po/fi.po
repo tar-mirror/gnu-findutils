@@ -848,17 +848,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Ei edelt‰v‰‰ s‰‰nnˆllist‰ lauseketta"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "toiminnot: -exec KOMENTO ; -fprint TIEDOSTO -fprint0 TIEDOSTO\n"
-#~ "      -fprintf TIEDOSTOTYYPPI -ok KOMENTO ; -print -print0\n"
-#~ "      -printf MUOTOILU -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Predikaattilista:\n"
 
@@ -868,30 +857,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Optimoitu arvopuu:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Optimoitu arvopuu:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s muuttui \"%s\":n ajon aikana"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "n‰enn‰ismuisti loppui"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "lis‰t‰‰n %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    tyyppi: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "vasen:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "oikea:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Normalisoitu arvopuu\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s muuttui \"%s\":n ajon aikana"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. muuttui \"%s\":n ajon aikana"
@@ -910,6 +880,29 @@ msgstr ""
 #~ "      -maxdepth TASOT -mindepth TASOT -mount -noleaf --version -xdev\n"
 #~ "testit (N voi olla +N tai -N tai N): -amin N -anewer TIEDOSTO -atime N -"
 #~ "cmin N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "toiminnot: -exec KOMENTO ; -fprint TIEDOSTO -fprint0 TIEDOSTO\n"
+#~ "      -fprintf TIEDOSTOTYYPPI -ok KOMENTO ; -print -print0\n"
+#~ "      -printf MUOTOILU -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "lis‰t‰‰n %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    tyyppi: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "vasen:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "oikea:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Normalisoitu arvopuu\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

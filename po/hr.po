@@ -848,16 +848,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Nedostaje prethodni regularni izraz"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "radnje: -exec NAREDBA ; -fprint SPIS -fprint0 SPIS -fprintf FOMAT SPISA\n"
-#~ "      -ok NAREDBA ; -print -print0 -printf FORMAT -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Popis Predikata:\n"
 
@@ -867,30 +857,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Optimirano Stablo Evaluacije:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Optimirano Stablo Evaluacije:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s se promijenio dok se izvr¹avao %s"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "virtualna memorija iscrpljena"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "umeæem %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "     tip: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "lijevo:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "desno:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Normalizirano Stablo Evaluacije:\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s se promijenio dok se izvr¹avao %s"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. se promijenio dok se izvr¹avao %s"
@@ -909,6 +880,28 @@ msgstr ""
 #~ "      -maxdepth NIVOA -mindepth NIVOA -mount -noleaf --version -xdev\n"
 #~ "testovi (N mo¾e biti +N ili -N ili N): -amin N -anewer SPIS -atime N -"
 #~ "cmin N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "radnje: -exec NAREDBA ; -fprint SPIS -fprint0 SPIS -fprintf FOMAT SPISA\n"
+#~ "      -ok NAREDBA ; -print -print0 -printf FORMAT -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "umeæem %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "     tip: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "lijevo:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "desno:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Normalizirano Stablo Evaluacije:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

@@ -807,75 +807,29 @@ msgstr ""
 #~ msgid "Invalid character class name"
 #~ msgstr "нерэчаісная назва клясы знака"
 
-#, fuzzy
-#~ msgid "Invalid back reference"
-#~ msgstr "Нерэчаісны сталы выраз"
-
 #~ msgid "Unmatched [ or [^"
 #~ msgstr "[ ці [^ несупадаюць"
 
 #~ msgid "Unmatched ( or \\("
 #~ msgstr "( ці \\( несупадаюць"
 
-#, fuzzy
-#~ msgid "Unmatched \\{"
-#~ msgstr "( ці \\( несупадаюць"
-
 #~ msgid "Invalid content of \\{\\}"
 #~ msgstr "нерэчаісны зьмест \\{\\}"
-
-#, fuzzy
-#~ msgid "Invalid range end"
-#~ msgstr "Нерэчаісны сталы выраз"
-
-#, fuzzy
-#~ msgid "Invalid preceding regular expression"
-#~ msgstr "Нерэчаісны сталы выраз"
-
-#, fuzzy
-#~ msgid "Premature end of regular expression"
-#~ msgstr "Нерэчаісны сталы выраз"
 
 #~ msgid "Regular expression too big"
 #~ msgstr "сталы выраз занадта вялікі"
 
-#, fuzzy
-#~ msgid "Unmatched ) or \\)"
-#~ msgstr "( ці \\( несупадаюць"
-
 #~ msgid "No previous regular expression"
 #~ msgstr "адсутнічае папярэдні сталы выраз"
-
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "дзеяньняў: -exec ЗАГАД ; -fprint ФАЙЛ -fprint0 ФАЙЛ -fprintf ФАЙЛ ФАРМАТ\n"
-#~ "      -ok ЗАГАД ; -print -print0 -printf ФАРМАТ -prune -ls\n"
 
 #~ msgid "Predicate List:\n"
 #~ msgstr "Сьпіс выказьнікаў:\n"
 
-#~ msgid "virtual memory exhausted"
-#~ msgstr "віртуальная памяць вычарпаная"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "устаўка %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    від: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "левы:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "правы:\n"
-
 #~ msgid "%s changed during execution of %s"
 #~ msgstr "%s зьменены цягам часу выкананьня %s"
+
+#~ msgid "virtual memory exhausted"
+#~ msgstr "віртуальная памяць вычарпаная"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. зьменены цягам часу выкананьня %s"
@@ -894,6 +848,25 @@ msgstr ""
 #~ "      -maxdepth УЗРОЎНІ -mindepth УЗРОЎНІ -mount -noleaf --version -xdev\n"
 #~ "праверак (N можа быць +N ці -N альбо N): -amin N -anewer ФАЙЛ -atime N -"
 #~ "cmin N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "дзеяньняў: -exec ЗАГАД ; -fprint ФАЙЛ -fprint0 ФАЙЛ -fprintf ФАЙЛ ФАРМАТ\n"
+#~ "      -ok ЗАГАД ; -print -print0 -printf ФАРМАТ -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "устаўка %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    від: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "левы:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "правы:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

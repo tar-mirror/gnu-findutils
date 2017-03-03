@@ -846,17 +846,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Нет предыдущего регулярного выражения"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "действия: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE "
-#~ "FORMAT\n"
-#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Список предикатов:\n"
 
@@ -866,30 +855,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Оптимизированное дерево вычислений:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Оптимизированное дерево вычислений:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s изменен во время исполнения %s"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "не хватает виртуальной памяти"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "вставляю %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "     тип: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "слева:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "справа:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Нормализованное Дерево:\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s изменен во время исполнения %s"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. изменен во время исполнения %s"
@@ -908,6 +878,29 @@ msgstr ""
 #~ "      -maxdepth LEVELS -mindepth LEVELS -mount -noleaf --version -xdev\n"
 #~ "tests (N может быть +N или -N или N): -amin N -anewer FILE -atime N -cmin "
 #~ "N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "действия: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE "
+#~ "FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "вставляю %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "     тип: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "слева:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "справа:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Нормализованное Дерево:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

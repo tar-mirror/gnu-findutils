@@ -820,18 +820,6 @@ msgstr ""
 #~ msgid "Invalid content of \\{\\}"
 #~ msgstr "无效的 \\{\\} 的内容"
 
-#, fuzzy
-#~ msgid "Invalid range end"
-#~ msgstr "无效的向后引用"
-
-#, fuzzy
-#~ msgid "Invalid preceding regular expression"
-#~ msgstr "无效的常规表达式"
-
-#, fuzzy
-#~ msgid "Premature end of regular expression"
-#~ msgstr "无效的常规表达式"
-
 #~ msgid "Regular expression too big"
 #~ msgstr "常规表达式过大"
 
@@ -840,16 +828,6 @@ msgstr ""
 
 #~ msgid "No previous regular expression"
 #~ msgstr "没有上一个常规表达式"
-
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "动作：-exec 命令 ; -fprint 文件 -fprint0 文件 -fprintf 文件 格式\n"
-#~ "      -ok 命令 ; -print -print0 -printf 格式 -prune -ls\n"
 
 #~ msgid "Predicate List:\n"
 #~ msgstr "断言列表：\n"
@@ -860,27 +838,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "优化的求值树：\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "优化的求值树：\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "在执行 %2$s 期间 %1$s 被改变"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "虚拟内存耗尽"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "正在插入 %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    类型：%s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "左：\n"
-
-#~ msgid "right:\n"
-#~ msgstr "右：\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "在执行 %2$s 期间 %1$s 被改变"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "在执行 %2$s 期间 %1$s/.. 被改变"
@@ -898,6 +860,25 @@ msgstr ""
 #~ "选项 (总为真)：-daystart -depth -follow --help\n"
 #~ "      -maxdepth 层次数 -mindepth 层次数 -mount -noleaf --version -xdev\n"
 #~ "测试 (N 可以为 +N 或 -N 或 N)：-amin N -anewer 文件 -atime N -cmin N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "动作：-exec 命令 ; -fprint 文件 -fprint0 文件 -fprintf 文件 格式\n"
+#~ "      -ok 命令 ; -print -print0 -printf 格式 -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "正在插入 %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    类型：%s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "左：\n"
+
+#~ msgid "right:\n"
+#~ msgstr "右：\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

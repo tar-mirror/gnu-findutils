@@ -1,16 +1,16 @@
-# Translation of findutils_stable-4.2.31 to Dutch.
-# Copyright (C) 1996, 2000, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+# Translation of findutils_stable-4.2.32 to Dutch.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
 # Erick Branderhorst <branderh@debian.org>, 1996.
 # Ivo Timmermans <itimmermans@bigfoot.com>, 2000.
 # Taco Witte <tcwitte@cs.uu.nl>, 2004.
-# Benno Schulenberg <benno@vertaalt.nl>, 2005, 2006, 2007.
-#
+# Benno Schulenberg <benno@vertaalt.nl>, 2005, 2006, 2007, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils_stable 4.2.31\n"
+"Project-Id-Version: findutils_stable 4.2.32\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2007-12-08 14:17+0000\n"
-"PO-Revision-Date: 2007-07-20 00:24+0200\n"
+"PO-Revision-Date: 2008-01-26 15:01+0100\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -35,7 +35,7 @@ msgstr "Geldige argumenten zijn:"
 
 #: gnulib/lib/closeout.c:73
 msgid "write error"
-msgstr ""
+msgstr "schrijffout"
 
 #: gnulib/lib/error.c:125
 msgid "Unknown system error"
@@ -119,11 +119,11 @@ msgstr "%s: optie '-W %s' staat geen argument toe\n"
 #. and use glyphs suitable for your language.
 #: gnulib/lib/quotearg.c:228
 msgid "`"
-msgstr "'"
+msgstr "‘"
 
 #: gnulib/lib/quotearg.c:229
 msgid "'"
-msgstr "'"
+msgstr "’"
 
 #: gnulib/lib/rpmatch.c:69
 msgid "^[yY]"
@@ -135,22 +135,22 @@ msgstr "^[nN]"
 
 #: gnulib/lib/xalloc-die.c:34
 msgid "memory exhausted"
-msgstr ""
+msgstr "onvoldoende geheugen beschikbaar"
 
 #: gnulib/lib/xstrtol-error.c:63
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %s%s argument `%s'"
-msgstr "ongeldig argument '%s' van '%s'"
+msgstr "ongeldig argument van %s%s: '%s'"
 
 #: gnulib/lib/xstrtol-error.c:68
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix in %s%s argument `%s'"
-msgstr "ongeldig argument '%s' van '%s'"
+msgstr "ongeldige suffix in argument van %s%s: '%s'"
 
 #: gnulib/lib/xstrtol-error.c:72
-#, fuzzy, c-format
+#, c-format
 msgid "%s%s argument `%s' too large"
-msgstr "argumentenregel is te lang"
+msgstr "argument van %s%s is te lang: '%s'"
 
 #: find/find.c:455
 msgid ""
@@ -162,7 +162,7 @@ msgstr ""
 
 #: find/find.c:537
 msgid "paths must precede expression"
-msgstr "padnamen moeten aan de expressies voorafgaan"
+msgstr "padnamen moeten voorafgaan aan de expressies"
 
 #: find/find.c:543
 #, c-format
@@ -181,7 +181,7 @@ msgstr "ongeldig argument '%s' van '%s'"
 
 #: find/find.c:609
 msgid "unexpected extra predicate"
-msgstr "onverwacht extra ding"
+msgstr "onverwacht extra argument"
 
 #: find/find.c:661 find/find.c:664
 msgid "cannot get current directory"
@@ -254,10 +254,10 @@ msgid ""
 "results may have failed to include directories that should have been "
 "searched."
 msgstr ""
-"WAARSCHUWING: het aantal harde koppelingen voor %s is verkeerd.  Dit zou een "
-"fout in het bestandssysteem-stuurprogramma kunnen zijn.  De optie '-noleaf' "
-"wordt nu automatisch aangezet.  In de tot nu toe gegeven resultaten kunnen "
-"mappen ontbreken die doorzocht hadden moeten worden."
+"WAARSCHUWING: het aantal harde koppelingen voor %s is verkeerd.\n"
+"Dit zou een fout in het bestandssysteem-stuurprogramma kunnen zijn.\n"
+"De optie '-noleaf' wordt nu automatisch aangezet.  In de reeds vermelde\n"
+"resultaten kunnen mappen ontbreken die doorzocht hadden moeten worden."
 
 #: find/fstype.c:249
 msgid "unknown"
@@ -366,10 +366,10 @@ msgid ""
 "page at http://savannah.gnu.org/ or, if you have no web access, by sending\n"
 "email to <bug-findutils@gnu.org>."
 msgstr ""
-"Rapporteer fouten in findutils via de foutenrapportagepagina op\n"
+"Rapporteer gebreken in findutils via de foutenrapportagepagina op\n"
 "http://savannah.gnu.org/.  Als u geen webtoegang hebt, stuur dan\n"
 "een e-mail naar <bug-findutils@gnu.org>.\n"
-"Meld gebreken in de vertaling aan <vertaling@vrijschrift.org>."
+"Meld fouten in de vertaling aan <vertaling@vrijschrift.org>."
 
 #: find/parser.c:840
 msgid "sanity check of the fnmatch() library function failed."
@@ -410,9 +410,9 @@ msgid ""
 "000; that is, at the moment it matches no files but it will soon be changed "
 "to match all files."
 msgstr ""
-"Waarschuwing: het opgegeven moduspatroon %s is gelijkwaardig aan 000.  Om "
-"consistent te blijven met -perm -000 zal de betekenis van -perm /000 "
-"binnenkort veranderen.  Op dit moment komt dit patroon met geen enkel "
+"Waarschuwing: het opgegeven moduspatroon %s is gelijkwaardig aan 000.\n"
+"Om consistent te blijven met -perm -000 zal de betekenis van -perm /000\n"
+"binnenkort veranderen.  Op dit moment komt dit patroon met geen enkel\n"
 "bestand overeen, maar zal binnenkort overeenkomen met alle bestanden."
 
 #: find/parser.c:1526
@@ -533,11 +533,11 @@ msgstr "oeps -- ongeldig expressietype (%d)!"
 
 #: find/tree.c:455
 msgid "oops -- invalid expression type in mark_stat!"
-msgstr "oeps -- ongeldig expressietype in mark_stat!"
+msgstr "oeps -- ongeldig expressietype in mark_stat()!"
 
 #: find/tree.c:491
 msgid "oops -- invalid expression type in mark_type!"
-msgstr "oeps -- ongeldig expressietype in mark_type!"
+msgstr "oeps -- ongeldig expressietype in mark_type()!"
 
 #: find/util.c:106
 msgid "oops -- invalid default insertion of and!"
@@ -550,21 +550,24 @@ msgstr "Gebruik:  %s [-H] [-L] [-P] [pad...] [expressie]\n"
 
 #: lib/buildcmd.c:179
 msgid "command too long"
-msgstr ""
+msgstr "commando is te lang"
 
 #: lib/buildcmd.c:241
 msgid "can not fit single argument within argument list size limit"
 msgstr ""
+"zelfs één enkel argument past niet binnen beschikbare grootte van "
+"argumentenlijst"
 
 #: lib/buildcmd.c:246
-#, fuzzy
 msgid "argument list too long"
-msgstr "argumentenregel is te lang"
+msgstr "argumentenlijst is te lang"
 
 #: lib/regextype.c:113
 #, c-format
 msgid "Unknown regular expression type %s; valid types are %s."
 msgstr ""
+"Reguliere expressie is van onbekend type (%s);\n"
+"geldige types zijn %s."
 
 #: locate/code.c:126
 #, c-format
@@ -583,8 +586,8 @@ msgid ""
 "Report bugs to <bug-findutils@gnu.org>.\n"
 msgstr ""
 "\n"
-"Rapporteer fouten in het programma aan <bug-findutils@gnu.org>\n"
-"en gebreken in de vertaling aan <vertaling@vrijschrift.org>.\n"
+"Rapporteer gebreken in het programma aan <bug-findutils@gnu.org>;\n"
+"meld fouten in de vertaling aan <vertaling@vrijschrift.org>.\n"
 
 #: locate/code.c:164
 #, c-format
@@ -594,7 +597,7 @@ msgstr "GNU findutils versie %s.\n"
 #: locate/frcode.c:161
 #, c-format
 msgid "Usage: %s [-0 | --null] [--version] [--help]\n"
-msgstr ""
+msgstr "Gebruik:  %s [-0 | --null] [--version] [--help]\n"
 
 #: locate/frcode.c:201 locate/locate.c:1281
 #, c-format
@@ -623,7 +626,7 @@ msgstr "Grootte van locate-gegevensbank: %s bytes\n"
 #: locate/locate.c:839
 #, c-format
 msgid "Filenames: %s "
-msgstr "Bestandsnamen: %s"
+msgstr "Bestandsnamen: %s "
 
 #: locate/locate.c:842
 #, c-format
@@ -671,7 +674,7 @@ msgstr ""
 #: locate/locate.c:926
 #, c-format
 msgid "warning: database `%s' is more than %d %s old"
-msgstr "waarschuwing: gegevensbank '%s' is meer dan %d %s oud"
+msgstr "Waarschuwing: gegevensbank '%s' is meer dan %d %s oud."
 
 #: locate/locate.c:1103
 #, c-format
@@ -862,9 +865,3 @@ msgstr ""
 "          [-s max_aantal_tekens]  [--max-chars=max_aantal_tekens]\n"
 "          [--exit]  [--no-run-if-empty]  [--verbose]  [--arg-file=bestand]\n"
 "          [--version]  [--help]  [COMMANDO [eerste_argumenten]]\n"
-
-#~ msgid "block size"
-#~ msgstr "blokgrootte"
-
-#~ msgid "argument to --limit"
-#~ msgstr "argument van '--limit'"

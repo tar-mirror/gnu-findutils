@@ -1,22 +1,22 @@
 # Hungarian translation of findutils.
-# Copyright (C) 2002 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2007 Free Software Foundation, Inc.
 # Translated using gnu.twm
-# Emese Kovács <emese@gnome.hu>, 2002.
-# Gabor Kelemen <kelemeng@gnome.hu>, 2006.
 #
+# Emese Kovács <emese@gnome.hu>, 2002.
+# Gabor Kelemen <kelemeng@gnome.hu>, 2006, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils 4.2.27\n"
+"Project-Id-Version: findutils_stable 4.2.31\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2007-12-08 14:17+0000\n"
-"PO-Revision-Date: 2006-09-11 13:14+0100\n"
-"Last-Translator: Emese Kovacs <emese@instantweb.hu>\n"
+"PO-Revision-Date: 2007-11-06 12:30+0100\n"
+"Last-Translator: Gabor Kelemen <kelemeng@gnome.hu>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10.2\n"
-"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: gnulib/lib/argmatch.c:133
 #, c-format
@@ -254,7 +254,7 @@ msgid ""
 "results may have failed to include directories that should have been "
 "searched."
 msgstr ""
-"FIGYELMEZTETÉS: A hard linkek szám hibás a következőhöz: %s; ez lehet egy "
+"FIGYELMEZTETÉS: A hard linkek száma hibás a következőhöz: %s; ez lehet egy "
 "hiba a fájlrendszer illesztőprogramjában. A find -noleaf kapcsolója "
 "automatikusan bekapcsolva. A korábbi próbálkozások meghiúsulhattak a "
 "keresendő könyvtárak felvételére."
@@ -432,9 +432,9 @@ msgid "GNU find version %s\n"
 msgstr "GNU find %s verzió\n"
 
 #: find/parser.c:1691 locate/code.c:165 locate/locate.c:1282 xargs/xargs.c:576
-#, fuzzy, c-format
+#, c-format
 msgid "Built using GNU gnulib version %s\n"
-msgstr "GNU findutils %s verzió\n"
+msgstr "Készült a GNU gnulib %s verzió használatával\n"
 
 #: find/parser.c:1692
 #, c-format
@@ -449,7 +449,7 @@ msgstr "figyelmeztetés: ismeretlen escape: \"\\%c\""
 #: find/parser.c:1954
 #, c-format
 msgid "error: %s at end of format string"
-msgstr ""
+msgstr "hiba: %s a formátum-karakterlánc végén"
 
 #: find/parser.c:1990
 #, c-format
@@ -483,9 +483,8 @@ msgid "Only one instance of {} is supported with -exec%s ... +"
 msgstr "Csak egyetlen {} példány támogatott a -exec%s ... + esetén"
 
 #: find/parser.c:2230
-#, fuzzy
 msgid "The environment is too large for exec()."
-msgstr "a környezet túl nagy az exec-hez"
+msgstr "A környezet túl nagy az exec()-hez."
 
 #: find/pred.c:1178
 #, c-format
@@ -613,6 +612,8 @@ msgstr "nap"
 #, c-format
 msgid "locate database %s contains a filename longer than locate can handle"
 msgstr ""
+"a(z) %s locate adatbázis a locate által kezelhetőnél hosszabb fájlnevet "
+"tartalmaz"
 
 #: locate/locate.c:567
 #, c-format
@@ -687,7 +688,7 @@ msgid "old"
 msgstr "régi"
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -705,7 +706,7 @@ msgstr ""
 "      [-P | -H | --nofollow] [-L | --follow] [-m | --mmap ] [ -s | --"
 "stdio ]\n"
 "      [-A | --all] [-p | --print] [-r | --regex ] [--regextype=TÍPUS]\n"
-"      [-version] [--help]\n"
+"      [--version] [--help]\n"
 "      minta...\n"
 
 #: xargs/xargs.c:300
@@ -759,6 +760,8 @@ msgstr "a környezet túl nagy az exec-hez"
 #, c-format
 msgid "warning: value %ld for -s option is too large, using %ld instead"
 msgstr ""
+"figyelmeztetés: a -s kapcsoló %ld értéke túl nagy, ehelyett a(z) %ld kerül "
+"felhasználásra"
 
 #: xargs/xargs.c:575
 #, c-format
@@ -771,14 +774,14 @@ msgid "Cannot open input file `%s'"
 msgstr "A(z) \"%s\" bemeneti fájl nem nyitható meg"
 
 #: xargs/xargs.c:642
-#, fuzzy, c-format
+#, c-format
 msgid "Your environment variables take up %lu bytes\n"
-msgstr "A környezeti változói %ld bájtot foglalnak\n"
+msgstr "A környezeti változói %lu bájtot foglalnak\n"
 
 #: xargs/xargs.c:645
-#, fuzzy, c-format
+#, c-format
 msgid "POSIX lower and upper limits on argument length: %lu, %lu\n"
-msgstr "A POSIX alsó és felső korlátai az argumentum hosszára: %ld, %ld\n"
+msgstr "A POSIX alsó és felső korlátai az argumentum hosszára: %lu, %lu\n"
 
 #: xargs/xargs.c:649
 #, c-format
@@ -786,9 +789,9 @@ msgid "Maximum length of command we could actually use: %ld\n"
 msgstr "A ténylegesen használható parancs maximális hossza: %ld\n"
 
 #: xargs/xargs.c:653
-#, fuzzy, c-format
+#, c-format
 msgid "Size of command buffer we are actually using: %lu\n"
-msgstr "A ténylegesen használt parancspuffer hossza: %ld\n"
+msgstr "A ténylegesen használt parancspuffer hossza: %lu\n"
 
 #: xargs/xargs.c:775 xargs/xargs.c:856
 #, c-format
@@ -846,7 +849,7 @@ msgid "%s: value for -%c option should be < %ld\n"
 msgstr "%s: a -%c kapcsoló értéke < %ld kell legyen\n"
 
 #: xargs/xargs.c:1215
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
 "       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
@@ -861,10 +864,10 @@ msgstr ""
 "Használat: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=elhat]\n"
 "       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
 "       [-L max-sor] [-l[max-sor]] [--max-lines[=max-sor]]\n"
-"       [-I replace-str] [-i[replace-str]] [--replace[=replace-str]]\n"
+"       [-I csere-kar] [-i[csere-kar]] [--replace[=csere-kar]]\n"
 "       [-n max-arg] [--max-args=max-arg]\n"
 "       [-s max-kar] [--max-chars=max-kar]\n"
-"       [-P max-proc] [--max-procs=max-proc]\n"
+"       [-P max-proc] [--max-procs=max-proc] [--show-limits]\n"
 "       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=fájl]\n"
 "       [--version] [--help] [parancs [induló-argumentumok]]\n"
 
@@ -873,6 +876,3 @@ msgstr ""
 
 #~ msgid "argument to --limit"
 #~ msgstr "a --limit argumentuma"
-
-#~ msgid "Reducing arg_max (%ld) to arg_size (%ld)\n"
-#~ msgstr "Az arg_max (%ld) csökkentése az arg_size (%ld) értékére\n"

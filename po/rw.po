@@ -654,7 +654,7 @@ msgid "old"
 msgstr ""
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -665,8 +665,6 @@ msgid ""
 "      [--version] [--help]\n"
 "      pattern...\n"
 msgstr ""
-"D Inzira Ububikoshingiro Inzira E i Kwirengagiza L Verisiyo Ifashayobora "
-"Ishusho"
 
 #: xargs/xargs.c:300
 #, c-format
@@ -869,10 +867,6 @@ msgstr ""
 #~ msgstr "Cyangwa"
 
 #, fuzzy
-#~ msgid "Unmatched \\{"
-#~ msgstr "Cyangwa"
-
-#, fuzzy
 #~ msgid "Invalid content of \\{\\}"
 #~ msgstr "Ibikubiyemo Bya"
 
@@ -901,6 +895,10 @@ msgstr ""
 #~ msgstr "Ibanjirije Ibisanzwe imvugo"
 
 #, fuzzy
+#~ msgid "error in %s: %s"
+#~ msgstr "Ikosa in"
+
+#, fuzzy
 #~ msgid ""
 #~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
 #~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
@@ -923,8 +921,13 @@ msgstr ""
 #~ msgstr "Iburyo:"
 
 #, fuzzy
-#~ msgid "error in %s: %s"
-#~ msgstr "Ikosa in"
+#~ msgid ""
+#~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"
+#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "      [--version] [--help] pattern...\n"
+#~ msgstr ""
+#~ "D Inzira Ububikoshingiro Inzira E i Kwirengagiza L Verisiyo Ifashayobora "
+#~ "Ishusho"
 
 #, fuzzy
 #~ msgid ""

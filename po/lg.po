@@ -865,17 +865,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Emabega tewali yo mboozi enoonya ebifaanagana"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "ebikolwa biri: -exec KIRAGIRO ; -fprint FAYIRO -fprint0 FAYIRO\n"
-#~ "      -fprintf NTEREEZA YA FAYIRO -ok KIRAGIRO ; -print -print0\n"
-#~ "      -printf NTEREEZA -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Olukalala lwa puledikato:\n"
 
@@ -885,30 +874,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Emitendera egiyunguluddwaamu amakulu nga gituukanisidwa:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Emitendera egiyunguluddwaamu amakulu nga gituukanisidwa:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s ekyuukidde ku muku gwa %s"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "ggwanika elizibizi lijjudde"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "nsonsekawo %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    ekika: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "kkono:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "ddyo:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Emitendera egiyunguluddwaamu amakulu nga ginoromawaziddwa:\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s ekyuukidde ku muku gwa %s"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. ekyuukidde ku muku gwa %s"
@@ -930,6 +900,29 @@ msgstr ""
 #~ "ebigezo biri : -amin N -anewer FAYIRO -atime N\n"
 #~ "                                       -cmin N (N esobola okubeera +N, -N "
 #~ "o N)\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "ebikolwa biri: -exec KIRAGIRO ; -fprint FAYIRO -fprint0 FAYIRO\n"
+#~ "      -fprintf NTEREEZA YA FAYIRO -ok KIRAGIRO ; -print -print0\n"
+#~ "      -printf NTEREEZA -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "nsonsekawo %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    ekika: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "kkono:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "ddyo:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Emitendera egiyunguluddwaamu amakulu nga ginoromawaziddwa:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

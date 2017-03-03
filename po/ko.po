@@ -781,86 +781,6 @@ msgstr ""
 #~ msgid "argument to --limit"
 #~ msgstr "인수 행이 너무 깁니다"
 
-#, fuzzy
-#~ msgid "Invalid regular expression"
-#~ msgstr "부적절한 수식"
-
-#, fuzzy
-#~ msgid "Invalid back reference"
-#~ msgstr "부적절한 수식"
-
-#, fuzzy
-#~ msgid "Unmatched [ or [^"
-#~ msgstr "일치되지 않는 %s 따옴표"
-
-#, fuzzy
-#~ msgid "Unmatched ( or \\("
-#~ msgstr "일치되지 않는 %s 따옴표"
-
-#, fuzzy
-#~ msgid "Unmatched \\{"
-#~ msgstr "일치되지 않는 %s 따옴표"
-
-#, fuzzy
-#~ msgid "Invalid range end"
-#~ msgstr "부적절한 수식"
-
-#, fuzzy
-#~ msgid "Invalid preceding regular expression"
-#~ msgstr "부적절한 수식"
-
-#, fuzzy
-#~ msgid "Premature end of regular expression"
-#~ msgstr "부적절한 수식"
-
-#, fuzzy
-#~ msgid "Regular expression too big"
-#~ msgstr "부적절한 수식"
-
-#, fuzzy
-#~ msgid "Unmatched ) or \\)"
-#~ msgstr "일치되지 않는 %s 따옴표"
-
-#, fuzzy
-#~ msgid "No previous regular expression"
-#~ msgstr "부적절한 수식"
-
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "행동: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
-
-#, fuzzy
-#~ msgid "Eval Tree:\n"
-#~ msgstr "정규화된 평가 트리:\n"
-
-#, fuzzy
-#~ msgid "Optimized Eval Tree:\n"
-#~ msgstr "정규화된 평가 트리:\n"
-
-#~ msgid "virtual memory exhausted"
-#~ msgstr "가상 메모리가 바닥났음"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "%s를 삽입함\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    형: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "왼쪽:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "오른쪽:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "정규화된 평가 트리:\n"
-
 #~ msgid "error in %s: %s"
 #~ msgstr "%s에 오류: %s"
 
@@ -875,8 +795,33 @@ msgstr ""
 #~ "      -maxdepth LEVELS -mindepth LEVELS -mount -noleaf --version -xdev\n"
 #~ "시험 (N은 +N, -N, N이 될 수 있음): -amin N -answer FILE -atime N -cmin N\n"
 
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "행동: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "%s를 삽입함\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    형: %s    %s  "
+
 #~ msgid "wait got pid %d, expected pid %d"
 #~ msgstr "기다리다 pid %d를 받았으나 pid %d가 요구됨"
 
 #~ msgid "%s stopped by signal %d"
 #~ msgstr "%s가 신호 %d에 의해 중지됨"
+
+#~ msgid "left:\n"
+#~ msgstr "왼쪽:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "오른쪽:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "정규화된 평가 트리:\n"
+
+#~ msgid "unmatched %s quote"
+#~ msgstr "일치되지 않는 %s 따옴표"

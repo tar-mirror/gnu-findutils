@@ -852,17 +852,6 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Neniu antaýa regulesprimo"
 
-#, fuzzy
-#~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
-#~ msgstr ""
-#~ "agoj: -exec ORDONO ; -fprint DOSIERO -fprint0 DOSIERO -fprintf DOSIERO "
-#~ "FORMATO\n"
-#~ "      -ok ORDONO ; -print -print0 -printf FORMATO -prune -ls\n"
-
 #~ msgid "Predicate List:\n"
 #~ msgstr "Predikatolisto:\n"
 
@@ -872,30 +861,11 @@ msgstr ""
 #~ msgid "Optimized Eval Tree:\n"
 #~ msgstr "Optimumigita Arbo de Elvalorado:\n"
 
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Optimumigita Arbo de Elvalorado:\n"
+#~ msgid "%s changed during execution of %s"
+#~ msgstr "%s þanøis dum plumumado de %s"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "virtuala memoro elæerpita"
-
-#~ msgid "inserting %s\n"
-#~ msgstr "enþovas %s\n"
-
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    speco: %s    %s  "
-
-#~ msgid "left:\n"
-#~ msgstr "maldekstre:\n"
-
-#~ msgid "right:\n"
-#~ msgstr "dekstre:\n"
-
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "Nomigita Arbo de Elvalorado:\n"
-
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s þanøis dum plumumado de %s"
 
 #~ msgid "%s/.. changed during execution of %s"
 #~ msgstr "%s/.. þanøis dum plumumado de %s"
@@ -914,6 +884,29 @@ msgstr ""
 #~ "      -maxdepth NIVELOJ -mindepth NIVELOJ -mount -noleaf --version -xdev\n"
 #~ "provoj (N povas esti +N aý -N aý N): -amin N -anewer DOSIERO -atime N -"
 #~ "cmin N\n"
+
+#~ msgid ""
+#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
+#~ "      -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls\n"
+#~ msgstr ""
+#~ "agoj: -exec ORDONO ; -fprint DOSIERO -fprint0 DOSIERO -fprintf DOSIERO "
+#~ "FORMATO\n"
+#~ "      -ok ORDONO ; -print -print0 -printf FORMATO -prune -ls\n"
+
+#~ msgid "inserting %s\n"
+#~ msgstr "enþovas %s\n"
+
+#~ msgid "    type: %s    %s  "
+#~ msgstr "    speco: %s    %s  "
+
+#~ msgid "left:\n"
+#~ msgstr "maldekstre:\n"
+
+#~ msgid "right:\n"
+#~ msgstr "dekstre:\n"
+
+#~ msgid "Normalized Eval Tree:\n"
+#~ msgstr "Nomigita Arbo de Elvalorado:\n"
 
 #~ msgid ""
 #~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"

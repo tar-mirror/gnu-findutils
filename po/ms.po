@@ -783,6 +783,12 @@ msgstr ""
 #~ msgid "virtual memory exhausted"
 #~ msgstr "kehabisan memori maya"
 
+#~ msgid "%s/.. changed during execution of %s"
+#~ msgstr "%s/.. perubahan semasa perlaksanaan %s"
+
+#~ msgid "error in %s: %s"
+#~ msgstr "ralat dalam %s: %s"
+
 #~ msgid "    type: %s    %s  "
 #~ msgstr "    jenis: %s    %s  "
 
@@ -791,9 +797,3 @@ msgstr ""
 
 #~ msgid "right:\n"
 #~ msgstr "kanan:\n"
-
-#~ msgid "%s/.. changed during execution of %s"
-#~ msgstr "%s/.. perubahan semasa perlaksanaan %s"
-
-#~ msgid "error in %s: %s"
-#~ msgstr "ralat dalam %s: %s"

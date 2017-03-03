@@ -1,14 +1,14 @@
-# -*- mode:po; coding:utf-8; -*- Slovenian messages for findutils.
-# Copyright (C) 1996, 2000, 2001, 2005, 2006 Free Software Foundation, Inc.
-# Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>, 2000, 2001, 2005, 2006.
-# $Id: sl.po,v 1.23.2.15 2008/01/25 19:14:18 jay Exp $
+# -*- mode:po; coding:utf-8; -*- Slovenian messages for findutils-stable.
+# Copyright (C) 1996, 2000, 2001, 2005, 2006, 2007 Free Software Foundation, Inc.
+# Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>, 2000, 2001, 2005, 2006, 2007.
+# $Id: sl.po,v 1.23.2.17 2008/02/13 22:49:49 jay Exp $
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils 4.2.27\n"
+"Project-Id-Version: findutils_stable-4.2.31\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2007-12-08 14:17+0000\n"
-"PO-Revision-Date: 2006-09-28 13:49+0200\n"
+"PO-Revision-Date: 2007-10-12 15:29+0200\n"
 "Last-Translator: Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>\n"
 "Language-Team: Slovenian <translation-team-sl@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -428,9 +428,9 @@ msgid "GNU find version %s\n"
 msgstr "GNU find, različica %s\n"
 
 #: find/parser.c:1691 locate/code.c:165 locate/locate.c:1282 xargs/xargs.c:576
-#, fuzzy, c-format
+#, c-format
 msgid "Built using GNU gnulib version %s\n"
-msgstr "GNU findutils, različica %s\n"
+msgstr "Prevedeno z GNU gnulib, različica %s\n"
 
 #: find/parser.c:1692
 #, c-format
@@ -445,7 +445,7 @@ msgstr "opozorilo: neprepoznano ubežno zaporedje »\\%c«"
 #: find/parser.c:1954
 #, c-format
 msgid "error: %s at end of format string"
-msgstr ""
+msgstr "napaka: %s na koncu formatnega niza"
 
 #: find/parser.c:1990
 #, c-format
@@ -478,9 +478,8 @@ msgid "Only one instance of {} is supported with -exec%s ... +"
 msgstr "Podprta je le enkratna navedba {} v kombinaciji z -exec%s ... +"
 
 #: find/parser.c:2230
-#, fuzzy
 msgid "The environment is too large for exec()."
-msgstr "okolje je preobsežno za klic exec"
+msgstr "Okolje je preobsežno za klic exec()."
 
 #: find/pred.c:1178
 #, c-format
@@ -605,6 +604,7 @@ msgstr "dni"
 #, c-format
 msgid "locate database %s contains a filename longer than locate can handle"
 msgstr ""
+"podatkovna zbirka locate %s vsebuje ime datoteke, ki je predolgo za locate"
 
 #: locate/locate.c:567
 #, c-format
@@ -678,7 +678,7 @@ msgid "old"
 msgstr "stari"
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -689,7 +689,7 @@ msgid ""
 "      [--version] [--help]\n"
 "      pattern...\n"
 msgstr ""
-"Uporaba: %s [-d path | --database=pot] [-e | -E | --[non-]existing]\n"
+"Uporaba: %s [-d pot | --database=pot] [-e | -E | --[non-]existing]\n"
 "        [-i | --ignore-case] [-w | --wholename] [-b | --basename]\n"
 "        [--limit=N | -l N] [-S | --statistics] [-0 | --null] [-c | --count]\n"
 "        [-P | -H | --nofollow] [-L | --follow] [-m | --mmap ] [ -s | --"
@@ -746,7 +746,7 @@ msgstr "okolje je preobsežno za klic exec"
 #: xargs/xargs.c:536
 #, c-format
 msgid "warning: value %ld for -s option is too large, using %ld instead"
-msgstr ""
+msgstr "opozorilo: vrednost %ld za izbiro -s je prevelika; uporabljeno %ld"
 
 #: xargs/xargs.c:575
 #, c-format
@@ -759,14 +759,14 @@ msgid "Cannot open input file `%s'"
 msgstr "Vhodne datoteke »%s« ni mogoče odpreti"
 
 #: xargs/xargs.c:642
-#, fuzzy, c-format
+#, c-format
 msgid "Your environment variables take up %lu bytes\n"
-msgstr "Spremenljivke okolja zasedajo %ld bajtov\n"
+msgstr "Spremenljivke okolja zasedajo %lu bajtov\n"
 
 #: xargs/xargs.c:645
-#, fuzzy, c-format
+#, c-format
 msgid "POSIX lower and upper limits on argument length: %lu, %lu\n"
-msgstr "Zgornja in spodnja meja POSIX za dolžino argumenta: %ld, %ld\n"
+msgstr "Zgornja in spodnja meja POSIX za dolžino argumenta: %lu, %lu\n"
 
 #: xargs/xargs.c:649
 #, c-format
@@ -774,9 +774,9 @@ msgid "Maximum length of command we could actually use: %ld\n"
 msgstr "Največja dolžina ukaza, ki ga lahko uporabimo: %ld\n"
 
 #: xargs/xargs.c:653
-#, fuzzy, c-format
+#, c-format
 msgid "Size of command buffer we are actually using: %lu\n"
-msgstr "Velikost ukaznega medpomnilnika, ki ga dejansko uporabljamo: %ld\n"
+msgstr "Velikost ukaznega medpomnilnika, ki ga dejansko uporabljamo: %lu\n"
 
 #: xargs/xargs.c:775 xargs/xargs.c:856
 #, c-format
@@ -834,7 +834,7 @@ msgid "%s: value for -%c option should be < %ld\n"
 msgstr "%s: vrednost za izbiro -%c mora biti < %ld\n"
 
 #: xargs/xargs.c:1215
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
 "       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
@@ -851,9 +851,9 @@ msgstr ""
 "       [-L največ-vrstic] [-l[največ-vrstic]] [--max-lines[=največ-vrstic]]\n"
 "       [-I nadomestni-niz] [-i[nadomestni-niz]] [--replace[=nadomestni-"
 "niz]]\n"
-"       [-n max-args] [--max-args=max-args]\n"
+"       [-n največ-argumentov] [--max-args=največ-argumentov]\n"
 "       [-s največ-znakov] [--max-chars=največ-znakov]\n"
-"       [-P največ-procesov]  [--max-procs=največ-procesov]\n"
+"       [-P največ-procesov]  [--max-procs=največ-procesov] [--show-limits]\n"
 "       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=datoteka]\n"
 "       [--version] [--help] [ukaz [začetni-argumenti]]\n"
 

@@ -1,14 +1,14 @@
 # Vietnamese translation for FindUtils.
 # Copyright © 2007 Free Software Foundation, Inc.
-# This file is distributed under the same license as the findutils-4.3.7 package.
-# Clytie Siddall <clytie@riverland.net.au>, 2006-2007.
+# This file is distributed under the same license as the findutils_stable-4.2.32 package.
+# Clytie Siddall <clytie@riverland.net.au>, 2006-2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils_stable 4.2.31\n"
+"Project-Id-Version: findutils_stable 4.2.32\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2007-12-08 14:17+0000\n"
-"PO-Revision-Date: 2007-07-18 23:38+0930\n"
+"PO-Revision-Date: 2008-01-26 19:12+1030\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -34,7 +34,7 @@ msgstr "Các đối số hợp lệ:"
 
 #: gnulib/lib/closeout.c:73
 msgid "write error"
-msgstr ""
+msgstr "lỗi ghi"
 
 #: gnulib/lib/error.c:125
 msgid "Unknown system error"
@@ -134,22 +134,22 @@ msgstr "^[kK]"
 
 #: gnulib/lib/xalloc-die.c:34
 msgid "memory exhausted"
-msgstr ""
+msgstr "cạn bộ nhớ"
 
 #: gnulib/lib/xstrtol-error.c:63
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %s%s argument `%s'"
-msgstr "đối số « %s » không hợp lệ đối với « %s »"
+msgstr "đối số %s%s không hợp lệ « %s »"
 
 #: gnulib/lib/xstrtol-error.c:68
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix in %s%s argument `%s'"
-msgstr "đối số « %s » không hợp lệ đối với « %s »"
+msgstr "hậu tố không hợp lệ trong đối số %s%s « %s »"
 
 #: gnulib/lib/xstrtol-error.c:72
-#, fuzzy, c-format
+#, c-format
 msgid "%s%s argument `%s' too large"
-msgstr "dòng đối số quá dài"
+msgstr "đối số %s%s « %s » quá lớn"
 
 #: find/find.c:455
 msgid ""
@@ -609,21 +609,20 @@ msgstr "Cách sử dụng: %s [-H] [-L] [-P] [đường_dẫn...] [biểu_thức
 
 #: lib/buildcmd.c:179
 msgid "command too long"
-msgstr ""
+msgstr "câu lệnh quá dài"
 
 #: lib/buildcmd.c:241
 msgid "can not fit single argument within argument list size limit"
-msgstr ""
+msgstr "không thể vừa một đối số riêng lẻ bên trong hạn chế kích cỡ đối số"
 
 #: lib/buildcmd.c:246
-#, fuzzy
 msgid "argument list too long"
-msgstr "dòng đối số quá dài"
+msgstr "danh sách đối số quá dài"
 
 #: lib/regextype.c:113
 #, c-format
 msgid "Unknown regular expression type %s; valid types are %s."
-msgstr ""
+msgstr "Không rõ kiểu biểu thức chính quy %s: các kiểu hợp lệ là %s."
 
 #: locate/code.c:126
 #, c-format
@@ -654,6 +653,11 @@ msgstr "Trình findutils phiên bản %s của GNU\n"
 #, c-format
 msgid "Usage: %s [-0 | --null] [--version] [--help]\n"
 msgstr ""
+"Sử dụng: %s [-0 | --null] [--version] [--help]\n"
+"\n"
+"null\t\tvô giá trị\n"
+"version\tphiên bảnhelp\t\ttrợ giúp\n"
+"\n"
 
 #: locate/frcode.c:201 locate/locate.c:1281
 #, c-format
@@ -942,14 +946,3 @@ msgstr ""
 "[--version]\t\t\t\t\t\t(phiên bản)\n"
 "[--help]\t\t\t\t\t\t\t(trợ giúp)\n"
 "[lệnh [các_đối_số_đầu]]\n"
-
-#~ msgid "block size"
-#~ msgstr "cỡ khối"
-
-#~ msgid "argument to --limit"
-#~ msgstr "đối số đối với « --limit » (giới hạn)"
-
-#~ msgid "Reducing arg_max (%ld) to arg_size (%ld)\n"
-#~ msgstr ""
-#~ "Đang rút gọn « arg_max » (đối số tối đa) (%ld) thành « arg-size » (kích cỡ "
-#~ "đối số) (%ld)\n"

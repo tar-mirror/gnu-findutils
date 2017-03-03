@@ -666,7 +666,7 @@ msgid "old"
 msgstr ""
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -677,9 +677,6 @@ msgid ""
 "      [--version] [--help]\n"
 "      pattern...\n"
 msgstr ""
-"Χρήση: %s [-d διαδρομή | --database=διαδρομή] [-e | --existing]\n"
-"      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
-"      [--version] [--help] pattern...\n"
 
 #: xargs/xargs.c:300
 #, c-format
@@ -889,6 +886,21 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Δεν προηγήθηκε κανονική έκφραση"
 
+#~ msgid "Predicate List:\n"
+#~ msgstr "Λίστα κατηγορημάτων:\n"
+
+#~ msgid "Eval Tree:\n"
+#~ msgstr "Δέντρο αξιολόγησης:\n"
+
+#~ msgid "Optimized Eval Tree:\n"
+#~ msgstr "Βελτιστοποιημένο δέντρο αξιολόγησης:\n"
+
+#~ msgid "virtual memory exhausted"
+#~ msgstr "η εικονική μνήμη εξαντλήθηκε"
+
+#~ msgid "error in %s: %s"
+#~ msgstr "σφάλμα στο %s: %s"
+
 #~ msgid ""
 #~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
 #~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
@@ -900,22 +912,6 @@ msgstr ""
 #~ "      -fls ΑΡΧΕΙΟ -ok ΕΝΤΟΛΗ ; -print -print0 -printf ΜΟΡΦΗ -prune -ls -"
 #~ "delete\n"
 #~ "      -quit\n"
-
-#~ msgid "Predicate List:\n"
-#~ msgstr "Λίστα κατηγορημάτων:\n"
-
-#~ msgid "Eval Tree:\n"
-#~ msgstr "Δέντρο αξιολόγησης:\n"
-
-#~ msgid "Optimized Eval Tree:\n"
-#~ msgstr "Βελτιστοποιημένο δέντρο αξιολόγησης:\n"
-
-#, fuzzy
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Βελτιστοποιημένο δέντρο αξιολόγησης:\n"
-
-#~ msgid "virtual memory exhausted"
-#~ msgstr "η εικονική μνήμη εξαντλήθηκε"
 
 #~ msgid "inserting %s\n"
 #~ msgstr "παρεμβολή του %s\n"
@@ -932,8 +928,14 @@ msgstr ""
 #~ msgid "Normalized Eval Tree:\n"
 #~ msgstr "Κανονικοποιημένο δέντρο αξιολόγησης:\n"
 
-#~ msgid "error in %s: %s"
-#~ msgstr "σφάλμα στο %s: %s"
+#~ msgid ""
+#~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"
+#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "      [--version] [--help] pattern...\n"
+#~ msgstr ""
+#~ "Χρήση: %s [-d διαδρομή | --database=διαδρομή] [-e | --existing]\n"
+#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "      [--version] [--help] pattern...\n"
 
 #~ msgid ""
 #~ "warning: locate database path `%s' contains a trailing colon, which is "

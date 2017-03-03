@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: findutils 4.2.10\n"
+"Project-Id-Version: findutils 4.2.6\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2007-12-08 14:17+0000\n"
-"PO-Revision-Date: 2004-12-23 12:44+0100\n"
+"PO-Revision-Date: 2004-12-23 12:02+0100\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
 "MIME-Version: 1.0\n"
@@ -46,12 +46,12 @@ msgstr "%s: l'opzione `%s' è ambigua\n"
 #: gnulib/lib/getopt.c:579 gnulib/lib/getopt.c:583
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
-msgstr "%s: l'opzione `--%s' non accetta un argomento\n"
+msgstr "%s: l'opzione `--%s' non accetta argomenti\n"
 
 #: gnulib/lib/getopt.c:592 gnulib/lib/getopt.c:597
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
-msgstr "%s: l'opzione `%c%s' non accetta un argomento\n"
+msgstr "%s: l'opzione `%c%s' non accetta argomenti\n"
 
 #: gnulib/lib/getopt.c:640 gnulib/lib/getopt.c:659 gnulib/lib/getopt.c:975
 #: gnulib/lib/getopt.c:994
@@ -93,7 +93,7 @@ msgstr "%s: l'opzione `-W %s' è ambigua\n"
 #: gnulib/lib/getopt.c:936 gnulib/lib/getopt.c:954
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
-msgstr "%s: l'opzione `-W %s' non accetta un argomento\n"
+msgstr "%s: l'opzione `-W %s' non accetta argomenti\n"
 
 #. TRANSLATORS:
 #. Get translations for open and closing quotation marks.
@@ -187,14 +187,14 @@ msgid "cannot get current directory"
 msgstr "impossibile ottenere la directory corrente"
 
 #: find/find.c:836
-#, c-format
+#, fuzzy, c-format
 msgid "Warning: filesystem %s has recently been unmounted."
-msgstr "Attenzione: il file system %s è stato smontato di recente."
+msgstr "Il file system %s è stato smontato di recente."
 
 #: find/find.c:846
-#, c-format
+#, fuzzy, c-format
 msgid "Warning: filesystem %s has recently been mounted."
-msgstr "Attenzione: il file system %s è stato montato di recente."
+msgstr "Il file system %s è stato montato di recente."
 
 #: find/find.c:941
 #, c-format
@@ -220,8 +220,6 @@ msgid ""
 "Symbolic link `%s' is part of a loop in the directory hierarchy; we have "
 "already visited the directory to which it points."
 msgstr ""
-"Il link simbolico `%s' è parte di un loop nella gerarchia delle directory; "
-"la directory a cui punta è già stata visitata."
 
 #: find/find.c:1551
 #, c-format
@@ -229,16 +227,14 @@ msgid ""
 "Filesystem loop detected; `%s' has the same device number and inode as a "
 "directory which is %d %s."
 msgstr ""
-"Trovato un loop nel file system; `%s' ha gli stessi numeri di dispositivo e "
-"di inode di una directory %d %s."
 
 #: find/find.c:1555
 msgid "level higher in the filesystem hierarchy"
-msgstr "livello più in alto nella gerarchia del file system"
+msgstr ""
 
 #: find/find.c:1556
 msgid "levels higher in the filesystem hierarchy"
-msgstr "livelli più in alto nella gerarchia del file system"
+msgstr ""
 
 #: find/find.c:1926
 #, c-format
@@ -667,7 +663,7 @@ msgid "old"
 msgstr ""
 
 #: locate/locate.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n"
 "      [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n"
@@ -678,9 +674,6 @@ msgid ""
 "      [--version] [--help]\n"
 "      pattern...\n"
 msgstr ""
-"Uso: %s [-d percorso | --database=percorso] [-e | --existing]\n"
-"    [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
-"    [--version] [--help] modello...\n"
 
 #: xargs/xargs.c:300
 #, c-format
@@ -732,7 +725,7 @@ msgstr "GNU xargs versione %s\n"
 #: xargs/xargs.c:606
 #, c-format
 msgid "Cannot open input file `%s'"
-msgstr "Impossibile aprire il file di input `%s'"
+msgstr ""
 
 #: xargs/xargs.c:642
 #, fuzzy, c-format
@@ -827,8 +820,8 @@ msgstr ""
 "     [-n arg-max] [-s car-max] [-P proc-max] [--null] [--eof[=eof-str]]\n"
 "     [--replace[=cambia-str]] [--max-lines[=linee-max]] [--interactive]\n"
 "     [--max-chars=car-max] [--verbose] [--exit] [--max-procs=proc-max]\n"
-"     [--max-args=arg-max] [--no-run-if-empty] [--arg-file=file]\n"
-"     [--version] [--help] [comando [argomenti-iniziali]]\n"
+"     [--max-args=arg-max] [--no-run-if-empty] [--version] [--help]\n"
+"     [comando [argomenti-iniziali]]\n"
 
 #~ msgid "block size"
 #~ msgstr "dimensioni del blocco"
@@ -855,7 +848,7 @@ msgstr ""
 #~ msgstr "Nome della classe di caratteri non valido"
 
 #~ msgid "Trailing backslash"
-#~ msgstr "Backlash finale"
+#~ msgstr "Backslash finale"
 
 #~ msgid "Invalid back reference"
 #~ msgstr "Riferimento all'indietro non valido"
@@ -890,6 +883,21 @@ msgstr ""
 #~ msgid "No previous regular expression"
 #~ msgstr "Non c'è una espressione regolare precedente"
 
+#~ msgid "Predicate List:\n"
+#~ msgstr "Lista dei predicati:\n"
+
+#~ msgid "Eval Tree:\n"
+#~ msgstr "Albero di valutazione:\n"
+
+#~ msgid "Optimized Eval Tree:\n"
+#~ msgstr "Albero di valutazione ottimizzato:\n"
+
+#~ msgid "virtual memory exhausted"
+#~ msgstr "la memoria virtuale è terminata"
+
+#~ msgid "error in %s: %s"
+#~ msgstr "errore in %s: %s"
+
 #~ msgid ""
 #~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
 #~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
@@ -900,21 +908,6 @@ msgstr ""
 #~ "      -fls FILE -ok COMANDO ; -print -print0 -printf FORMATO -prune -ls -"
 #~ "delete\n"
 #~ "      -quit\n"
-
-#~ msgid "Predicate List:\n"
-#~ msgstr "Lista dei predicati:\n"
-
-#~ msgid "Eval Tree:\n"
-#~ msgstr "Albero di valutazione:\n"
-
-#~ msgid "Optimized Eval Tree:\n"
-#~ msgstr "Albero di valutazione ottimizzato:\n"
-
-#~ msgid "Optimized command line:\n"
-#~ msgstr "Riga di comando ottimizzata:\n"
-
-#~ msgid "virtual memory exhausted"
-#~ msgstr "la memoria virtuale è terminata"
 
 #~ msgid "inserting %s\n"
 #~ msgstr "inserimento di %s\n"
@@ -928,15 +921,17 @@ msgstr ""
 #~ msgid "right:\n"
 #~ msgstr "destra:\n"
 
-#~ msgid "[stat called here] "
-#~ msgstr "[chiamata stat] "
-
-#, fuzzy
-#~ msgid "[type needed here] "
-#~ msgstr "[chiamata stat] "
-
 #~ msgid "Normalized Eval Tree:\n"
 #~ msgstr "Albero di valutazione normalizzato:\n"
+
+#~ msgid ""
+#~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"
+#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "      [--version] [--help] pattern...\n"
+#~ msgstr ""
+#~ "Uso: %s [-d percorso | --database=percorso] [-e | --existing]\n"
+#~ "    [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
+#~ "    [--version] [--help] modello...\n"
 
 #~ msgid ""
 #~ "warning: locate database path `%s' contains a trailing colon, which is "
