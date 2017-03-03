@@ -18,6 +18,16 @@ known (the left hand side is false for \fIand\fR operations, true for
 .B find
 moves on to the next file name.
 .PP
+If you are using 
+.B find 
+in an environment where security is important (for example if you are
+using it to seach directories that are writable by other users), you
+should read the "Security Considerations" chapter of the findutils
+documentation, which is called \fBFinding Files\fP and comes with
+findutils.   That document also includes a lot more detail 
+and discussion than this manual page, so you may find it a more useful 
+source of information.
+.SH OPTIONS
 The `\-H', `\-L' and `\-P' options control the treatment of symbolic
 links.  Command-line arguments following these are taken to be names
 of files or directories to be examined, up to the first argument that
@@ -30,10 +40,9 @@ used.  If no expression is given, the expression `\-print' is used
 This manual page talks about `options' within the expression list.
 These options control the behaviour of 
 .B find
-but are specified immediately after the last path name.  The two
+but are specified immediately after the last path name.  The three
 `real' options `\-H', `\-L' and `\-P' must appear before the first
 path name, if at all.
-.SH OPTIONS
 .IP \-P
 Never follow symbolic links.  This is the default behaviour.  When 
 .B find
@@ -50,11 +59,20 @@ from the link itself (unless it is a broken symbolic link or
 .B find
 is unable to examine the file to which the link points).  Use of this
 option implies \-noleaf.  If you later use the \-P option, \-noleaf
-will still be in effect.
+will still be in effect.  If \-L is in effect and 
+.B find 
+discovers a symbolic link to a subdirectory during its search, 
+the subdirectory pointed to by the symbolic link will be searched.
+.IP
+When the \-L option is in effect, the \-type predicate will always
+match against the type of the file that a symbolic link points to
+rather than the link itself (unless the symbolic link is broken).
+Using \-L causes the \-lname and \-ilname predicates always to return
+false.
 
 .IP \-H
-Do not follow symbolic links, except those appearing on the command
-line.  When
+Do not follow symbolic links, except while processing the command
+line arguments.  When
 .B find
 examines or prints information about files, the information used 
 shall be taken from the properties of the symbolic link itself.   The
@@ -63,18 +81,15 @@ command line is a symbolic link, and the link can be resolved.  For
 that situation, the information used is taken from whatever the link
 points to (that is, the link is followed).  The information about the
 link itself is used as a fallback if the file pointed to by the
-symbolic link cannot be examined.
-
-When the \-H option is in effect, the \-type predicate will always
-match against the type of the file that a symbolic link points to
-rather than the link itself (unless the symbolic link is broken).
-Using \-H causes the \-lname and \-ilname predicates always to return
-false.
+symbolic link cannot be examined.  If \-H is in effect and one of the
+paths specified on the command line is a symbolic link to a directory,
+the contents of that directory will be examined (though of course
+\-maxdepth 0 would prevent this).
 .P
-If more than one of \-H, \-L and \-P are both specified, each
-overrides the others; the last one appearing on the command line takes
-effect.  Since it is the default, the \-P option should be considered
-to be in effect unless either \-H or \-L is specified.
+If more than one of \-H, \-L and \-P is specified, each overrides the
+others; the last one appearing on the command line takes effect.
+Since it is the default, the \-P option should be considered to be in
+effect unless either \-H or \-L is specified.
 
 GNU 
 .B find
@@ -99,17 +114,10 @@ as the argument of \-newer will be dereferenced, and the timestamp
 will be taken from the file to which the symbolic link points.  The
 same consideration applies to \-anewer and \-cnewer.
 
-Similarly, when \-H or \-L is in effect, the \-type predicate will
-always match against the type of the file that a symbolic link points
-to rather than the link itself (unless the link is broken or cannot be
-dereferenced).  Using \-H or \-L causes the \-lname and \-ilname
-predicates always to return false (again, except in the case of broken
-links).
-
 The \-follow option has a similar effect to \-L, though it takes
 effect at the point where it appears (that is, if \-L is not used but
-\-follow is, any symbolic links appearing after it on the command line
-will be dereferenced).
+\-follow is, any symbolic links appearing after \-follow on the
+command line will be dereferenced, and those before it will not).
 
 .P
 .SH EXPRESSIONS
@@ -153,7 +161,7 @@ and exit.
 Normally, \fBfind\fR will emit an error message when it fails to stat a file.
 If you give this option and a file is deleted between the time \fBfind\fR 
 reads the name of the file from the directory and the time it tries to stat 
-the file, nno error message will be issued.    This also applies to files
+the file, no error message will be issued.    This also applies to files
 or directories whose names are given on the command line.  This option takes
 effect at the time the command line is read, which means that you cannot search
 one part of the filesystem with this option on and part of it with this option
@@ -301,7 +309,7 @@ and `[]') match a `.' at the start of the base name (this is a change
 in findutils-4.2.2; see section STANDARDS CONFORMANCE below).  To ignore a
 directory and the files under it, use \-prune; see an example in the
 description of \-wholename.  Braces are not recognised as being
-special, despite the fact that some shells including Bash ibmue braces
+special, despite the fact that some shells including Bash imbue braces
 with a special meaning in shell patterns.  The filename matching is
 performed with the use of the
 .BR fnmatch (3) 
@@ -455,7 +463,7 @@ quoted to protect them from expansion by the shell.  See the
 section for examples of the use of the `\-exec' option.  The specified
 command is run once for each matched file.
 The command is executed in the starting directory.   There are
-unavoidable security problems surrpounding use of the -exec option;
+unavoidable security problems surrounding use of the -exec option;
 you should use the -execdir option instead.  
 
 .IP "\-exec \fIcommand\fR {} +"
@@ -740,9 +748,8 @@ paths specified on the command line will be processed.  For example,
 .B find /tmp/foo /tmp/bar \-print \-quit
 will print only
 .BR /tmp/foo .
-Any command lines which have been built up with `
+Any command lines which have been built up with
 .B \-execdir ... {} +
-.R \' 
 will be invoked before 
 .B find
 exits.   The exit status may or may not be zero, depending on whether
@@ -761,17 +768,18 @@ Force precedence.
 .IP "! \fIexpr\fR"
 True if \fIexpr\fR is false.
 .IP "\-not \fIexpr\fR"
-Same as ! \fIexpr\fR.
+Same as ! \fIexpr\fR, but not POSIX compliant.
 .IP "\fIexpr1 expr2\fR"
-And (implied); \fIexpr2\fR is not evaluated if \fIexpr1\fR is false.
+Two expressions in a row are taken to be joined with an 
+implied "and"; \fIexpr2\fR is not evaluated if \fIexpr1\fR is false.
 .IP "\fIexpr1\fR \-a \fIexpr2\fR"
 Same as \fIexpr1 expr2\fR.
 .IP "\fIexpr1\fR \-and \fIexpr2\fR"
-Same as \fIexpr1 expr2\fR.
+Same as \fIexpr1 expr2\fR, but not POSIX compliant.
 .IP "\fIexpr1\fR \-o \fIexpr2\fR"
 Or; \fIexpr2\fR is not evaluated if \fIexpr1\fR is true.
 .IP "\fIexpr1\fR \-or \fIexpr2\fR"
-Same as \fIexpr1\fR \-o \fIexpr2\fR.
+Same as \fIexpr1\fR \-o \fIexpr2\fR, but not POSIX compliant.
 .IP "\fIexpr1\fR , \fIexpr2\fR"
 List; both \fIexpr1\fR and \fIexpr2\fR are always evaluated.
 The value of \fIexpr1\fR is discarded; the value of the list is the
@@ -877,8 +885,6 @@ on the symbolic link, so this diagnostic is frequently not necessary.
 The \-d option is supported for comatibility with various BSD systems,
 but you should use the POSIX-compliant predicate \-depth instead.
 .SH "ENVIRONMENT VARIABLES"
-.IP POSIXLY_CORRECT
-Determines the block size used by `-ls'.
 .IP LANG
 Provides a default value for the internationalization variables that
 are unset or null.
@@ -908,6 +914,11 @@ Determines the location of the internationalisation message catalogues.
 .IP PATH
 Affects the directores which are searched to find the executables 
 invoked by `\-exec' and `\-ok'.
+.IP POSIXLY_CORRECT
+Determines the block size used by `-ls'.
+.IP TZ
+Affects the time zone used for some of the time-related format
+directives of -printf and -fprintf.
 .SH "EXAMPLES"
 .nf
 .B find /tmp \-name core \-type f \-print | xargs /bin/rm -f
@@ -1039,14 +1050,23 @@ on the correctness of the results of
 .BR find .
 
 .SH "SEE ALSO"
-\fBlocate\fP(1), \fBlocatedb\fP(5), \fBupdatedb\fP(1), \fBxargs\fP(1)
-\fBFinding Files\fP (on-line in Info, or printed)
+\fBlocate\fP(1), \fBlocatedb\fP(5), \fBupdatedb\fP(1), \fBxargs\fP(1),
+\fBfnmatch\fP(3), \fBregex\fP(7), \fBstat\fP(2), \fBlstat\fP(2),
+\fBls\fP(1), \fBprintf\fP(3), \fBstrftime\fP(3), \fBctime\fP(3),
+\fBFinding Files\fP (on-line in Info, or printed), 
 .SH "HISTORY"
 As of findutils-4.2.2, shell metacharacters ('*'. '?' or '[]' for
 example) used in filename patterns will match a leading '.', because
 IEEE POSIX interpretation 126 requires this.
 
 .SH "BUGS"
+.P
+There are security problems inherent in the behaviour that the POSIX
+standard specifies for
+.BR find ,
+which therefore cannot be fixed.  For example, the -exec action is
+inherently insecure, and -execdir should be used instead.  
+Please see \fBFinding Files\fP for more information. 
 .P 
 The best way to report a bug is to use the form at
 http://savannah.gnu.org/bugs/?group=findutils.  

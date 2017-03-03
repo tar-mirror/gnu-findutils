@@ -30,6 +30,11 @@
 #include "buildcmd.h"
 #include "nextelem.h"
 
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#else
+#include <sys/file.h>
+#endif
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -1543,6 +1548,12 @@ parse_version (char **argv, int *arg_ptr)
   printf("D_TYPE ");
   ++features;
 #endif
+#if defined(O_NOFOLLOW)
+  printf("O_NOFOLLOW(%s) ",
+	 (options.open_nofollow_available ? "enabled" : "disabled"));
+  ++features;
+#endif
+  
   if (0 == features)
     {
       /* For the moment, leave this as English in case someone wants
@@ -1909,8 +1920,6 @@ new_insert_exec_ok (const char *action,
   int saw_braces;		/* True if previous arg was '{}'. */
   boolean allow_plus;		/* True if + is a valid terminator */
   int brace_count;		/* Number of instances of {}. */
-  const char *prefix;
-  size_t pfxlen;
   
   struct predicate *our_pred;
   struct exec_val *execp;	/* Pointer for efficiency. */
@@ -1930,6 +1939,7 @@ new_insert_exec_ok (const char *action,
   
   if ((func == pred_execdir) || (func == pred_okdir))
     {
+      options.ignore_readdir_race = false;
       check_path_safety(action);
       execp->use_current_dir = true;
     }

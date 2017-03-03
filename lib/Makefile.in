@@ -132,7 +132,8 @@ AR = ar
 ARFLAGS = cru
 libfind_a_AR = $(AR) $(ARFLAGS)
 am_libfind_a_OBJECTS = listfile.$(OBJEXT) nextelem.$(OBJEXT) \
-	extendbuf.$(OBJEXT) buildcmd.$(OBJEXT) savedirinfo.$(OBJEXT)
+	extendbuf.$(OBJEXT) buildcmd.$(OBJEXT) savedirinfo.$(OBJEXT) \
+	forcefindlib.$(OBJEXT)
 libfind_a_OBJECTS = $(am_libfind_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -254,7 +255,7 @@ AUTOMAKE_OPTIONS = 1.5 gnits
 # no-dependencies
 noinst_LIBRARIES = libfind.a
 libfind_a_SOURCES = modetype.h nextelem.h listfile.c nextelem.c \
-	extendbuf.c buildcmd.c savedirinfo.c
+	extendbuf.c buildcmd.c savedirinfo.c forcefindlib.c
 EXTRA_DIST = modetype.h wait.h extendbuf.h savedirinfo.h buildcmd.h \
 	waitpid.c forcefindlib.c
 BUILT_SOURCES = 
@@ -315,6 +316,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/buildcmd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/extendbuf.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/forcefindlib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/listfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nextelem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/savedirinfo.Po@am__quote@

@@ -296,8 +296,6 @@ pred_amin (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 boolean
 pred_and (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
-  int match = 0;
-  
   if (pred_ptr->pred_left == NULL
       || (*pred_ptr->pred_left->pred_func) (pathname, stat_buf,
 					    pred_ptr->pred_left))
@@ -305,7 +303,7 @@ pred_and (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
       /* Check whether we need a stat here. */
       if (get_info(pathname, state.rel_pathname, stat_buf, pred_ptr) != 0)
 	    return false;
-      return ((*pred_ptr->pred_right->pred_func) (pathname, stat_buf,
+      return ((*pred_ptr->pred_right->pred_func) (pathname, stat_buf,  
 						  pred_ptr->pred_right));
     }
   else
@@ -444,7 +442,6 @@ pred_empty (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
     return (false);
 }
 
-#if defined(NEW_EXEC)
 static boolean
 new_impl_pred_exec (const char *pathname, struct stat *stat_buf,
 		    struct predicate *pred_ptr,
@@ -490,64 +487,21 @@ new_impl_pred_exec (const char *pathname, struct stat *stat_buf,
 					&execp->state);
     }
 }
-#else
-static boolean
-old_impl_pred_exec (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
-{
-  int i;
-  int path_pos;
-  struct exec_val *execp;	/* Pointer for efficiency. */
 
-  (void) pathname;
-  (void) stat_buf;
-  
-  execp = &pred_ptr->args.exec_vec;
-
-  /* Replace "{}" with the real path in each affected arg. */
-  for (path_pos = 0; execp->paths[path_pos].offset >= 0; path_pos++)
-    {
-      register char *from, *to;
-
-      i = execp->paths[path_pos].offset;
-      execp->vec[i] =
-	xmalloc (strlen (execp->paths[path_pos].origarg) + 1
-		 + (strlen (pathname) - 2) * execp->paths[path_pos].count);
-      for (from = execp->paths[path_pos].origarg, to = execp->vec[i]; *from; )
-	if (from[0] == '{' && from[1] == '}')
-	  {
-	    to = stpcpy (to, pathname);
-	    from += 2;
-	  }
-	else
-	  *to++ = *from++;
-      *to = *from;		/* Copy null. */
-    }
-
-  i = launch (pred_ptr);
-
-  /* Free the temporary args. */
-  for (path_pos = 0; execp->paths[path_pos].offset >= 0; path_pos++)
-    free (execp->vec[execp->paths[path_pos].offset]);
-
-  return (i);
-}
-#endif
 
 boolean
 pred_exec (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
-#if defined(NEW_EXEC)
   return new_impl_pred_exec(pathname, stat_buf, pred_ptr, NULL, 0);
-#else
-  return old_impl_pred_exec(pathname, stat_buf, pred_ptr);
-#endif
 }
 
 boolean
 pred_execdir (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
-  const char *s = basename(pathname);
-  return new_impl_pred_exec(s, stat_buf, pred_ptr, "./", 2);
+   const char *prefix = (state.rel_pathname[0] == '/') ? NULL : "./";
+   (void) &pathname;
+   return new_impl_pred_exec (state.rel_pathname, stat_buf, pred_ptr,
+			      prefix, (prefix ? 2 : 0));
 }
 
 boolean
@@ -654,7 +608,7 @@ pred_fprintf (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 		   human_readable ((uintmax_t) stat_buf->st_dev, hbuf,
 				   human_ceiling, 1, 1));
 	  break;
-	case 'f':		/* basename of path */
+	case 'f':		/* base name of path */
 	  fprintf (fp, segment->text, base_name (pathname));
 	  break;
 	case 'F':		/* filesystem type */
@@ -1121,7 +1075,6 @@ pred_nouser (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 #endif
 }
 
-#if defined(NEW_EXEC)
 
 static boolean
 is_ok(const char *program, const char *arg)
@@ -1149,45 +1102,13 @@ pred_ok (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 boolean
 pred_okdir (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
-  const char *s = basename(pathname);
-  
+  const char *prefix = (state.rel_pathname[0] == '/') ? NULL : "./";
   if (is_ok(pred_ptr->args.exec_vec.replace_vec[0], pathname))
-    return new_impl_pred_exec (s, stat_buf, pred_ptr, "./", 2);
+    return new_impl_pred_exec (state.rel_pathname, stat_buf, pred_ptr, 
+			       prefix, (prefix ? 2 : 0));
   else
     return false;
 }
-
-
-
-#else
-boolean
-pred_ok (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
-{
-  fflush (stdout);
-  /* The draft open standard requires that, in the POSIX locale,
-     the last non-blank character of this prompt be '?'.
-     The exact format is not specified.
-     This standard does not have requirements for locales other than POSIX
-  */
-  fprintf (stderr, _("< %s ... %s > ? "),
-	   pred_ptr->args.exec_vec.vec[0], pathname);
-  fflush (stderr);
-  if (yesno ())
-    return pred_exec (pathname, stat_buf, pred_ptr);
-  else
-    return (false);
-}
-
-boolean
-pred_okdir (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
-{
-  error(1, 0, "-okdir is not yet implemented.");
-  return false;
-}
-
-
-#endif
-
 
 boolean
 pred_open (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
@@ -1496,7 +1417,7 @@ pred_xtype (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
     zero, and the exit arg (status high) is 0.
     Otherwise return false, possibly printing an error message. */
 
-#if defined(NEW_EXEC)
+
 static void
 prep_child_for_exec (void)
 {
@@ -1623,64 +1544,6 @@ launch (const struct buildcmd_control *ctl,
     }
   
 }
-#else
-static boolean
-launch (struct predicate *pred_ptr)
-{
-  int status;
-  pid_t child_pid;
-  struct exec_val *execp;	/* Pointer for efficiency. */
-  static int first_time = 1;
-
-  execp = &pred_ptr->args.exec_vec;
-
-  /* Make sure output of command doesn't get mixed with find output. */
-  fflush (stdout);
-  fflush (stderr);
-
-  /* Make sure to listen for the kids.  */
-  if (first_time)
-    {
-      first_time = 0;
-      signal (SIGCHLD, SIG_DFL);
-    }
-
-  child_pid = fork ();
-  if (child_pid == -1)
-    error (1, errno, _("cannot fork"));
-  if (child_pid == 0)
-    {
-      /* We be the child. */
-      if (starting_desc < 0
-	  ? chdir (starting_dir) != 0
-	  : fchdir (starting_desc) != 0)
-	{
-	  error (0, errno, "%s", starting_dir);
-	  _exit (1);
-	}
-      execvp (execp->vec[0], execp->vec);
-      error (0, errno, "%s", execp->vec[0]);
-      _exit (1);
-    }
-
-  
-  while (waitpid (child_pid, &status, 0) == (pid_t) -1)
-    if (errno != EINTR)
-      {
-	error (0, errno, _("error waiting for %s"), execp->vec[0]);
-	state.exit_status = 1;
-	return false;
-      }
-  if (WIFSIGNALED (status))
-    {
-      error (0, 0, _("%s terminated by signal %d"),
-	     execp->vec[0], WTERMSIG (status));
-      state.exit_status = 1;
-      return (false);
-    }
-  return (!WEXITSTATUS (status));
-}
-#endif
 
 
 /* Return a static string formatting the time WHEN according to the

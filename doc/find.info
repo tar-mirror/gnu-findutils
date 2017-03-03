@@ -6,11 +6,19 @@ START-INFO-DIR-ENTRY
 * Finding files: (find).        Operating on files matching certain criteria.
 END-INFO-DIR-ENTRY
 
+INFO-DIR-SECTION Individual utilities
+START-INFO-DIR-ENTRY
+* find: (find)Invoking find.                    Finding and acting on files.
+* locate: (find)Invoking locate.                Finding files in a database.
+* updatedb: (find)Invoking updatedb.            Building the locate database.
+* xargs: (find)Invoking xargs.                  Operating on many files.
+END-INFO-DIR-ENTRY
+
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various operations on them.
 
-   Copyright (C) 1994,1996,1998,2000,2001,2003,2004 Free Software
-Foundation, Inc.
+   Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005 Free
+Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -31,7 +39,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.  This is
-edition 4.2.15, for `find' version 4.2.15.
+edition 4.2.18, for `find' version 4.2.18.
 
 * Menu:
 
@@ -753,9 +761,10 @@ File: find.info,  Node: Size,  Next: Type,  Prev: Time,  Up: Finding Files
      that's the default anyway.
 
      The size does not count indirect blocks, but it does count blocks
-     in sparse files that are not actually allocated.  This handling of
-     sparse files differs from the output of the `%k' and `%b' format
-     specifiers for the `-printf' predicate.
+     in sparse files that are not actually allocated.  In other words,
+     it's consistent with the result you get for `ls -l' or `wc -c'.
+     This handling of sparse files differs from the output of the `%k'
+     and `%b' format specifiers for the `-printf' predicate.
 
 
  -- Test: -empty
@@ -1916,6 +1925,10 @@ down the list, so the program run by `xargs' has less work to do.  The
 tests builtin to `find' will likely run faster than tests that other
 programs perform.
 
+   For reasons of efficiency it is often useful to limit the number of
+times an external program has to be run.  For this reason, it is often
+a good idea to implement "extended" tests by using `xargs'.
+
    For example, here is a way to print the names of all of the
 unstripped binaries in the `/usr/local' directory tree.  Builtin tests
 avoid running `file' on files that are not regular files or are not
@@ -1927,33 +1940,37 @@ executable.
 The `cut' program removes everything after the file name from the
 output of `file'.
 
-   If you want to place a special test somewhere in the middle of a
-`find' expression, you can use `-exec' to run a program that performs
-the test.  Because `-exec' evaluates to the exit status of the executed
-program, you can write a program (which can be a shell script) that
-tests for a special attribute and make it exit with a true (zero) or
-false (non-zero) status.  It is a good idea to place such a special
-test _after_ the builtin tests, because it starts a new process which
-could be avoided if a builtin test evaluates to false.  Use this method
-only when `xargs' is not flexible enough, because starting one or more
-new processes to test each file is slower than using `xargs' to start
-one process that tests many files.
+   However, using `xargs' can present important security problems
+(*note Security Considerations::).  These can be avoided by using
+`-execdir'.  The `-execdir' action is also a useful way of putting your
+own test in the middle of a set of other tests or actions for `find'
+(for example, you might want to use `-prune').
+
+   To place a special test somewhere in the middle of a `find'
+expression, you can use `-execdir' (or, less securely, `-exec') to run
+a program that performs the test.  Because `-execdir' evaluates to the
+exit status of the executed program, you can use a program (which can
+be a shell script) that tests for a special attribute and make it exit
+with a true (zero) or false (non-zero) status.  It is a good idea to
+place such a special test _after_ the builtin tests, because it starts
+a new process which could be avoided if a builtin test evaluates to
+false.
 
    Here is a shell script called `unstripped' that checks whether its
 argument is an unstripped binary file:
 
      #! /bin/sh
-     file $1 | grep 'not stripped' > /dev/null
+     file "$1" | grep -q "not stripped"
 
    This script relies on the fact that the shell exits with the status
-of the last program it executed, in this case `grep'.  `grep' exits
-with a true status if it found any matches, false if not.  Here is an
-example of using the script (assuming it is in your search path).  It
-lists the stripped executables in the file `sbins' and the unstripped
-ones in `ubins'.
+of the last command in the pipeline, in this case `grep'.  The `grep'
+command exits with a true status if it found any matches, false if not.
+Here is an example of using the script (assuming it is in your search
+path).  It lists the stripped executables (and shell scripts) in the
+file `sbins' and the unstripped ones in `ubins'.
 
      find /usr/local -type f -perm +a=x \
-       \( -exec unstripped '{}' \; -fprint ubins -o -fprint sbins \)
+       \( -execdir unstripped '{}' \; -fprint ubins -o -fprint sbins \)
 
 
 File: find.info,  Node: Common Tasks,  Next: Databases,  Prev: Actions,  Up: Top
@@ -3345,47 +3362,157 @@ might be intended to persuade `find' to search part of the filesystem
 which would not normally be included in the search (defeating the
 `-prune' action for example).
 
+* Menu:
+
+* Changing the Current Working Directory::
+* Race Conditions with -exec::
+* Race Conditions with -print and -print0::
+
+   ---------- Footnotes ----------
+
+   (1) This is more or less the definition of the term "race condition"
+
+
+File: find.info,  Node: Changing the Current Working Directory,  Next: Race Conditions with -exec,  Up: Security Considerations for find
+
 8.2.1 Changing the Current Working Directory
 --------------------------------------------
 
 As find searches the file system, it finds subdirectories and then
-searches within them by changing its working directory.    First,
-`find' notices a subdirectory.  It then decides if that subdirectory
-meets the criteria for being searched; that is, any `-xdev' or `-prune'
+searches within them by changing its working directory.  First, `find'
+notices a subdirectory.  It then decides if that subdirectory meets the
+criteria for being searched; that is, any `-xdev' or `-prune'
 expressions are taken into account.  The `find' program will then
-change working directory using the `chdir()' system call and proceed to
-search the directory.
+change working directory and proceed to search the directory.
 
    A race condition attack might take the form that once the checks
 relevant to `-xdev' and `-prune' have been done, an attacker might
 rename the directory that was being considered, and put in its place a
-symbolic link that actually points somewhere else.  The `find' command
-would then issue the `chdir()' system call, changing its working
-directory to the destination of the symbolic link (`chdir()' will
-always dereference symbolic links).  This manipulation leaves `find'
-with a working directory chosen by an attacker, bypassing any
-protection apparently provided by `-xdev' and `-prune', and any
-protection provided by being able to _not_ list particular directories
-on the `find' command line.  This form of attack is particularly
-problematic if the attacker can predict when the `find' command will be
-run, as is the case with `cron' tasks for example.
+symbolic link that actually points somewhere else.
+
+   The idea behind this attack is to fool `find' into going into the
+wrong directory.  This would leave `find' with a working directory
+chosen by an attacker, bypassing any protection apparently provided by
+`-xdev' and `-prune', and any protection provided by being able to
+_not_ list particular directories on the `find' command line.  This
+form of attack is particularly problematic if the attacker can predict
+when the `find' command will be run, as is the case with `cron' tasks
+for example.
 
    GNU `find' has specific safeguards to prevent this general class of
-problem.  Each time `find' changes directory, it examines the directory
-it is about to move to, issues the `chdir()' system call, and then
-checks that it has ended up in the subdirectory it expected.  If not,
-an error message is issued and `find' exits immediately.  This prevents
-filesystem manipulation attacks from persuading `find' to search parts
-of the filesystem it did not intend.
+problem.  The exact form of these safeguards depends on the properties
+of your system.
 
-   Where an automounter is in use, it can be the case that the use of
-the `chdir()' system call can itself cause a new filesystem to be
-mounted at that point.  This will cause `find''s security check to
-fail.  However, this does not normally represent a security problem
-(since the automounter configuration is normally set up by the system
-administrator).  Therefore, if the `chdir()' sanity check fails, `find'
-will check to see if a new filesystem has been mounted at the current
-directory; if so, `find' will issue a warning message and continue.
+* Menu:
+
+* O_FOLLOW::                       Safely changing directory using fchdir().
+* Systems without O_NOFOLLOW::     Checking for symbolic links after chdir().
+* Working with automounters::      These can look like race condition exploits
+* Problems with dead NFS servers:: If you don't have O_FOLLOW, this ia a problem.
+
+
+File: find.info,  Node: O_FOLLOW,  Next: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
+
+8.2.1.1 O_FOLLOW
+................
+
+If your system supports the O_NOFOLLOW flag (1) to the `open(2)' system
+call, `find' uses it when safely changing directory.  The target
+directory is first opened and then `find' changes working directory
+with the `fchdir()' system call.  This ensures that symbolic links are
+not followed, preventing the sort of race condition attack in which use
+is made of symbolic links.
+
+   If for any reason this approach does not work, `find' will fall back
+on the method which is normally used if O_NOFOLLOW is not supported.
+
+   You can tell if your system supports O_NOFOLLOW by running
+
+     find --version
+
+   This will tell you the version number and which features are enabled.
+For example, if I run this on my system now, this gives:
+     GNU find version 4.2.18-CVS
+     Features enabled: D_TYPE O_NOFOLLOW(enabled)
+
+   Here, you can see that I am running a version of find which was built
+from the development (CVS) code prior to the release of
+findutils-4.2.18, and that the D_TYPE and O_NOFOLLOW features are
+present.  O_NOFOLLOW is qualified with "enabled".  This simply means
+that the current system seems to support O_NOFOLLOW.  This check is
+needed because it is possible to build find on a system that defines
+O_NOFOLLOW and then run it on a system that ignores the O_NOFOLLOW
+flag.  We try to detect such cases at startup by checking the operating
+system and version number; when this happens you will see
+"O_NOFOLLOW(disabled)" instead.
+
+   ---------- Footnotes ----------
+
+   (1) GNU/Linux (kernel version 2.1.126 and later) and FreeBSD
+(3.0-CURRENT and later) support this
+
+
+File: find.info,  Node: Systems without O_NOFOLLOW,  Next: Working with automounters,  Prev: O_FOLLOW,  Up: Changing the Current Working Directory
+
+8.2.1.2 Systems without O_NOFOLLOW
+..................................
+
+The strategy for preventing this type of problem on systems that lack
+support for the O_NOFOLLOW flag is more complex.  Each time `find'
+changes directory, it examines the directory it is about to move to,
+issues the `chdir()' system call, and then checks that it has ended up
+in the subdirectory it expected.  If not, an error message is issued
+and `find' exits immediately.  This method also prevents filesystem
+manipulation attacks from persuading `find' to search parts of the
+filesystem it did not intend.  However, we heve to take special steps
+in order not to be unneccessarily concluding that there is a problem
+aut "automount" mount points.
+
+
+File: find.info,  Node: Working with automounters,  Next: Problems with dead NFS servers,  Prev: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
+
+8.2.1.3 Working with automounters
+.................................
+
+Where an automounter is in use on systems that do not support O_FOLLOW,
+it can be the case that the use of the `chdir()' system call can itself
+cause a new filesystem to be mounted at that point.  This will cause
+`find''s security check to fail.  However, this does not normally
+represent a security problem (since the automounter configuration is
+normally set up by the system administrator).  Therefore, if the
+`chdir()' sanity check fails, `find' will check to see if a new
+filesystem has been mounted at the current directory; if so, `find'
+will issue a warning message and continue.
+
+   To make this solution work, `find' reads the list of mounted
+filesystems at startup, and again when the sanity check fails.  It
+compares the two lists to find out if the directory it has moved into
+has just been mounted.
+
+
+File: find.info,  Node: Problems with dead NFS servers,  Prev: Working with automounters,  Up: Changing the Current Working Directory
+
+8.2.1.4 Problems with dead NFS servers
+......................................
+
+Examining every mount point on the system has a downside too.  In
+general, `find' will be used to search just part of the filesystem.
+However, `find' examines every mount point.  If the system has a
+filesystem mounted on an unresponsive NFS server, `find' will hang,
+waiting for the NFS server to respond.  Worse, it does this even if the
+affected mount point is not within the directory tree that find would
+have searched anyway.
+
+   This is very unfortunate.  However, this problem only affects systems
+that have no support for O_FOLLOW.  As far as I can tell, it is not
+possible on such systems to fix all three problems (the race condition,
+the false-alarm at automount mount points, and the hang at startup if
+there is a dead NFS server) at once.  If you have some ideas about how
+`find' could do this better, please send email to the
+<bug-findutils@gnu.org> mailing list.
+
+
+File: find.info,  Node: Race Conditions with -exec,  Next: Race Conditions with -print and -print0,  Prev: Changing the Current Working Directory,  Up: Security Considerations for find
 
 8.2.2 Race Conditions with -exec
 --------------------------------
@@ -3428,6 +3555,16 @@ the file to be processed exists (`/tmp/umsp' in our example, and only
 the basename of the file to be processed is passed to the invoked
 command, with a `./' prepended (giving `./passwd' in our example).
 
+   The `-execdir' action refuses to do anything if the current
+directory is included in the $PATH environment variable.  This is
+necessary because `-execdir' runs programs in the same directory in
+which it finds files - in general, such a directory might be writable
+by untrusted users.  For similar reasons, `-execdir' does not allow
+`{}' to appear in the name of the command to be run.
+
+
+File: find.info,  Node: Race Conditions with -print and -print0,  Prev: Race Conditions with -exec,  Up: Security Considerations for find
+
 8.2.3 Race Conditions with -print and -print0
 ---------------------------------------------
 
@@ -3446,10 +3583,6 @@ this reason, the `-print' and `-print0' actions are just as insecure as
    does not cope correctly with newlines or other "white space" in
 filenames, and copes poorly with filenames containing quotes, the
 `-print' action is less secure even than `-print0'.
-
-   ---------- Footnotes ----------
-
-   (1) This is more or less the definition of the term "race condition"
 
 
 File: find.info,  Node: Security Considerations for xargs,  Next: Security Considerations for locate,  Prev: Security Considerations for find,  Up: Security Considerations
@@ -3596,7 +3729,7 @@ File: find.info,  Node: Error Messages From find,  Next: Error Messages From xar
      somewhere it didn't expect to be.  This happens in one of two
      circumstances.  Firstly this happens when "automount" does its
      thing on a system where `find' doesn't know how to determine what
-     the current set of mounted filesystems is(1).
+     the current set of mounted filesystems is
 
      Secondly, this can happen when the device number of a directory
      appears to change during a change of current directory, but `find'
@@ -3642,14 +3775,6 @@ File: find.info,  Node: Error Messages From find,  Next: Error Messages From xar
 `some-program terminated by signal 99'
      Some program which was launched via `-exec' or similar was killed
      with a fatal signal.  This is just an advisory message.
-
-   ---------- Footnotes ----------
-
-   (1) To do this, `find' requires to be able to use `getmntent()' -
-check the `config.h' file for HAVE_GETMNTENT, which should be #defined
-to 1.  If HAVE_GETMNTENT is not set, consider submitting a problem
-report to <bug-findutils@gnu.org>, because `find' needs to be able to
-figure out how to enumerate the mounted devices on your system
 
 
 File: find.info,  Node: Error Messages From xargs,  Next: Error Messages From locate,  Prev: Error Messages From find,  Up: Error Messages
@@ -3752,7 +3877,7 @@ Expressions::, for more information on expressions.
 * -daystart:                             Age Ranges.           (line 29)
 * -delete:                               Delete Files.         (line  7)
 * -depth:                                Directories.          (line 21)
-* -empty:                                Size.                 (line 49)
+* -empty:                                Size.                 (line 50)
 * -exec <1>:                             Multiple Files.       (line 25)
 * -exec:                                 Single File.          (line 27)
 * -execdir <1>:                          Multiple Files.       (line 15)
@@ -3823,100 +3948,107 @@ Expressions::, for more information on expressions.
 
 
 Tag Table:
-Node: Top1127
-Node: Introduction2093
-Node: Scope3335
-Node: Overview5260
-Node: find Expressions7023
-Node: Finding Files8648
-Node: Name9115
-Node: Base Name Patterns9743
-Node: Full Name Patterns10457
-Node: Fast Full Name Search11955
-Node: Shell Pattern Matching14375
-Node: Links16464
-Node: Symbolic Links16899
-Node: Hard Links21026
-Node: Time23501
-Node: Age Ranges24089
-Node: Comparing Timestamps25487
-Node: Size26779
-Node: Type28492
-Node: Owner29348
-Node: Permissions30175
-Node: Contents32530
-Node: Directories33703
-Node: Filesystems38353
-Node: Combining Primaries With Operators39704
-Node: Actions41224
-Node: Print File Name41789
-Node: Print File Information42403
-Node: Escapes44959
-Node: Format Directives45688
-Node: Name Directives46831
-Node: Ownership Directives47535
-Node: Size Directives48089
-Node: Location Directives48627
-Node: Time Directives49748
-Node: Time Formats50651
-Node: Time Components51087
-Node: Date Components51593
-Node: Combined Time Formats52416
-Node: Formatting Flags53133
-Node: Run Commands53745
-Node: Single File54103
-Node: Multiple Files55524
-Node: Unsafe File Name Handling59341
-Node: Safe File Name Handling60904
-Node: Limiting Command Size62431
-Node: Interspersing File Names64366
-Node: Querying65485
-Node: Delete Files66409
-Node: Adding Tests66813
-Node: Common Tasks69081
-Node: Viewing And Editing69498
-Node: Archiving70504
-Node: Cleaning Up72136
-Node: Strange File Names73925
-Node: Fixing Permissions75560
-Node: Classifying Files76124
-Node: Databases76842
-Node: Database Locations77565
-Node: Database Formats78573
-Node: New Database Format79360
-Node: Sample Database81028
-Node: Old Database Format81676
-Node: Newline Handling83736
-Node: File Permissions85176
-Node: Mode Structure85745
-Node: Symbolic Modes87878
-Node: Setting Permissions88880
-Node: Copying Permissions91425
-Node: Changing Special Permissions92235
-Node: Conditional Executability94079
-Node: Multiple Changes94705
-Node: Umask and Protection96361
-Node: Numeric Modes97459
-Node: Reference99274
-Node: Invoking find99583
-Node: Warning Messages101764
-Node: Invoking locate103530
-Node: Invoking updatedb107458
-Node: Invoking xargs109743
-Node: Security Considerations112981
-Node: Levels of Risk114516
-Ref: Levels of Risk-Footnote-1117310
-Node: Security Considerations for find117489
-Ref: Security Considerations for find-Footnote-1125055
-Node: Security Considerations for xargs125128
-Node: Security Considerations for locate127204
-Node: Security Summary127900
-Node: Error Messages128623
-Node: Error Messages From find129675
-Ref: Error Messages From find-Footnote-1134591
-Node: Error Messages From xargs134932
-Node: Error Messages From locate136382
-Node: Error Messages From updatedb137608
-Node: Primary Index138022
+Node: Top1523
+Node: Introduction2489
+Node: Scope3731
+Node: Overview5656
+Node: find Expressions7419
+Node: Finding Files9044
+Node: Name9511
+Node: Base Name Patterns10139
+Node: Full Name Patterns10853
+Node: Fast Full Name Search12351
+Node: Shell Pattern Matching14771
+Node: Links16860
+Node: Symbolic Links17295
+Node: Hard Links21422
+Node: Time23897
+Node: Age Ranges24485
+Node: Comparing Timestamps25883
+Node: Size27175
+Node: Type28973
+Node: Owner29829
+Node: Permissions30656
+Node: Contents33011
+Node: Directories34184
+Node: Filesystems38834
+Node: Combining Primaries With Operators40185
+Node: Actions41705
+Node: Print File Name42270
+Node: Print File Information42884
+Node: Escapes45440
+Node: Format Directives46169
+Node: Name Directives47312
+Node: Ownership Directives48016
+Node: Size Directives48570
+Node: Location Directives49108
+Node: Time Directives50229
+Node: Time Formats51132
+Node: Time Components51568
+Node: Date Components52074
+Node: Combined Time Formats52897
+Node: Formatting Flags53614
+Node: Run Commands54226
+Node: Single File54584
+Node: Multiple Files56005
+Node: Unsafe File Name Handling59822
+Node: Safe File Name Handling61385
+Node: Limiting Command Size62912
+Node: Interspersing File Names64847
+Node: Querying65966
+Node: Delete Files66890
+Node: Adding Tests67294
+Node: Common Tasks69945
+Node: Viewing And Editing70362
+Node: Archiving71368
+Node: Cleaning Up73000
+Node: Strange File Names74789
+Node: Fixing Permissions76424
+Node: Classifying Files76988
+Node: Databases77706
+Node: Database Locations78429
+Node: Database Formats79437
+Node: New Database Format80224
+Node: Sample Database81892
+Node: Old Database Format82540
+Node: Newline Handling84600
+Node: File Permissions86040
+Node: Mode Structure86609
+Node: Symbolic Modes88742
+Node: Setting Permissions89744
+Node: Copying Permissions92289
+Node: Changing Special Permissions93099
+Node: Conditional Executability94943
+Node: Multiple Changes95569
+Node: Umask and Protection97225
+Node: Numeric Modes98323
+Node: Reference100138
+Node: Invoking find100447
+Node: Warning Messages102628
+Node: Invoking locate104394
+Node: Invoking updatedb108322
+Node: Invoking xargs110607
+Node: Security Considerations113845
+Node: Levels of Risk115380
+Ref: Levels of Risk-Footnote-1118174
+Node: Security Considerations for find118353
+Ref: Security Considerations for find-Footnote-1120577
+Node: Changing the Current Working Directory120650
+Node: O_FOLLOW122522
+Ref: O_FOLLOW-Footnote-1124156
+Node: Systems without O_NOFOLLOW124258
+Node: Working with automounters125130
+Node: Problems with dead NFS servers126185
+Node: Race Conditions with -exec127280
+Node: Race Conditions with -print and -print0130145
+Node: Security Considerations for xargs131066
+Node: Security Considerations for locate133142
+Node: Security Summary133838
+Node: Error Messages134561
+Node: Error Messages From find135613
+Node: Error Messages From xargs140489
+Node: Error Messages From locate141939
+Node: Error Messages From updatedb143165
+Node: Primary Index143579
 
 End Tag Table

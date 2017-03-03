@@ -17,7 +17,7 @@
    USA.*/
 
 /* GNU find was written by Eric Decker <cire@cisco.com>,
-   with enhancements by David MacKenzie <djm@gnu.ai.mit.edu>,
+   with enhancements by David MacKenzie <djm@gnu.org>,
    Jay Plett <jay@silence.princeton.nj.us>,
    and Tim Wood <axolotl!tim@toad.com>.
    The idea for -print0 and xargs -0 came from
@@ -38,6 +38,10 @@
 #include <sys/file.h>
 #endif
 
+#ifdef HAVE_SYS_UTSNAME_H
+#include <sys/utsname.h>
+#endif
+
 #include "../gnulib/lib/xalloc.h"
 #include "../gnulib/lib/human.h"
 #include "../gnulib/lib/canonicalize.h"
@@ -45,6 +49,7 @@
 #include <modetype.h>
 #include "savedirinfo.h"
 #include "buildcmd.h"
+#include "dirname.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -108,6 +113,12 @@ int starting_desc;
 
 /* The stat buffer of the initial working directory. */
 struct stat starting_stat_buf;
+
+enum ChdirSymlinkHandling
+  {
+    SymlinkHandleDefault,	/* Normally the right choice */
+    SymlinkFollowOk		/* see comment in process_top_path() */
+  };
 
 
 enum TraversalDirection
@@ -316,6 +327,7 @@ get_info (const char *pathname,
   /* If we need the full stat info, or we need the type info but don't 
    * already have it, stat the file now.
    */
+  (void) name;
   if (pred_ptr->need_stat)
     {
       return get_statinfo(pathname, state.rel_pathname, p);
@@ -326,6 +338,37 @@ get_info (const char *pathname,
     }
   return 0;
 }
+
+/* Determine if we can use O_NOFOLLOW.
+ */
+#if defined(O_NOFOLLOW)
+static boolean 
+check_nofollow(void)
+{
+  struct utsname uts;
+  float  release;
+
+  if (0 == uname(&uts))
+    {
+      /* POSIX requires that atof() ignore "unrecognised suffixes". */
+      release = atof(uts.release);
+      
+      if (0 == strcmp("Linux", uts.sysname))
+	{
+	  /* Linux kernels 2.1.126 and earlier ignore the O_NOFOLLOW flag. */
+	  return release >= 2.2; /* close enough */
+	}
+      else if (0 == strcmp("FreeBSD", uts.sysname)) 
+	{
+	  /* FreeBSD 3.0-CURRENT and later support it */
+	  return release >= 3.1;
+	}
+    }
+
+  /* Well, O_NOFOLLOW was defined, so we'll try to use it. */
+  return true;
+}
+#endif
 
 int
 main (int argc, char **argv)
@@ -375,6 +418,12 @@ main (int argc, char **argv)
     options.output_block_size = 512;
   else
     options.output_block_size = 1024;
+
+#ifdef O_NOFOLLOW
+  options.open_nofollow_available = check_nofollow();
+#else
+  options.open_nofollow_available = false;
+#endif
   
   if (getenv("FIND_BLOCK_SIZE"))
     {
@@ -384,8 +433,21 @@ main (int argc, char **argv)
   options.no_leaf_check = false;
   set_follow_state(SYMLINK_NEVER_DEREF); /* The default is equivalent to -P. */
 
-  init_mounted_dev_list();
-
+  /* safely_chdir() needs to check that it has ended up in the right place. 
+   * To avoid bailing out when something gets automounted, it checks if 
+   * the target directory appears to have had a directory mounted on it as
+   * we chdir()ed.  The problem with this is that in order to notice that 
+   * a filesystem was mounted, we would need to lstat() all the mount points.
+   * That strategy loses if our machine is a client of a dead NFS server.
+   *
+   * Hence if safely_chdir() and wd_sanity_check() can manage without needing 
+   * to know the mounted device list, we do that.  
+   */
+  if (!options.open_nofollow_available)
+    {
+      init_mounted_dev_list();
+    }
+  
 #ifdef DEBUG
   fprintf (stderr, "cur_day_start = %s", ctime (&options.cur_day_start));
 #endif /* DEBUG */
@@ -667,7 +729,7 @@ get_mount_state(dev_t newdev)
 static int
 fs_likely_to_be_automounted(const char *fs)
 {
-  return ( (0==strcmp(fs, "nfs")) || (0==strcmp(fs, "autofs")));
+  return ( (0==strcmp(fs, "nfs")) || (0==strcmp(fs, "autofs")) || (0==strcmp(fs, "subfs")));
 }
 
 enum WdSanityCheckFatality
@@ -846,21 +908,26 @@ enum SafeChdirStatus
     SafeChdirFailNonexistent
   };
 
-/* Safely perform a change in directory.
+/* Safely perform a change in directory.  We do this by calling
+ * lstat() on the subdirectory, using chdir() tro move into it, and
+ * then lstat()ing ".".  We compare the results of the two stat calls
+ * to see if they are consistent.  If not, we sound the alarm.
  *
+ * If following_links() is true, we do follow symbolic links.
  */
-static int 
-safely_chdir(const char *dest,
-	     enum TraversalDirection direction,
-	     struct stat *statbuf_dest)
+static enum SafeChdirStatus
+safely_chdir_lstat(const char *dest,
+		   enum TraversalDirection direction,
+		   struct stat *statbuf_dest,
+		   enum ChdirSymlinkHandling symlink_handling)
 {
   struct stat statbuf_arrived;
   int rv, dotfd=-1;
   int saved_errno;		/* specific_dirname() changes errno. */
-  char *name = NULL;
   boolean rv_set = false;
   
   saved_errno = errno = 0;
+
   dotfd = open(".", O_RDONLY);
   if (dotfd >= 0)
     {
@@ -868,12 +935,45 @@ safely_chdir(const char *dest,
       if (0 == options.xstat(dest, statbuf_dest))
 	{
 #ifdef S_ISLNK
+	  /* symlink_handling might be set to SymlinkFollowOk, which
+	   * would allow us to chdir() into a symbolic link.  This is
+	   * only useful for the case where the directory we're
+	   * chdir()ing into is the basename of a command line
+	   * argument, for example where "foo/bar/baz" is specified on
+	   * the command line.  When -P is in effect (the default),
+	   * baz will not be followed if it is a symlink, but if bar
+	   * is a symlink, it _should_ be followed.  Hence we need the
+	   * ability to override the policy set by following_links().
+	   */
 	  if (!following_links() && S_ISLNK(statbuf_dest->st_mode))
 	    {
-	      rv = SafeChdirFailSymlink;
-	      rv_set = true;
-	      saved_errno = 0;	/* silence the error message */
-	      goto fail;
+	      /* We're not supposed to be following links, but this is 
+	       * a link.  Check symlink_handling to see if we should 
+	       * make a special exception.
+	       */
+	      if (symlink_handling == SymlinkFollowOk)
+		{
+		  /* We need to re-stat() the file so that the 
+		   * sanity check can pass. 
+		   */
+		  if (0 != stat(dest, statbuf_dest))
+		    {
+		      rv = SafeChdirFailNonexistent;
+		      rv_set = true;
+		      saved_errno = errno;
+		      goto fail;
+		    }
+		}
+	      else
+		{
+		  /* Not following symlinks, so the attempt to
+		   * chdir() into a symlink should be prevented.
+		   */
+		  rv = SafeChdirFailSymlink;
+		  rv_set = true;
+		  saved_errno = 0;	/* silence the error message */
+		  goto fail;
+		}
 	    }
 #endif	  
 #ifdef S_ISDIR
@@ -917,8 +1017,6 @@ safely_chdir(const char *dest,
 		  rv_set = true;
 		  if (options.ignore_readdir_race)
 		    errno = 0;	/* don't issue err msg */
-		  else
-		    name = specific_dirname(dest);
 		}
 	      else if (ENOTDIR == saved_errno)
 		{
@@ -934,7 +1032,6 @@ safely_chdir(const char *dest,
 		{
 		  rv = SafeChdirFailChdirFailed;
 		  rv_set = true;
-		  name = specific_dirname(dest);
 		}
 	      goto fail;
 	    }
@@ -944,7 +1041,7 @@ safely_chdir(const char *dest,
 	  saved_errno = errno;
 	  rv = SafeChdirFailStat;
 	  rv_set = true;
-	  name = specific_dirname(dest);
+
 	  if ( (ENOENT == saved_errno) || (0 == state.curdepth))
 	    saved_errno = 0;	/* don't issue err msg */
 	  goto fail;
@@ -958,23 +1055,20 @@ safely_chdir(const char *dest,
       goto fail;
     }
 
+  /* This is the success path, so we clear errno.  The caller probably
+   * won't be calling error() anyway.
+   */
   saved_errno = 0;
   
   /* We use the same exit path for successs or failure. 
    * which has occurred is recorded in RV. 
    */
  fail:
+  /* We do not call error() as this would result in a duplicate error
+   * message when the caller does the same thing.
+   */
   if (saved_errno)
-    {
-      errno = saved_errno;
-      
-      /* do not call error() as this would result in a duplicate error message 
-       * when the caller does the same thing. 
-       */
-    }
-  
-  free(name);
-  name = NULL;
+    errno = saved_errno;
   
   if (dotfd >= 0)
     {
@@ -984,6 +1078,84 @@ safely_chdir(const char *dest,
   assert(rv_set);
   return rv;
 }
+
+#if defined(O_NOFOLLOW)
+/* Safely change working directory to the specified subdirectory.
+ * We use open() with O_NOFOLLOW, followed by fchdir().  This ensures
+ * that we don't follow symbolic links (of course, we do follow them
+ * if the -L option is in effect).
+ */
+static enum SafeChdirStatus
+safely_chdir_nofollow(const char *dest,
+		      enum TraversalDirection direction,
+		      struct stat *statbuf_dest,
+		      enum ChdirSymlinkHandling symlink_handling)
+{
+  int extraflags = following_links() ? O_NOFOLLOW : 0;
+
+  errno = 0;
+  int fd = open(dest, O_RDONLY|extraflags);
+  if (fd < 0)
+    {
+      switch (errno)
+	{
+	case ELOOP:
+	  return SafeChdirFailSymlink; /* This is why we use O_NOFOLLOW */
+	case ENOENT:
+	  return SafeChdirFailNonexistent;
+	default:
+	  return SafeChdirFailChdirFailed;
+	}
+    }
+  
+  errno = 0;
+  if (0 == fchdir(fd))
+    {
+      close(fd);
+      return SafeChdirOK;
+    }
+  else
+    {
+      int saved_errno = errno;
+      close(fd);
+      errno = saved_errno;
+      
+      switch (errno)
+	{
+	case ENOTDIR:
+	  return SafeChdirFailNotDir;
+	  
+	case EACCES:
+	case EBADF:		/* Shouldn't happen */
+	case EINTR:
+	case EIO:
+	default:
+	  return SafeChdirFailChdirFailed;
+	}
+    }
+}
+#endif
+
+static enum SafeChdirStatus
+safely_chdir(const char *dest,
+	     enum TraversalDirection direction,
+	     struct stat *statbuf_dest,
+	     enum ChdirSymlinkHandling symlink_handling)
+{
+  /* We're about to leave a directory.  If there are any -execdir
+   * argument lists which have been built but have not yet been
+   * processed, do them now because they must be done in the same
+   * directory.
+   */
+  complete_pending_execdirs(eval_tree);
+
+#if defined(O_NOFOLLOW)
+  if (options.open_nofollow_available)
+    return safely_chdir_nofollow(dest, direction, statbuf_dest, symlink_handling);
+#endif
+  return safely_chdir_lstat(dest, direction, statbuf_dest, symlink_handling);
+}
+
 
 
 /* Safely go back to the starting directory. */
@@ -998,6 +1170,13 @@ chdir_back (void)
 #ifdef DEBUG_STAT
       fprintf(stderr, "chdir_back(): chdir(\"%s\")\n", starting_dir);
 #endif
+      
+      /* We will need the mounted device list.  Get it now if we don't
+       * already have it.
+       */
+      if (NULL == mounted_devices)
+	init_mounted_dev_list();
+      
       if (chdir (starting_dir) != 0)
 	error (1, errno, "%s", starting_dir);
 
@@ -1021,13 +1200,78 @@ chdir_back (void)
     }
 }
 
-/* Descend PATHNAME, which is a command-line argument.  */
+/* Descend PATHNAME, which is a command-line argument.  
+   Actions like -execdir assume that we are in the 
+   parent directory of the file we're examining, 
+   and on entry to this function our working directory
+   is whetever it was when find was invoked.  Therefore
+   If PATHNAME is "." we just leave things as they are. 
+   Otherwise, we figure out what the parent directory is, 
+   and move to that.
+*/
 static void
 process_top_path (char *pathname, mode_t mode)
 {
+  int dirchange;
+  char *parent_dir = dir_name(pathname);
+  char *base = base_name(pathname);
+  
   state.curdepth = 0;
   state.path_length = strlen (pathname);
-  process_path (pathname, pathname, false, ".", mode);
+
+  if (0 == strcmp(pathname, parent_dir))
+    {
+      dirchange = 0;
+      base = pathname;
+    }
+  else
+    {
+      enum TraversalDirection direction;
+      enum SafeChdirStatus chdir_status;
+      struct stat st;
+
+      dirchange = 1;
+      if (0 == strcmp(base, ".."))
+	direction = TraversingUp;
+      else
+	direction = TraversingDown;
+
+      /* We pass SymlinkFollowOk to safely_chdir(), which allows it to
+       * chdir() into a symbolic link.  This is only useful for the
+       * case where the directory we're chdir()ing into is the
+       * basename of a command line argument, for example where
+       * "foo/bar/baz" is specified on the command line.  When -P is
+       * in effect (the default), baz will not be followed if it is a
+       * symlink, but if bar is a symlink, it _should_ be followed.
+       * Hence we need the ability to override the policy set by
+       * following_links().
+       */
+      chdir_status = safely_chdir(parent_dir, direction, &st, SymlinkFollowOk);
+      if (SafeChdirOK != chdir_status)
+	{
+	  const char *what = (SafeChdirFailWouldBeUnableToReturn == chdir_status) ? "." : parent_dir;
+	  if (errno)
+	    error (0, errno, "%s", what);
+	  else
+	    error (0, 0, "Failed to safely change directory into `%s'",
+		   parent_dir);
+	    
+	  /* We can't process this command-line argument. */
+	  state.exit_status = 1;
+	  return;
+	}
+    }
+
+  free (parent_dir);
+  parent_dir = NULL;
+  
+  process_path (pathname, base, false, ".", mode);
+  complete_pending_execdirs(eval_tree);
+  
+  if (dirchange)
+    {
+      chdir_back();
+    }
 }
 
 
@@ -1089,6 +1333,67 @@ issue_loop_warning(const char *name, const char *pathname, int level)
     }
 }
 
+/* Take a "mode" indicator and fill in the files of 'state'.
+ */
+static int
+digest_mode(mode_t mode,
+	    const char *pathname,
+	    const char *name,
+	    struct stat *pstat,
+	    boolean leaf)
+{
+  /* If we know the type of the directory entry, and it is not a
+   * symbolic link, we may be able to avoid a stat() or lstat() call.
+   */
+  if (mode)
+    {
+      if (S_ISLNK(mode) && following_links())
+	{
+	  /* mode is wrong because we should have followed the symlink. */
+	  if (get_statinfo(pathname, name, pstat) != 0)
+	    return 0;
+	  mode = state.type = pstat->st_mode;
+	  state.have_type = true;
+	}
+      else
+	{
+	  state.have_type = true;
+	  pstat->st_mode = state.type = mode;
+	}
+    }
+  else
+    {
+      /* Mode is not yet known; may have to stat the file unless we 
+       * can deduce that it is not a directory (which is all we need to 
+       * know at this stage)
+       */
+      if (leaf)
+	{
+	  state.have_stat = false;
+	  state.have_type = false;;
+	  state.type = 0;
+	}
+      else
+	{
+	  if (get_statinfo(pathname, name, pstat) != 0)
+	    return 0;
+	  
+	  /* If -L is in effect and we are dealing with a symlink,
+	   * st_mode is the mode of the pointed-to file, while mode is
+	   * the mode of the directory entry (S_IFLNK).  Hence now
+	   * that we have the stat information, override "mode".
+	   */
+	  state.type = pstat->st_mode;
+	  state.have_type = true;
+	}
+    }
+
+  /* success. */
+  return 1;
+}
+
+
+
 /* Recursively descend path PATHNAME, applying the predicates.
    LEAF is true if PATHNAME is known to be in a directory that has no
    more unexamined subdirectories, and therefore it is not a directory.
@@ -1118,51 +1423,8 @@ process_path (char *pathname, char *name, boolean leaf, char *parent,
   state.have_stat = false;
   state.have_type = false;
 
-  /* If we know the type of the directory entry, and it is not a
-   * symbolic link, we may be able to avoid a stat() or lstat() call.
-   */
-  if (mode)
-    {
-      if (S_ISLNK(mode) && following_links())
-	{
-	  /* mode is wrong because we should have followed the symlink. */
-	  if (get_statinfo(pathname, name, &stat_buf) != 0)
-	    return 0;
-	  mode = state.type = stat_buf.st_mode;
-	  state.have_type = true;
-	}
-      else
-	{
-	  state.have_type = true;
-	  stat_buf.st_mode = state.type = mode;
-	}
-    }
-  else
-    {
-      /* Mode is not yet known; may have to stat the file unless we 
-       * can deduce that it is not a directory (which is all we need to 
-       * know at this stage)
-       */
-      if (leaf)
-	{
-	  state.have_stat = false;
-	  state.have_type = false;;
-	  state.type = 0;
-	}
-      else
-	{
-	  if (get_statinfo(pathname, name, &stat_buf) != 0)
-	    return 0;
-
-	  /* If -L is in effect and we are dealing with a symlink,
-	   * st_mode is the mode of the pointed-to file, while mode is
-	   * the mode of the directory entry (S_IFLNK).  Hence now
-	   * that we have the stat information, override "mode".
-	   */
-	  state.type = stat_buf.st_mode;
-	  state.have_type = true;
-	}
-    }
+  if (!digest_mode(mode, pathname, name, &stat_buf, leaf))
+    return 0;
   
   if (!S_ISDIR (state.type))
     {
@@ -1227,6 +1489,11 @@ process_path (char *pathname, char *name, boolean leaf, char *parent,
 
   if (options.do_dir_first == false && state.curdepth >= options.mindepth)
     {
+      /* The fields in 'state' are now out of date.  Correct them.
+       */
+      if (!digest_mode(mode, pathname, name, &stat_buf, leaf))
+	return 0;
+
       state.rel_pathname = name;
       apply_predicate (pathname, &stat_buf, eval_tree);
     }
@@ -1362,10 +1629,16 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
       cur_path_size = 0;
       cur_path = NULL;
 
-#if USE_SAFE_CHDIR
+      /* We're about to leave the directory.  If there are any
+       * -execdir argument lists which have been built but have not
+       * yet been processed, do them now because they must be done in
+       * the same directory.
+       */
+      complete_pending_execdirs(eval_tree);
+      
       if (strcmp (name, "."))
 	{
-	  enum SafeChdirStatus status = safely_chdir (name, TraversingDown, &stat_buf);
+	  enum SafeChdirStatus status = safely_chdir (name, TraversingDown, &stat_buf, SymlinkHandleDefault);
 	  switch (status)
 	    {
 	    case SafeChdirOK:
@@ -1379,9 +1652,13 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      dir_ids[dir_curr].ino = stat_buf.st_ino;
 	      break;
       
+	    case SafeChdirFailWouldBeUnableToReturn:
+	      error (0, errno, ".");
+	      state.exit_status = 1;
+	      break;
+	      
 	    case SafeChdirFailNonexistent:
 	    case SafeChdirFailStat:
-	    case SafeChdirFailWouldBeUnableToReturn:
 	    case SafeChdirFailSymlink:
 	    case SafeChdirFailNotDir:
 	    case SafeChdirFailChdirFailed:
@@ -1390,46 +1667,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      return;
 	    }
 	}
-#else
-      if (0 != strcmp (name, "."))
-	{
-#ifdef DEBUG_STAT
-	  fprintf(stderr, "process_dir(): chdir(\"%s\")\n", name);
-#endif
-	  if (chdir (name) < 0)
-	    {
-	      error (0, errno, "%s", pathname);
-	      exit_status = 1;
-	      return;
-	    }
-	}
-      
 
-      /* Check that we are where we should be. */
-      if (1)
-	{
-	  boolean changed = false;
-	  wd_sanity_check(pathname,
-			  program_name,
-			  ".",
-			  dir_ids[dir_curr].dev,
-			  dir_ids[dir_curr].ino,
-			  &stat_buf, 0, __LINE__, 
-			  TraversingDown,
-			  FATAL_IF_SANITY_CHECK_FAILS,
-			  &changed);
-	  if (changed)
-	    {
-	      /* If there had been a change but wd_sanity_check()
-	       * accepted it, we need to accept that on the 
-	       * way back up as well, so modify our record 
-	       * of what we think we should see later. 
-	       */
-	      dir_ids[dir_curr].dev = stat_buf.st_dev;
-	      dir_ids[dir_curr].ino = stat_buf.st_ino;
-	    }
-	}
-#endif
 
       for (idx=0, namep = name_space; *namep; namep += file_len - pathname_len + 1, ++idx)
 	{
@@ -1502,9 +1740,9 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
        * yet been processed, do them now because they must be done in
        * the same directory.
        */
-      complete_pending_execdirs(eval_tree);
+      complete_pending_execdirs(eval_tree); 
 
-#if USE_SAFE_CHDIR
+
       if (strcmp (name, "."))
 	{
 	  enum SafeChdirStatus status;
@@ -1524,15 +1762,18 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      dir = parent;
 	    }
 	  
-	  status = safely_chdir (dir, TraversingUp, &stat_buf);
+	  status = safely_chdir (dir, TraversingUp, &stat_buf, SymlinkHandleDefault);
 	  switch (status)
 	    {
 	    case SafeChdirOK:
 	      break;
       
+	    case SafeChdirFailWouldBeUnableToReturn:
+	      error (1, errno, ".");
+	      return;
+	      
 	    case SafeChdirFailNonexistent:
 	    case SafeChdirFailStat:
-	    case SafeChdirFailWouldBeUnableToReturn:
 	    case SafeChdirFailSymlink:
 	    case SafeChdirFailNotDir:
 	    case SafeChdirFailChdirFailed:
@@ -1550,74 +1791,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      did.dev = starting_stat_buf.st_dev;
 	      did.ino = starting_stat_buf.st_ino;
 	    }
-
-	  wd_sanity_check(pathname,
-			  program_name,
-			  parent,
-			  did.dev,
-			  did.ino,
-			  &stat_buf,
-			  deref ? 1 : 0,
-			  __LINE__, 
-			  TraversingUp,
-			  FATAL_IF_SANITY_CHECK_FAILS,
-			  &changed);
 	}
-#else
-      if (strcmp (name, "."))
-	{
-	  /* We could go back and do the next command-line arg
-	     instead, maybe using longjmp.  */
-	  char const *dir;
-	  boolean deref = following_links() ? true : false;
-	  
-	  if (!deref)
-	    dir = "..";
-	  else
-	    {
-	      chdir_back ();
-	      dir = parent;
-	    }
-
-#ifdef DEBUG_STAT
-	  fprintf(stderr, "process_dir(): chdir(\"%s\")\n", dir);
-#endif
-	  if (chdir (dir) != 0)
-	    error (1, errno, "%s", parent);
-
-	  /* Check that we are where we should be. */
-	  if (1)
-	    {
-	      boolean changed = false;
-	      struct stat tmp;
-	      int problem_is_with_parent;
-	      
-	      memset(&tmp, 0, sizeof(tmp));
-	      if (dir_curr > 0)
-		{
-		  tmp.st_dev = dir_ids[dir_curr-1].dev;
-		  tmp.st_ino = dir_ids[dir_curr-1].ino;
-		}
-	      else
-		{
-		  tmp.st_dev = starting_stat_buf.st_dev;
-		  tmp.st_ino = starting_stat_buf.st_ino;
-		}
-
-	      problem_is_with_parent = deref ? 1 : 0;
-	      wd_sanity_check(pathname,
-			      program_name,
-			      parent,
-			      tmp.st_dev,
-			      tmp.st_ino,
-			      &stat_buf,
-			      problem_is_with_parent, __LINE__, 
-			      TraversingUp,
-			      FATAL_IF_SANITY_CHECK_FAILS,
-			      &changed);
-	    }
-	}
-#endif
 
       if (cur_path)
 	free (cur_path);

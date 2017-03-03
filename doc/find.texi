@@ -17,12 +17,21 @@
 * Finding files: (find).        Operating on files matching certain criteria.
 @end direntry
 
-@ifinfo
+@dircategory Individual utilities
+@direntry
+* find: (find)Invoking find.                    Finding and acting on files.
+* locate: (find)Invoking locate.                Finding files in a database.
+* updatedb: (find)Invoking updatedb.            Building the locate database.
+* xargs: (find)Invoking xargs.                  Operating on many files.
+@end direntry
+
+@copying
 
 This file documents the GNU utilities for finding files that match
 certain criteria and performing various operations on them.
 
-Copyright (C) 1994,1996,1998,2000,2001,2003,2004 Free Software Foundation, Inc.
+Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005 Free
+Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -44,7 +53,7 @@ Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions,
 except that this permission notice may be stated in a translation approved
 by the Foundation.
-@end ifinfo
+@end copying
 
 @titlepage
 @title Finding Files
@@ -54,31 +63,19 @@ by the Foundation.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1994,1996,1998,2000,2001,2003,2004 Free Software Foundation, Inc.
-
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
-
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
-
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be stated in a translation approved
-by the Foundation.
+@insertcopying{}
 @end titlepage
 
+@contents
+
+@ifnottex
 @node Top, Introduction, , (dir)
 @comment  node-name,  next,  previous,  up
 
-@ifinfo
 This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 This is edition @value{EDITION}, for @code{find} version @value{VERSION}.
-@end ifinfo
+@end ifnottex
 
 @c The master menu, created with texinfo-master-menu, goes here.
 
@@ -822,9 +819,10 @@ indicates that the test should succeed if the file uses less than
 default anyway.  
 
 The size does not count indirect blocks, but it does count blocks in
-sparse files that are not actually allocated.  This handling of sparse
-files differs from the output of the @samp{%k} and @samp{%b} format
-specifiers for the @samp{-printf} predicate.
+sparse files that are not actually allocated.  In other words, it's
+consistent with the result you get for @samp{ls -l} or @samp{wc -c}.
+This handling of sparse files differs from the output of the @samp{%k}
+and @samp{%b} format specifiers for the @samp{-printf} predicate.
 
 @end deffn
 
@@ -1982,6 +1980,10 @@ builtin tests to pare down the list, so the program run by @code{xargs}
 has less work to do.  The tests builtin to @code{find} will likely run
 faster than tests that other programs perform.
 
+For reasons of efficiency it is often useful to limit the number of
+times an external program has to be run.  For this reason, it is often
+a good idea to implement ``extended'' tests by using @code{xargs}.
+
 For example, here is a way to print the names of all of the unstripped
 binaries in the @file{/usr/local} directory tree.  Builtin tests avoid
 running @code{file} on files that are not regular files or are not
@@ -1996,37 +1998,43 @@ find /usr/local -type f -perm +a=x | xargs file |
 The @code{cut} program removes everything after the file name from the
 output of @code{file}.
 
+However, using @code{xargs} can present important security problems
+(@pxref{Security Considerations}).  These can be avoided by using
+@samp{-execdir}.  The @samp{-execdir} action is also a useful way of
+putting your own test in the middle of a set of other tests or actions
+for @code{find} (for example, you might want to use @samp{-prune}).
+
 @c Idea from Martin Weitzel.
-If you want to place a special test somewhere in the middle of a
-@code{find} expression, you can use @samp{-exec} to run a program that
-performs the test.  Because @samp{-exec} evaluates to the exit status of
-the executed program, you can write a program (which can be a shell
-script) that tests for a special attribute and make it exit with a true
-(zero) or false (non-zero) status.  It is a good idea to place such a
-special test @emph{after} the builtin tests, because it starts a new
-process which could be avoided if a builtin test evaluates to false.
-Use this method only when @code{xargs} is not flexible enough, because
-starting one or more new processes to test each file is slower than
-using @code{xargs} to start one process that tests many files.
+To place a special test somewhere in the middle of a @code{find}
+expression, you can use @samp{-execdir} (or, less securely,
+@samp{-exec}) to run a program that performs the test.  Because
+@samp{-execdir} evaluates to the exit status of the executed program,
+you can use a program (which can be a shell script) that tests for a
+special attribute and make it exit with a true (zero) or false
+(non-zero) status.  It is a good idea to place such a special test
+@emph{after} the builtin tests, because it starts a new process which
+could be avoided if a builtin test evaluates to false.  
 
 Here is a shell script called @code{unstripped} that checks whether its
 argument is an unstripped binary file:
 
 @example
 #! /bin/sh
-file $1 | grep 'not stripped' > /dev/null
+file "$1" | grep -q "not stripped"
 @end example
 
+
 This script relies on the fact that the shell exits with the status of
-the last program it executed, in this case @code{grep}.  @code{grep}
-exits with a true status if it found any matches, false if not.  Here is
-an example of using the script (assuming it is in your search path).  It
-lists the stripped executables in the file @file{sbins} and the
-unstripped ones in @file{ubins}.
+the last command in the pipeline, in this case @code{grep}.  The
+@code{grep} command exits with a true status if it found any matches,
+false if not.  Here is an example of using the script (assuming it is
+in your search path).  It lists the stripped executables (and shell
+scripts) in the file @file{sbins} and the unstripped ones in
+@file{ubins}.
 
 @example
 find /usr/local -type f -perm +a=x \
-  \( -exec unstripped '@{@}' \; -fprint ubins -o -fprint sbins \)
+  \( -execdir unstripped '@{@}' \; -fprint ubins -o -fprint sbins \)
 @end example
 
 @node Common Tasks, Databases, Actions, Top
@@ -3035,50 +3043,143 @@ might be intended to persuade @code{find} to search part of the
 filesystem which would not normally be included in the search
 (defeating the @code{-prune} action for example).  
 
+@menu
+* Changing the Current Working Directory::
+* Race Conditions with -exec::
+* Race Conditions with -print and -print0::
+@end menu
+
+
+@node Changing the Current Working Directory
 @subsection Changing the Current Working Directory
+
 As find searches the file system, it finds subdirectories and then
-searches within them by changing its working directory.    First,
+searches within them by changing its working directory.  First,
 @code{find} notices a subdirectory.  It then decides if that
 subdirectory meets the criteria for being searched; that is, any
 @samp{-xdev} or @samp{-prune} expressions are taken into account.  The
-@code{find} program will then change working directory using the
-@code{chdir()} system call and proceed to search the directory.  
+@code{find} program will then change working directory and proceed to
+search the directory.
 
 A race condition attack might take the form that once the checks
 relevant to @samp{-xdev} and @samp{-prune} have been done, an attacker
 might rename the directory that was being considered, and put in its
-place a symbolic link that actually points somewhere else.  The
-@code{find} command would then issue the @code{chdir()} system call,
-changing its working directory to the destination of the symbolic link
-(@code{chdir()} will always dereference symbolic links).  This
-manipulation leaves @code{find} with a working directory chosen by an
-attacker, bypassing any protection apparently provided by @samp{-xdev}
-and @samp{-prune}, and any protection provided by being able to
-@emph{not} list particular directories on the @code{find} command
-line.  This form of attack is particularly problematic if the attacker
-can predict when the @code{find} command will be run, as is the case
-with @code{cron} tasks for example.  
+place a symbolic link that actually points somewhere else.  
+
+The idea behind this attack is to fool @code{find} into going into the
+wrong directory.  This would leave @code{find} with a working
+directory chosen by an attacker, bypassing any protection apparently
+provided by @samp{-xdev} and @samp{-prune}, and any protection
+provided by being able to @emph{not} list particular directories on
+the @code{find} command line.  This form of attack is particularly
+problematic if the attacker can predict when the @code{find} command
+will be run, as is the case with @code{cron} tasks for example.
 
 GNU @code{find} has specific safeguards to prevent this general class
-of problem.  Each time @code{find} changes directory, it examines the
-directory it is about to move to, issues the @code{chdir()} system
-call, and then checks that it has ended up in the subdirectory it
-expected.  If not, an error message is issued and @code{find} exits
-immediately.  This prevents filesystem manipulation attacks from
-persuading @code{find} to search parts of the filesystem it did not
-intend.
+of problem.  The exact form of these safeguards depends on the
+properties of your system.  
 
-Where an automounter is in use, it can be the case that the use of the
-@code{chdir()} system call can itself cause a new filesystem to be
-mounted at that point.  This will cause @code{find}'s security check
-to fail.  However, this does not normally represent a security problem
-(since the automounter configuration is normally set up by the system
-administrator).  Therefore, if the @code{chdir()} sanity check fails,
-@code{find} will check to see if a new filesystem has been mounted at
-the current directory; if so, @code{find} will issue a warning message
-and continue.  
+@menu 
+* O_FOLLOW::                       Safely changing directory using fchdir().
+* Systems without O_NOFOLLOW::     Checking for symbolic links after chdir().
+* Working with automounters::      These can look like race condition exploits
+* Problems with dead NFS servers:: If you don't have O_FOLLOW, this ia a problem.
+@end menu
 
+@node O_FOLLOW
+@subsubsection O_FOLLOW 
 
+If your system supports the O_NOFOLLOW flag @footnote{GNU/Linux
+(kernel version 2.1.126 and later) and FreeBSD (3.0-CURRENT and later)
+support this} to the @code{open(2)} system call, @code{find} uses it
+when safely changing directory.  The target directory is first opened
+and then @code{find} changes working directory with the
+@code{fchdir()} system call.  This ensures that symbolic links are not
+followed, preventing the sort of race condition attack in which use
+is made of symbolic links.
+
+If for any reason this approach does not work, @code{find} will fall
+back on the method which is normally used if O_NOFOLLOW is not
+supported.
+
+You can tell if your system supports O_NOFOLLOW by running 
+
+@example
+find --version
+@end example
+
+This will tell you the version number and which features are enabled.
+For example, if I run this on my system now, this gives:
+@example
+GNU find version 4.2.18-CVS
+Features enabled: D_TYPE O_NOFOLLOW(enabled)
+@end example
+
+Here, you can see that I am running a version of find which was built
+from the development (CVS) code prior to the release of
+findutils-4.2.18, and that the D_TYPE and O_NOFOLLOW features are
+present.  O_NOFOLLOW is qualified with ``enabled''.  This simply means
+that the current system seems to support O_NOFOLLOW.  This check is
+needed because it is possible to build find on a system that defines
+O_NOFOLLOW and then run it on a system that ignores the O_NOFOLLOW
+flag.  We try to detect such cases at startup by checking the
+operating system and version number; when this happens you will see
+``O_NOFOLLOW(disabled)'' instead.
+
+@node Systems without O_NOFOLLOW
+@subsubsection Systems without O_NOFOLLOW
+
+The strategy for preventing this type of problem on systems that lack
+support for the O_NOFOLLOW flag is more complex.  Each time
+@code{find} changes directory, it examines the directory it is about
+to move to, issues the @code{chdir()} system call, and then checks
+that it has ended up in the subdirectory it expected.  If not, an
+error message is issued and @code{find} exits immediately.  This
+method also prevents filesystem manipulation attacks from persuading
+@code{find} to search parts of the filesystem it did not intend.
+However, we heve to take special steps in order not to be
+unneccessarily concluding that there is a problem aut ``automount''
+mount points.
+
+@node Working with automounters
+@subsubsection Working with automounters
+
+Where an automounter is in use on systems that do not support
+O_FOLLOW, it can be the case that the use of the @code{chdir()} system
+call can itself cause a new filesystem to be mounted at that point.
+This will cause @code{find}'s security check to fail.  However, this
+does not normally represent a security problem (since the automounter
+configuration is normally set up by the system administrator).
+Therefore, if the @code{chdir()} sanity check fails, @code{find} will
+check to see if a new filesystem has been mounted at the current
+directory; if so, @code{find} will issue a warning message and
+continue.
+
+To make this solution work, @code{find} reads the list of mounted
+filesystems at startup, and again when the sanity check fails.  It
+compares the two lists to find out if the directory it has moved into
+has just been mounted.
+
+@node Problems with dead NFS servers
+@subsubsection Problems with dead NFS servers
+
+Examining every mount point on the system has a downside too.  In
+general, @code{find} will be used to search just part of the
+filesystem.  However, @code{find} examines every mount point.  If the
+system has a filesystem mounted on an unresponsive NFS server,
+@code{find} will hang, waiting for the NFS server to respond.  Worse,
+it does this even if the affected mount point is not within the
+directory tree that find would have searched anyway.
+
+This is very unfortunate.  However, this problem only affects systems
+that have no support for O_FOLLOW.  As far as I can tell, it is not
+possible on such systems to fix all three problems (the race
+condition, the false-alarm at automount mount points, and the hang at
+startup if there is a dead NFS server) at once.  If you have some
+ideas about how @code{find} could do this better, please send email to
+the @email{bug-findutils@@gnu.org} mailing list.
+
+@node Race Conditions with -exec
 @subsection Race Conditions with -exec
 
 The @samp{-exec} action causes another program to be run.  It is
@@ -3124,7 +3225,15 @@ is the same as the directory in which the file to be processed exists
 be processed is passed to the invoked command, with a @samp{./}
 prepended (giving @file{./passwd} in our example).
 
+The @samp{-execdir} action refuses to do anything if the current
+directory is included in the @var{$PATH} environment variable.  This
+is necessary because @samp{-execdir} runs programs in the same
+directory in which it finds files -- in general, such a directory
+might be writable by untrusted users.  For similar reasons,
+@samp{-execdir} does not allow @samp{@{@}} to appear in the name of
+the command to be run.
 
+@node Race Conditions with -print and -print0
 @subsection Race Conditions with -print and -print0
 
 The @samp{-print} and @samp{-print0} actions can be used to produce a
@@ -3286,13 +3395,7 @@ This message is issued when @code{find} changes directory and ends up
 somewhere it didn't expect to be.  This happens in one of two
 circumstances.  Firstly this happens when ``automount'' does its thing
 on a system where @code{find} doesn't know how to determine what the
-current set of mounted filesystems is@footnote{To do this, @code{find}
-requires to be able to use @code{getmntent()} - check the
-@file{config.h} file for HAVE_GETMNTENT, which should be #defined to
-1.  If HAVE_GETMNTENT is not set, consider submitting a problem report
-to @email{bug-findutils@@gnu.org}, because @code{find} needs to be
-able to figure out how to enumerate the mounted devices on your
-system}.
+current set of mounted filesystems is
 
 Secondly, this can happen when the device number of a directory
 appears to change during a change of current directory, but
@@ -3413,7 +3516,6 @@ Expressions}, for more information on expressions.
 
 @printindex fn
 
-@contents
 @bye
 
 @comment texi related words used by Emacs' spell checker ispell.el
