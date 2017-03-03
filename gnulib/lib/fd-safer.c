@@ -26,7 +26,9 @@
 
 #include <errno.h>
 
-#include <unistd.h>
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #ifndef STDIN_FILENO
 # define STDIN_FILENO 0
 #endif

@@ -1,7 +1,5 @@
-This is
-/localhome/jay/source/GNU/findutils/cvs/4.2.x/fixbug-4.2/findutils/doc/find.info,
-produced by makeinfo version 4.7 from
-/localhome/jay/source/GNU/findutils/cvs/4.2.x/fixbug-4.2/findutils/doc/find.texi.
+This is ../../findutils/doc/find.info, produced by makeinfo version 4.8
+from ../../findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
 START-INFO-DIR-ENTRY
@@ -42,7 +40,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.27, for `find' version 4.2.27.
+   This is edition 4.2.28, for `find' version 4.2.28.
 
 * Menu:
 
@@ -990,13 +988,13 @@ structured and how to specify them.
           match a file which has mode 0777, for example.
 
     `-perm /222'
-          Match files which are writeable by somebody (their owner, or
+          Match files which are writable by somebody (their owner, or
           their group, or anybody else).
 
     `-perm /022'
-          Match files which are writeable by either their owner or their
-          group.  The files don't have to be writeable by both the
-          owner and group to be matched; either will do.
+          Match files which are writable by either their owner or their
+          group.  The files don't have to be writable by both the owner
+          and group to be matched; either will do.
 
     `-perm /g+w,o+w'
           As above.
@@ -1005,7 +1003,7 @@ structured and how to specify them.
           As above
 
     `-perm -022'
-          Search for files which are writeable by both their owner and
+          Search for files which are writable by both their owner and
           their group.
 
     `-perm -444 -perm /222 ! -perm /111'
@@ -1373,7 +1371,7 @@ File: find.info,  Node: Escapes,  Next: Format Directives,  Up: Print File Infor
 3.2.1 Escapes
 -------------
 
-The escapes that `-printf' and `-fprintf' recognize are:
+The escapes that `-printf' and `-fprintf' recognise are:
 
 `\a'
      Alarm bell.
@@ -1428,7 +1426,7 @@ even numeric ones, are printed with %s.  The format flag `-' does work;
 it forces left-alignment of the field.
 
    `%%' is a literal percent sign.  A `%' character followed by an
-unrecognised character (i.e. not a known directive or printf field
+unrecognised character (i.e. not a known directive or `printf' field
 width and precision specifier), is discarded (but the unrecognised
 character is printed), and a warning message is printed to the standard
 error output (because it was probably a typo).
@@ -1495,7 +1493,7 @@ File: find.info,  Node: Ownership Directives,  Next: Size Directives,  Prev: Nam
      leading zero on the number, use the '#' format flag, for example
      '%#m'.
 
-     The permisison numbers used are the traditional Unix permission
+     The permission numbers used are the traditional Unix permission
      numbers, which will be as expected on most systems, but if your
      system's permission bit layout differs from the traditional Unix
      semantics, you will see a difference between the mode as printed by
@@ -1772,7 +1770,7 @@ File: find.info,  Node: Single File,  Next: Multiple Files,  Up: Run Commands
 Here is how to run a command on one file at a time.
 
  -- Action: -execdir command ;
-     Execute COMMAND; true if zero status is returned.  `find' takes
+     Execute COMMAND; true if zero sftatus is returned.  `find' takes
      all arguments after `-exec' to be part of the command until an
      argument consisting of `;' is reached.  It replaces the string
      `{}' by the current file name being processed everywhere it occurs
@@ -1804,7 +1802,7 @@ problems surrounding `-exec'.
      starting directories, rather than just the basename of the matched
      file.
 
-     While some implementations of `find' replace the `{}' only whwre
+     While some implementations of `find' replace the `{}' only where
      it appears on its own in an argument, GNU `find' replaces `{}'
      wherever it appears.
 
@@ -2444,7 +2442,7 @@ a single character.
 
    The old format therefore cannot faithfully store entries with
 non-ASCII characters. It therefore should not be used in
-internationalized environments.
+internationalised environments.
 
    The output of `locate --statistics' will give an incorrect count of
 the number of file names containing newlines or high-bit characters for
@@ -2529,28 +2527,54 @@ permissions to perform any of the above operations on a file:
    Files are given an owner and group when they are created.  Usually
 the owner is the current user and the group is the group of the
 directory the file is in, but this varies with the operating system, the
-filesystem the file is created on, and the way the file is created.  You
-can change the owner and group of a file by using the `chown' and
+file system the file is created on, and the way the file is created.
+You can change the owner and group of a file by using the `chown' and
 `chgrp' commands.
 
    In addition to the three sets of three permissions listed above, a
 file's permissions have three special components, which affect only
 executable files (programs) and, on some systems, directories:
 
-  1. set the process's effective user ID to that of the file upon
+  1. Set the process's effective user ID to that of the file upon
      execution (called the "setuid bit").  No effect on directories.
 
-  2. set the process's effective group ID to that of the file upon
+  2. Set the process's effective group ID to that of the file upon
      execution (called the "setgid bit").  For directories on some
      systems, put files created in the directory into the same group as
      the directory, no matter what group the user who creates them is
      in.
 
-  3. save the program's text image on the swap device so it will load
-     more quickly when run (called the "sticky bit").  For directories
-     on some systems, prevent users from removing files that they do
-     not own in the directory; this is called making the directory
-     "append-only".
+  3. prevent users from removing or renaming a file in a directory
+     unless they own the file or the directory; this is called the
+     "restricted deletion flag" for the directory.  For regular files
+     on some systems, save the program's text image on the swap device
+     so it will load more quickly when run; this is called the "sticky
+     bit".
+
+   In addition to the permissions listed above, there may be file
+attributes specific to the file system, e.g: access control lists
+(ACLs), whether a file is compressed, whether a file can be modified
+(immutability), whether a file can be dumped.  These are usually set
+using programs specific to the file system.  For example:
+
+ext2
+     On GNU and GNU/Linux the file permissions ("attributes") specific
+     to the ext2 file system are set using `chattr'.
+
+FFS
+     On FreeBSD the file permissions ("flags") specific to the FFS file
+     system are set using `chrflags'.
+
+   Although a file's permission "bits" allow an operation on that file,
+that operation may still fail, because:
+
+   * the file-system-specific permissions do not permit it;
+
+   * the file system is mounted as read-only.
+
+   For example, if the immutable attribute is set on a file, it cannot
+be modified, regardless of the fact that you may have just run `chmod
+a+w FILE'.
 
 
 File: find.info,  Node: Symbolic Modes,  Next: Numeric Modes,  Prev: Mode Structure,  Up: File Permissions
@@ -2566,7 +2590,10 @@ Umask and Protection::).
 
    The format of symbolic modes is:
 
-     [ugoa...][[+-=][rwxXstugo...]...][,...]
+     [ugoa...][+-=]PERMS...[,...]
+
+where PERMS is either zero or more letters from the set `rwxXst', or a
+single letter from the set `ugo'.
 
    The following sections describe the operators and other details of
 symbolic modes.
@@ -2594,7 +2621,7 @@ format:
      USERS OPERATION PERMISSIONS
 
 The spaces between the three parts above are shown for readability only;
-symbolic modes can not contain spaces.
+symbolic modes cannot contain spaces.
 
    The USERS part tells which users' access to the file is changed.  It
 consists of one or more of the following letters (or it can be empty;
@@ -2630,8 +2657,8 @@ the file, and is one of the following symbols:
      for the file.
 
    The PERMISSIONS part tells what kind of access to the file should be
-changed; it is zero or more of the following letters.  As with the
-USERS part, the order does not matter when more than one letter is
+changed; it is normally zero or more of the following letters.  As with
+the USERS part, the order does not matter when more than one letter is
 given.  Omitting the PERMISSIONS part is useful only with the `='
 operation, where it gives the specified USERS no access at all to the
 file.
@@ -2650,7 +2677,7 @@ but not to execute it, use:
 
      a=rw
 
-   To remove write permission for from all users other than the file's
+   To remove write permission for all users other than the file's
 owner, use:
 
      go-w
@@ -2667,7 +2694,7 @@ file, if they have write permission on the directory it is in.
 
 Another way to specify the same thing is:
 
-     og-rxw
+     og-rwx
 
 
 File: find.info,  Node: Copying Permissions,  Next: Changing Special Permissions,  Prev: Setting Permissions,  Up: Symbolic Modes
@@ -2675,8 +2702,8 @@ File: find.info,  Node: Copying Permissions,  Next: Changing Special Permissions
 5.2.2 Copying Existing Permissions
 ----------------------------------
 
-You can base part of a file's permissions on part of its existing
-permissions.  To do this, instead of using `r', `w', or `x' after the
+You can base a file's permissions on its existing permissions.  To do
+this, instead of using a series of `r', `w', or `x' letters after the
 operator, you use the letter `u', `g', or `o'.  For example, the mode
 
      o+g
@@ -2706,45 +2733,37 @@ part.
 `g' in the USERS part of the symbolic mode and `s' in the PERMISSIONS
 part.
 
-   To change a file's permission to stay permanently on the swap device,
-use `o' in the USERS part of the symbolic mode and `t' in the
-PERMISSIONS part.
+   To change a file's permission to set the restricted deletion flag or
+sticky bit, omit the USERS part of the symbolic mode (or use `a') and
+put `t' in the PERMISSIONS part.
 
-   For example, to add set user ID permission to a program, you can use
+   For example, to add set-user-ID permission to a program, you can use
 the mode:
 
      u+s
 
-   To remove both set user ID and set group ID permission from it, you
+   To remove both set-user-ID and set-group-ID permission from it, you
 can use the mode:
 
      ug-s
 
-   To cause a program to be saved on the swap device, you can use the
+   To set the restricted deletion flag or sticky bit, you can use the
 mode:
 
-     o+t
+     +t
 
-   Remember that the special permissions only affect files that are
-executable, plus, on some systems, directories (on which they have
-different meanings; *note Mode Structure::).  Using `a' in the USERS
-part of a symbolic mode does not cause the special permissions to be
-affected; thus,
-
-     a+s
-
-has _no effect_.  You must use `u', `g', and `o' explicitly to affect
-the special permissions.  Also, the combinations `u+t', `g+t', and
-`o+s' have no effect.
+   The combination `o+s' has no effect.  On GNU systems the
+combinations `u+t' and `g+t' have no effect, and `o+t' acts like plain
+`+t'.
 
    The `=' operator is not very useful with special permissions; for
 example, the mode:
 
      o=t
 
-does cause the file to be saved on the swap device, but it also removes
-all read, write, and execute permissions that users not in the file's
-group might have had for it.
+does set the restricted deletion flag or sticky bit, but it also
+removes all read, write, and execute permissions that users not in the
+file's group might have had for it.
 
 
 File: find.info,  Node: Conditional Executability,  Next: Multiple Changes,  Prev: Changing Special Permissions,  Up: Symbolic Modes
@@ -2753,17 +2772,15 @@ File: find.info,  Node: Conditional Executability,  Next: Multiple Changes,  Pre
 -------------------------------
 
 There is one more special type of symbolic permission: if you use `X'
-instead of `x', execute permission is affected only if the file already
-had execute permission or is a directory.  It affects directories'
-execute permission even if they did not initially have any execute
-permissions set.
+instead of `x', execute permission is affected only if the file is a
+directory or already had execute permission.
 
    For example, this mode:
 
      a+X
 
-gives all users permission to execute files (or search directories) if
-anyone could before.
+gives all users permission to search directories, or to execute files if
+anyone could execute them before.
 
 
 File: find.info,  Node: Multiple Changes,  Next: Umask and Protection,  Prev: Conditional Executability,  Up: Symbolic Modes
@@ -2785,7 +2802,7 @@ after a USERS part in the symbolic mode.
 gives users other than the owner of the file read permission and, if it
 is a directory or if someone already had execute permission to it,
 gives them execute permission; and it also denies them write permission
-to it file.  It does not affect the permission that the owner of the
+to the file.  It does not affect the permission that the owner of the
 file has for it.  The above mode is equivalent to the two modes:
 
      og+rX
@@ -2853,22 +2870,21 @@ File: find.info,  Node: Numeric Modes,  Prev: Symbolic Modes,  Up: File Permissi
 5.3 Numeric Modes
 =================
 
-File permissions are stored internally as 16 bit integers.  As an
-alternative to giving a symbolic mode, you can give an octal (base 8)
-number that corresponds to the internal representation of the new mode.
-This number is always interpreted in octal; you do not have to add a
-leading 0, as you do in C.  Mode 0055 is the same as mode 55.
+As an alternative to giving a symbolic mode, you can give an octal
+(base 8) number that represents the new mode.  This number is always
+interpreted in octal; you do not have to add a leading 0, as you do in
+C.  Mode 0055 is the same as mode 55.
 
    A numeric mode is usually shorter than the corresponding symbolic
-mode, but it is limited in that it can not take into account a file's
+mode, but it is limited in that it cannot take into account a file's
 previous permissions; it can only set them absolutely.
 
    The permissions granted to the user, to other users in the file's
-group, and to other users not in the file's group are each stored as
-three bits, which are represented as one octal digit.  The three special
-permissions are also each stored as one bit, and they are as a group
-represented as another octal digit.  Here is how the bits are arranged
-in the 16 bit integer, starting with the lowest valued bit:
+group, and to other users not in the file's group each require three
+bits, which are represented as one octal digit.  The three special
+permissions also require one bit each, and they are as a group
+represented as another octal digit.  Here is how the bits are arranged,
+starting with the lowest valued bit:
 
      Value in  Corresponding
      Mode      Permission
@@ -2889,13 +2905,13 @@ in the 16 bit integer, starting with the lowest valued bit:
       400      Read
 
                Special permissions:
-     1000      Save text image on swap device
+     1000      Restricted deletion flag or sticky bit
      2000      Set group ID on execution
      4000      Set user ID on execution
 
    For example, numeric mode 4755 corresponds to symbolic mode
 `u=rwxs,go=rx', and numeric mode 664 corresponds to symbolic mode
-`ug=rw,o=r'.  Numeric mode 0 corresponds to symbolic mode `ugo='.
+`ug=rw,o=r'.  Numeric mode 0 corresponds to symbolic mode `a='.
 
 
 File: find.info,  Node: Reference,  Next: Common Tasks,  Prev: File Permissions,  Up: Top
@@ -2968,7 +2984,7 @@ symbolic links are handled.
 and options that the expression can contain.  If the expression is
 missing, `-print' is assumed.
 
-   `find' also recognizes two options for administrative use:
+   `find' also recognises two options for administrative use:
 
 `--help'
      Print a summary of the command line usage and exit.
@@ -3356,7 +3372,7 @@ program died due to a fatal signal.
      `-l', MAX-LINES defaults to 1 if omitted.  For `-L', the argument
      is mandatory.  Trailing blanks cause an input line to be logically
      continued on the next input line, for the purpose of counting the
-     lines.  Implies `-x'.  The `-l' form of this option is deprecared
+     lines.  Implies `-x'.  The `-l' form of this option is deprecated
      in favour of the POSIX-compliant `-L' option.
 
 `--max-args=MAX-ARGS'
@@ -4201,12 +4217,12 @@ File: find.info,  Node: Environment Variables,  Prev: Regular Expressions,  Up: 
 =========================
 
 LANG
-     Provides a default value for the internationalization variables
+     Provides a default value for the internationalisation variables
      that are unset or null.
 
 LC_ALL
      If set to a non-empty string value, override the values of all the
-     other internationalization variables.
+     other internationalisation variables.
 
 LC_COLLATE
      The POSIX standard specifies that this variable affects the pattern
@@ -4504,8 +4520,8 @@ that can be deleted.  This might include:
    * Temporary files which are no longer required
 
    This example concentrates on the actual deletion task rather than on
-sophisticated ways of locatng the files that need to be deleted.  We'll
-assume that the files we want to delete are old files underneath
+sophisticated ways of locating the files that need to be deleted.
+We'll assume that the files we want to delete are old files underneath
 `/var/tmp/stuff'.
 
 8.1.1 The Traditional Way
@@ -4760,7 +4776,7 @@ understanding they can take advantage of it like so:
      find /var/tmp/stuff4 -mtime +90 -delete &
      wait
 
-   In the example above, four spearate instances of `find' are used to
+   In the example above, four separate instances of `find' are used to
 search four subdirectories in parallel.  The `wait' command simply
 waits for all of these to complete.  Whether this approach is more or
 less efficient than a single instance of `find' depends on a number of
@@ -4785,7 +4801,7 @@ most secure alternative is `-execdir ... +', but this is not as
 portable as the insecure action `-exec ... +'.
 
    The `-delete' action is not completely portable, but the only other
-possiblility which is as secure (`-execdir') is no more portable.  The
+possibillity which is as secure (`-execdir') is no more portable.  The
 most efficient portable alternative is `-exec ...+', but this is
 insecure and isn't supported by versions of GNU findutils prior to
 4.2.12.
@@ -4822,10 +4838,10 @@ be different, this could well be the wrong value.
 
    One solution to this problem is to modify `find' to recheck the
 modification time of `timestamp' every time a file is to be compared
-against it, but that will reduce the performence of `find'.
+against it, but that will reduce the performance of `find'.
 
-8.2.2 Using the test utlity to compare timestamps
--------------------------------------------------
+8.2.2 Using the test utility to compare timestamps
+--------------------------------------------------
 
 The `test' command can be used to compare timestamps:
 
@@ -4868,7 +4884,7 @@ entirely:
 
    The command above works by generating a list of the timestamps and
 names of all the files which are newer than the timestamp.  The `sort',
-`tail' and `cut' comands simply pull out the name of the file with the
+`tail' and `cut' commands simply pull out the name of the file with the
 largest timestamp value (that is, the latest file).  The `touch'
 command is then used to update the timestamp,
 
@@ -4882,8 +4898,9 @@ Many operating systems now keep file modification time information at a
 granularity which is finer than one second.  Unfortunately the `%A@'
 format for `-printf' only prints a whole-number value currently; that
 is, these values are at a one-second granularity.  This means that in
-our example above, `$newest' wil be the name of a file which is no more
-than one second older than the newest file, but may indeed be older.
+our example above, `$newest' will be the name of a file which is no
+more than one second older than the newest file, but may indeed be
+older.
 
    It would be possible to solve this problem with some kind of loop:
 
@@ -5121,7 +5138,7 @@ File: find.info,  Node: Changing the Current Working Directory,  Next: Race Cond
 
 As `find' searches the filesystem, it finds subdirectories and then
 searches within them by changing its working directory.  First, `find'
-reaches and recognizes a subdirectory.  It then decides if that
+reaches and recognises a subdirectory.  It then decides if that
 subdirectory meets the criteria for being searched; that is, any
 `-xdev' or `-prune' expressions are taken into account.  The `find'
 program will then change working directory and proceed to search the
@@ -5219,7 +5236,7 @@ will make one more attempt.  If that succeeds, execution carries on as
 normal.  This is the usual case for automounters.
 
    Where an attacker is trying to exploit a race condition, the problem
-may not have gone away on the second attampt.  If this is the case,
+may not have gone away on the second attempt.  If this is the case,
 `find' will issue a warning message and then ignore that subdirectory.
 When this happens, actions such as `-exec' or `-print' may already have
 taken place for the problematic subdirectory.  This is because `find'
@@ -5680,122 +5697,122 @@ Expressions::, for more information on expressions.
 
 
 Tag Table:
-Node: Top1625
-Node: Introduction2670
-Node: Scope4966
-Node: Overview6891
-Node: find Expressions8762
-Node: Finding Files10387
-Node: Name10854
-Node: Base Name Patterns11482
-Ref: Base Name Patterns-Footnote-112580
-Node: Full Name Patterns12792
-Node: Fast Full Name Search15455
-Node: Shell Pattern Matching17876
-Node: Links19966
-Node: Symbolic Links20401
-Node: Hard Links24898
-Node: Time27452
-Node: Age Ranges28040
-Node: Comparing Timestamps29567
-Node: Size30859
-Node: Type32701
-Node: Owner34369
-Node: Permissions35196
-Node: Contents38361
-Node: Directories39534
-Node: Filesystems44495
-Node: Combining Primaries With Operators45846
-Node: Actions47464
-Node: Print File Name48026
-Node: Print File Information49043
-Node: Escapes52038
-Node: Format Directives52789
-Node: Name Directives53932
-Node: Ownership Directives54918
-Node: Size Directives55935
-Node: Location Directives56701
-Node: Time Directives57820
-Node: Time Formats58723
-Node: Time Components59159
-Node: Date Components59665
-Node: Combined Time Formats60488
-Node: Formatting Flags61205
-Node: Run Commands61817
-Node: Single File62175
-Node: Multiple Files64097
-Node: Unsafe File Name Handling67951
-Node: Safe File Name Handling69514
-Node: Unusual Characters in File Names71090
-Node: Limiting Command Size74126
-Node: Interspersing File Names76419
-Node: Querying78874
-Node: Delete Files80404
-Node: Adding Tests80808
-Node: Databases83448
-Node: Database Locations84166
-Node: Database Formats85174
-Node: New Database Format86078
-Node: Sample Database87745
-Node: Old Database Format88393
-Node: Newline Handling90453
-Node: File Permissions91899
-Node: Mode Structure92468
-Node: Symbolic Modes94601
-Node: Setting Permissions95603
-Node: Copying Permissions98148
-Node: Changing Special Permissions98958
-Node: Conditional Executability100802
-Node: Multiple Changes101428
-Node: Umask and Protection103084
-Node: Numeric Modes104182
-Node: Reference105997
-Node: Invoking find106345
-Node: Warning Messages108677
-Node: Invoking locate110453
-Node: Invoking updatedb116238
-Node: Invoking xargs119923
-Node: Regular Expressions124953
-Node: findutils-default regular expression syntax126148
-Node: awk regular expression syntax128654
-Node: egrep regular expression syntax130539
-Node: emacs regular expression syntax132750
-Node: gnu-awk regular expression syntax135279
-Node: grep regular expression syntax137619
-Node: posix-awk regular expression syntax140345
-Node: posix-basic regular expression syntax142616
-Node: posix-egrep regular expression syntax145255
-Node: posix-extended regular expression syntax147628
-Node: Environment Variables150103
-Node: Common Tasks152047
-Node: Viewing And Editing152472
-Node: Archiving153478
-Node: Cleaning Up155110
-Node: Strange File Names156899
-Node: Fixing Permissions158549
-Node: Classifying Files159113
-Node: Worked Examples159831
-Node: Deleting Files160468
-Node: Updating A Timestamp File173488
-Node: Security Considerations180214
-Node: Levels of Risk181748
-Ref: Levels of Risk-Footnote-1184546
-Node: Security Considerations for find184725
-Ref: Security Considerations for find-Footnote-1187009
-Node: Changing the Current Working Directory187082
-Node: O_NOFOLLOW188809
-Ref: O_NOFOLLOW-Footnote-1190453
-Node: Systems without O_NOFOLLOW190555
-Node: Race Conditions with -exec192659
-Node: Race Conditions with -print and -print0195570
-Node: Security Considerations for xargs196490
-Node: Security Considerations for locate198560
-Node: Security Summary199257
-Node: Error Messages200014
-Node: Error Messages From find201026
-Node: Error Messages From xargs205883
-Node: Error Messages From locate207643
-Node: Error Messages From updatedb208875
-Node: Primary Index209278
+Node: Top1523
+Node: Introduction2568
+Node: Scope4864
+Node: Overview6789
+Node: find Expressions8660
+Node: Finding Files10285
+Node: Name10752
+Node: Base Name Patterns11380
+Ref: Base Name Patterns-Footnote-112478
+Node: Full Name Patterns12690
+Node: Fast Full Name Search15353
+Node: Shell Pattern Matching17774
+Node: Links19864
+Node: Symbolic Links20299
+Node: Hard Links24796
+Node: Time27350
+Node: Age Ranges27938
+Node: Comparing Timestamps29465
+Node: Size30757
+Node: Type32599
+Node: Owner34267
+Node: Permissions35094
+Node: Contents38255
+Node: Directories39428
+Node: Filesystems44389
+Node: Combining Primaries With Operators45740
+Node: Actions47358
+Node: Print File Name47920
+Node: Print File Information48937
+Node: Escapes51932
+Node: Format Directives52683
+Node: Name Directives53828
+Node: Ownership Directives54814
+Node: Size Directives55831
+Node: Location Directives56597
+Node: Time Directives57716
+Node: Time Formats58619
+Node: Time Components59055
+Node: Date Components59561
+Node: Combined Time Formats60384
+Node: Formatting Flags61101
+Node: Run Commands61713
+Node: Single File62071
+Node: Multiple Files63994
+Node: Unsafe File Name Handling67848
+Node: Safe File Name Handling69411
+Node: Unusual Characters in File Names70987
+Node: Limiting Command Size74023
+Node: Interspersing File Names76316
+Node: Querying78771
+Node: Delete Files80301
+Node: Adding Tests80705
+Node: Databases83345
+Node: Database Locations84063
+Node: Database Formats85071
+Node: New Database Format85975
+Node: Sample Database87642
+Node: Old Database Format88290
+Node: Newline Handling90350
+Node: File Permissions91796
+Node: Mode Structure92365
+Node: Symbolic Modes95506
+Node: Setting Permissions96603
+Node: Copying Permissions99151
+Node: Changing Special Permissions99965
+Node: Conditional Executability101509
+Node: Multiple Changes102041
+Node: Umask and Protection103698
+Node: Numeric Modes104796
+Node: Reference106488
+Node: Invoking find106836
+Node: Warning Messages109168
+Node: Invoking locate110944
+Node: Invoking updatedb116729
+Node: Invoking xargs120414
+Node: Regular Expressions125444
+Node: findutils-default regular expression syntax126639
+Node: awk regular expression syntax129145
+Node: egrep regular expression syntax131030
+Node: emacs regular expression syntax133241
+Node: gnu-awk regular expression syntax135770
+Node: grep regular expression syntax138110
+Node: posix-awk regular expression syntax140836
+Node: posix-basic regular expression syntax143107
+Node: posix-egrep regular expression syntax145746
+Node: posix-extended regular expression syntax148119
+Node: Environment Variables150594
+Node: Common Tasks152538
+Node: Viewing And Editing152963
+Node: Archiving153969
+Node: Cleaning Up155601
+Node: Strange File Names157390
+Node: Fixing Permissions159040
+Node: Classifying Files159604
+Node: Worked Examples160322
+Node: Deleting Files160959
+Node: Updating A Timestamp File173979
+Node: Security Considerations180709
+Node: Levels of Risk182243
+Ref: Levels of Risk-Footnote-1185041
+Node: Security Considerations for find185220
+Ref: Security Considerations for find-Footnote-1187504
+Node: Changing the Current Working Directory187577
+Node: O_NOFOLLOW189304
+Ref: O_NOFOLLOW-Footnote-1190948
+Node: Systems without O_NOFOLLOW191050
+Node: Race Conditions with -exec193154
+Node: Race Conditions with -print and -print0196065
+Node: Security Considerations for xargs196985
+Node: Security Considerations for locate199055
+Node: Security Summary199752
+Node: Error Messages200509
+Node: Error Messages From find201521
+Node: Error Messages From xargs206378
+Node: Error Messages From locate208138
+Node: Error Messages From updatedb209370
+Node: Primary Index209773
 
 End Tag Table

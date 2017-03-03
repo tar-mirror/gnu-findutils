@@ -151,8 +151,6 @@ static boolean parse_quit          PARAMS((const struct parser_table*, char *arg
 
 
 boolean parse_print             PARAMS((const struct parser_table*, char *argv[], int *arg_ptr));
-boolean parse_openparen              PARAMS((const struct parser_table* entry, char *argv[], int *arg_ptr));
-boolean parse_closeparen             PARAMS((const struct parser_table* entry, char *argv[], int *arg_ptr));
 
 
 
@@ -204,7 +202,7 @@ char *find_pred_name PARAMS((PRED_FUNC pred_func));
 
 static struct parser_table const parse_table[] =
 {
-  PARSE_PUNCTUATION("!",                     negate),
+ PARSE_PUNCTUATION("!",                     negate),
   PARSE_PUNCTUATION("not",                   negate),	     /* GNU */
   PARSE_PUNCTUATION("(",                     openparen),
   PARSE_PUNCTUATION(")",                     closeparen),
@@ -222,13 +220,13 @@ static struct parser_table const parse_table[] =
   PARSE_OPTION     ("d",                     d), /* Mac OS X, FreeBSD, NetBSD, OpenBSD, but deprecated  in favour of -depth */
   PARSE_OPTION     ("depth",                 depth),
   PARSE_TEST       ("empty",                 empty),	     /* GNU */
-  PARSE_ACTION     ("exec",                  exec),
+  {ARG_ACTION,      "exec",    parse_exec, pred_exec}, /* POSIX */
   PARSE_ACTION     ("execdir",               execdir), /* *BSD, GNU */
   PARSE_ACTION     ("fls",                   fls),	     /* GNU */
   PARSE_POSOPT     ("follow",                follow),  /* GNU, Unix */
   PARSE_ACTION     ("fprint",                fprint),	     /* GNU */
   PARSE_ACTION     ("fprint0",               fprint0),	     /* GNU */
-  PARSE_ACTION     ("fprintf",               fprintf),	     /* GNU */
+  {ARG_ACTION,      "fprintf", parse_fprintf, pred_fprintf}, /* GNU */
   PARSE_TEST       ("fstype",                fstype),  /* GNU, Unix */
   PARSE_TEST       ("gid",                   gid),	     /* GNU */
   PARSE_TEST       ("group",                 group),
@@ -265,7 +263,7 @@ static struct parser_table const parse_table[] =
   PARSE_TEST       ("perm",                  perm),
   PARSE_ACTION     ("print",                 print),
   PARSE_ACTION     ("print0",                print0),	     /* GNU */
-  PARSE_ACTION_NP  ("printf",                printf),	     /* GNU */
+  {ARG_ACTION,      "printf",   parse_printf, NULL},	     /* GNU */
   PARSE_ACTION     ("prune",                 prune),
   PARSE_ACTION     ("quit",                  quit),	     /* GNU */
   PARSE_TEST       ("regex",                 regex),	     /* GNU */
@@ -2110,6 +2108,7 @@ new_insert_exec_ok (const char *action,
   boolean allow_plus;		/* True if + is a valid terminator */
   int brace_count;		/* Number of instances of {}. */
   PRED_FUNC func = entry->pred_func;
+  enum BC_INIT_STATUS bcstatus;
   
   struct predicate *our_pred;
   struct exec_val *execp;	/* Pointer for efficiency. */
@@ -2212,8 +2211,24 @@ new_insert_exec_ok (const char *action,
 	    suffix);
     }
 
-  /* execp->ctl   = xmalloc(sizeof struct buildcmd_control); */
-  bc_init_controlinfo(&execp->ctl);
+  /* We use a switch statement here so that 
+   * the compiler warns us when we forget to handle a 
+   * newly invented enum value.
+   */
+  bcstatus = bc_init_controlinfo(&execp->ctl);
+  switch (bcstatus) 
+    {
+    case BC_INIT_ENV_TOO_BIG:
+      error(1, 0, 
+	    _("The environment is too large for exec()."));
+      break;
+    case BC_INIT_OK:
+      /* Good news.  Carry on. */
+      break;
+    }
+  bc_use_sensible_arg_max(&execp->ctl);
+
+
   execp->ctl.exec_callback = launch;
 
   if (our_pred->args.exec_vec.multiple)

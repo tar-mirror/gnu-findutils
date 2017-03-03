@@ -65,9 +65,6 @@
 /* Define to 1 if you have the `atexit' function. */
 #undef HAVE_ATEXIT
 
-/* Define to 1 if you have the <bp-sym.h> header file. */
-#undef HAVE_BP_SYM_H
-
 /* Define to 1 if you have the `btowc' function. */
 #undef HAVE_BTOWC
 
@@ -90,17 +87,9 @@
    */
 #undef HAVE_DECL_GETCWD
 
-/* Define to 1 if you have the declaration of `getdelim', and to 0 if you
-   don't. */
-#undef HAVE_DECL_GETDELIM
-
 /* Define to 1 if you have the declaration of `getenv', and to 0 if you don't.
    */
 #undef HAVE_DECL_GETENV
-
-/* Define to 1 if you have the declaration of `getline', and to 0 if you
-   don't. */
-#undef HAVE_DECL_GETLINE
 
 /* Define to 1 if you have the declaration of `strdup', and to 0 if you don't.
    */
@@ -125,6 +114,10 @@
 /* Define to 1 if you have the declaration of `strtoumax', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRTOUMAX
+
+/* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
+   */
+#undef HAVE_DECL_TZNAME
 
 /* Define to 1 if you have the declaration of `__fpending', and to 0 if you
    don't. */
@@ -155,9 +148,6 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the `flockfile' function. */
-#undef HAVE_FLOCKFILE
-
 /* Define to 1 if you have the `forcefindlib' function. */
 #undef HAVE_FORCEFINDLIB
 
@@ -166,9 +156,6 @@
 
 /* Define to 1 if you have the `fs_stat_dev' function. */
 #undef HAVE_FS_STAT_DEV
-
-/* Define to 1 if you have the `funlockfile' function. */
-#undef HAVE_FUNLOCKFILE
 
 /* Define if struct statfs has the f_fstypename member. */
 #undef HAVE_F_FSTYPENAME_IN_STATFS
@@ -210,14 +197,8 @@
 /* Define to 1 if you have the `isascii' function. */
 #undef HAVE_ISASCII
 
-/* Define to 1 if you have the `isblank' function. */
-#undef HAVE_ISBLANK
-
 /* Define to 1 if you have the `iswprint' function. */
 #undef HAVE_ISWPRINT
-
-/* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
-#undef HAVE_LANGINFO_CODESET
 
 /* Define to 1 if you have the `sun' library (-lsun). */
 #undef HAVE_LIBSUN
@@ -255,9 +236,6 @@
 
 /* Define to 1 if <wchar.h> declares mbstate_t. */
 #undef HAVE_MBSTATE_T
-
-/* Define to 1 if you have the `memchr' function. */
-#undef HAVE_MEMCHR
 
 /* Define to 1 if you have the `memcmp' function. */
 #undef HAVE_MEMCMP
@@ -471,12 +449,6 @@
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
-/* Define to 1 if you have the `wcrtomb' function. */
-#undef HAVE_WCRTOMB
-
-/* Define to 1 if you have the `wcscoll' function. */
-#undef HAVE_WCSCOLL
-
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
@@ -586,7 +558,7 @@
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
-   automatically deduced at run-time.
+   automatically deduced at runtime.
 	STACK_DIRECTION > 0 => grows toward higher addresses
 	STACK_DIRECTION < 0 => grows toward lower addresses
 	STACK_DIRECTION = 0 => direction of growth unknown */
@@ -640,9 +612,6 @@
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 #undef _POSIX_SOURCE
-
-/* Define if you want regoff_t to be at least as wide POSIX requires. */
-#undef _REGEX_LARGE_OFFSETS
 
 /* Enable extensions on Solaris.  */
 #ifndef __EXTENSIONS__
@@ -718,7 +687,7 @@
    supported. Do not define if restrict is supported directly. */
 #undef restrict
 
-/* Define to `unsigned' if <sys/types.h> does not define. */
+/* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t
 
 /* Define to `int' if <sys/types.h> does not define. */
