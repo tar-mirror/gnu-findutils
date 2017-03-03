@@ -1,7 +1,7 @@
 This is
-/home/james/source/GNU/findutils/cvs/4.4/findutils/doc/find-maint.info,
+/home/james/source/GNU/findutils/git/gnu/findutils/doc/find-maint.info,
 produced by makeinfo version 4.11 from
-/home/james/source/GNU/findutils/cvs/4.4/findutils/doc/find-maint.texi.
+/home/james/source/GNU/findutils/git/gnu/findutils/doc/find-maint.texi.
 
 INFO-DIR-SECTION GNU organization
 START-INFO-DIR-ENTRY
@@ -11,7 +11,7 @@ END-INFO-DIR-ENTRY
    This manual explains how GNU findutils is maintained, how changes
 should be made and tested, and what resources exist to help developers.
 
-   This is edition 4.4.0, for findutils version 4.4.0.
+   This is edition 4.4.1, for findutils version 4.4.1.
 
    Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 
@@ -31,7 +31,7 @@ Maintaining GNU Findutils
 This manual explains how GNU findutils is maintained, how changes should
 be made and tested, and what resources exist to help developers.
 
-   This is edition 4.4.0, for findutils version 4.4.0.
+   This is edition 4.4.1, for findutils version 4.4.1.
 
    Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 
@@ -807,7 +807,7 @@ available.    Here is an example alert:-
 
      GNU findutils heap buffer overrun (potential privilege escalation)
 
-     $Revision: 1.6 $; $Date: 2008/03/08 21:38:25 $
+     $Revision$; $Date$
 
 
      I. BACKGROUND
@@ -1606,7 +1606,7 @@ Node: Bugs29111
 Node: Distributions30855
 Node: Internationalisation31890
 Node: Security32374
-Node: Making Releases43770
-Node: GNU Free Documentation License45795
+Node: Making Releases43742
+Node: GNU Free Documentation License45767
 
 End Tag Table

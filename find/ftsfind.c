@@ -432,7 +432,7 @@ consider_visiting(FTS *p, FTSENT *ent)
        * link.  That would be fine, but if this is part of a symbolic
        * link loop, we diagnose the problem and also ensure that the
        * eventual return value is nonzero.   Note that while the path 
-       * we stat is local (fts_accpath), we print the fill path name 
+       * we stat is local (fts_accpath), we print the full path name 
        * of the file (fts_path) in the error message.
        */
       if (symlink_loop(ent->fts_accpath))
@@ -498,7 +498,7 @@ consider_visiting(FTS *p, FTSENT *ent)
 
   /* examine this item. */
   ignore = 0;
-  isdir = S_ISDIR(statbuf.st_mode)
+  isdir = S_ISDIR(mode)
     || (FTS_D  == ent->fts_info)
     || (FTS_DP == ent->fts_info)
     || (FTS_DC == ent->fts_info);

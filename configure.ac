@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([GNU findutils], 4.4.0, [bug-findutils@gnu.org])
+AC_INIT([GNU findutils], 4.4.1, [bug-findutils@gnu.org])
 AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE
 
@@ -9,7 +9,7 @@ AC_CANONICAL_HOST
 AC_CONFIG_MACRO_DIR(gnulib/m4)
 
 dnl Set of available languages.
-ALL_LINGUAS="be bg ca da de el eo es et fi fr ga gl hr hu id it ja ko lg ms nl pl pt pt_BR ro ru rw sk sl sr sv tr uk vi zh_CN zh_TW"
+ALL_LINGUAS="be bg ca cs da de el eo es et fi fr ga gl hr hu id it ja ko lg lt ms nl pl pt pt_BR ro ru rw sk sl sr sv tr uk vi zh_CN zh_TW"
 
 AC_SUBST(INCLUDES)dnl
 AC_SUBST(AUXDIR,$ac_aux_dir)

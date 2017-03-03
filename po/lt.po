@@ -1,116 +1,116 @@
-# Mensajes en espaÒol para GNU findutils.
-# Copyright (C) 1996, 2001, 2004 Free Software Foundation, Inc.
-# IÒaky PÈrez Gonz·lez <inaky@peloncho.fis.ucm.es>, 1996.
-# Santiago Vila Doncel <sanvila@unex.es>, 2001, 2004.
+# translation of findutils-4.4.0 to Lithuanian
+# findutils
+# Copyright (C) 2008 Free Software Foundation, Inc.
+# This file is distributed under the same license as the findutils package.
 #
+# Gintautas Miliauskas <gintas@akl.lt>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU findutils 4.2.6\n"
+"Project-Id-Version: findutils-4.4.0\n"
 "Report-Msgid-Bugs-To: bug-findutils@gnu.org\n"
 "POT-Creation-Date: 2009-04-21 21:36+0100\n"
-"PO-Revision-Date: 2004-12-23 16:57+0100\n"
-"Last-Translator: Santiago Vila Doncel <sanvila@unex.es>\n"
-"Language-Team: Spanish <es@li.org>\n"
+"PO-Revision-Date: 2008-07-09 13:00+0300\n"
+"Last-Translator: Gintautas Miliauskas <gintas@akl.lt>\n"
+"Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-1\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%"
+"100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: KBabel 1.11.4\n"
 
 #: gnulib/lib/argmatch.c:133
 #, c-format
 msgid "invalid argument %s for %s"
-msgstr "argumento %s inv·lido para %s"
+msgstr "netaisyklingas argumentas %s %s"
 
 #: gnulib/lib/argmatch.c:134
 #, c-format
 msgid "ambiguous argument %s for %s"
-msgstr "argumento %s ambiguo para %s"
+msgstr "dviprasmis parametras %s argumentui %s"
 
 #: gnulib/lib/argmatch.c:153
 #, c-format
 msgid "Valid arguments are:"
-msgstr "Los argumentos v·lidos son:"
+msgstr "Galimi argumentai:"
 
 #: gnulib/lib/closein.c:99
 msgid "error closing file"
-msgstr ""
+msgstr "klaida u≈æveriant failƒÖ"
 
 #: gnulib/lib/closeout.c:73 locate/code.c:152 locate/frcode.c:216
 msgid "write error"
-msgstr ""
+msgstr "ra≈°ymo klaida"
 
 #: gnulib/lib/error.c:125
 msgid "Unknown system error"
-msgstr "Error del sistema desconocido"
+msgstr "Ne≈æinoma sistemos klaida"
 
 #: gnulib/lib/getopt.c:530 gnulib/lib/getopt.c:546
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
-msgstr "%s: la opciÛn `%s' es ambigua\n"
+msgstr "%s: argumentas ‚Äû%s‚Äú dviprasmis\n"
 
 #: gnulib/lib/getopt.c:579 gnulib/lib/getopt.c:583
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
-msgstr "%s: la opciÛn `--%s' no admite ning˙n argumento\n"
+msgstr "%s: argumentas ‚Äû--%s‚Äú neleid≈æia parametro\n"
 
 #: gnulib/lib/getopt.c:592 gnulib/lib/getopt.c:597
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
-msgstr "%s: la opciÛn `%c%s' no admite ning˙n argumento\n"
+msgstr "%s: argumentas ‚Äû%c%s‚Äú neleid≈æia parametro\n"
 
 #: gnulib/lib/getopt.c:640 gnulib/lib/getopt.c:659 gnulib/lib/getopt.c:975
 #: gnulib/lib/getopt.c:994
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
-msgstr "%s: la opciÛn `%s' necesita un argumento\n"
+msgstr "%s: parametrui ‚Äû%s‚Äú reikia argumento\n"
 
 #: gnulib/lib/getopt.c:697 gnulib/lib/getopt.c:700
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
-msgstr "%s: opciÛn no reconocida `--%s'\n"
+msgstr "%s: neatpa≈æintas argumentas ‚Äû--%s‚Äú\n"
 
 #: gnulib/lib/getopt.c:708 gnulib/lib/getopt.c:711
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
-msgstr "%s: opciÛn no reconocida `%c%s'\n"
+msgstr "%s: neatpa≈æintas argumentas ‚Äû%c%s‚Äú\n"
 
 #: gnulib/lib/getopt.c:763 gnulib/lib/getopt.c:766
 #, c-format
 msgid "%s: illegal option -- %c\n"
-msgstr "%s: opciÛn ilegal -- %c\n"
+msgstr "%s: neleistinas argumentas -- %c\n"
 
 #: gnulib/lib/getopt.c:772 gnulib/lib/getopt.c:775
 #, c-format
 msgid "%s: invalid option -- %c\n"
-msgstr "%s: opciÛn inv·lida -- %c\n"
+msgstr "%s: netaisyklingas argumentas -- %c\n"
 
 #: gnulib/lib/getopt.c:827 gnulib/lib/getopt.c:843 gnulib/lib/getopt.c:1047
 #: gnulib/lib/getopt.c:1065
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
-msgstr "%s: la opciÛn necesita un argumento -- %c\n"
+msgstr "%s: parametrui reikia argumento -- %c\n"
 
 #: gnulib/lib/getopt.c:896 gnulib/lib/getopt.c:912
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
-msgstr "%s: la opciÛn `-W %s' es ambigua\n"
+msgstr "%s: parametras ‚Äû-W %s‚Äú dviprasmis\n"
 
 #: gnulib/lib/getopt.c:936 gnulib/lib/getopt.c:954
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
-msgstr "%s: la opciÛn `-W %s' no admite ning˙n argumento\n"
+msgstr "%s: parametras ‚Äû-W %s‚Äú neleid≈æia argumento\n"
 
 #: gnulib/lib/openat-die.c:33
-#, fuzzy
 msgid "unable to record current working directory"
-msgstr "no se puede obtener el directorio actual"
+msgstr ""
 
 #: gnulib/lib/openat-die.c:46
-#, fuzzy
 msgid "failed to return to initial working directory"
-msgstr "no se puede volver al directorio de partida"
+msgstr ""
 
-# No ha habido ninguna queja en coreutils, pongamos aquÌ tambiÈn los
-# sÌmbolos de cita tradicionales en espaÒol.
 #. TRANSLATORS:
 #. Get translations for open and closing quotation marks.
 #.
@@ -132,150 +132,143 @@ msgstr "no se puede volver al directorio de partida"
 #. and use glyphs suitable for your language.
 #: gnulib/lib/quotearg.c:228
 msgid "`"
-msgstr "´"
+msgstr "‚Äû"
 
 #: gnulib/lib/quotearg.c:229
 msgid "'"
-msgstr "ª"
+msgstr "‚Äú"
 
 #: gnulib/lib/regcomp.c:131
 msgid "Success"
-msgstr "…xito"
+msgstr "Sƒókmƒó"
 
 #: gnulib/lib/regcomp.c:134
 msgid "No match"
-msgstr "No hay ninguna coincidencia"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:137
 msgid "Invalid regular expression"
-msgstr "ExpresiÛn regular inv·lida"
+msgstr "Netaisyklinga reguliarioji i≈°rai≈°ka"
 
 #: gnulib/lib/regcomp.c:140
 msgid "Invalid collation character"
-msgstr "Car·cter de secuencia inv·lido"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:143
 msgid "Invalid character class name"
-msgstr "Nombre de clase de caracteres inv·lido"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:146
 msgid "Trailing backslash"
-msgstr "Barra invertida final"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:149
 msgid "Invalid back reference"
-msgstr "Referencia hacia atr·s inv·lida"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:152
 msgid "Unmatched [ or [^"
-msgstr "[ o [^ desemparejado"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:155
 msgid "Unmatched ( or \\("
-msgstr "( o \\( desemparejado"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:158
 msgid "Unmatched \\{"
-msgstr "\\{ desemparejada"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:161
 msgid "Invalid content of \\{\\}"
-msgstr "Contenido de \\{\\} inv·lido"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:164
 msgid "Invalid range end"
-msgstr "Final de rango inv·lido"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:167
 msgid "Memory exhausted"
-msgstr "Memoria agotada"
+msgstr "Baigƒósi atmintis"
 
 #: gnulib/lib/regcomp.c:170
 msgid "Invalid preceding regular expression"
-msgstr "ExpresiÛn regular precedente inv·lida"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:173
 msgid "Premature end of regular expression"
-msgstr "Fin prematuro de la expresiÛn regular"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:176
 msgid "Regular expression too big"
-msgstr "ExpresiÛn regular demasiado grande"
+msgstr ""
 
 #: gnulib/lib/regcomp.c:179
 msgid "Unmatched ) or \\)"
-msgstr ") o \\) desemparejado"
+msgstr "Nesuderintas ) arba \\)"
 
 #: gnulib/lib/regcomp.c:680
 msgid "No previous regular expression"
-msgstr "No hay ninguna expresiÛn regular anterior"
+msgstr ""
 
 #: gnulib/lib/rpmatch.c:69
 msgid "^[yY]"
-msgstr "^[sS]"
+msgstr "^[yYtT]"
 
 #: gnulib/lib/rpmatch.c:72
 msgid "^[nN]"
 msgstr "^[nN]"
 
 #: gnulib/lib/xalloc-die.c:34
-#, fuzzy
 msgid "memory exhausted"
-msgstr "Memoria agotada"
+msgstr "baigƒósi atmintis"
 
 #: gnulib/lib/xstrtol-error.c:63
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %s%s argument `%s'"
-msgstr "argumento `%s' inv·lido para la opciÛn `%s'"
+msgstr ""
 
 #: gnulib/lib/xstrtol-error.c:68
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix in %s%s argument `%s'"
-msgstr "argumento `%s' inv·lido para la opciÛn `%s'"
+msgstr ""
 
 #: gnulib/lib/xstrtol-error.c:72
-#, fuzzy, c-format
+#, c-format
 msgid "%s%s argument `%s' too large"
-msgstr "lista de argumentos demasiado larga"
+msgstr ""
 
 #: find/find.c:201 find/ftsfind.c:730
 msgid "cannot get current directory"
-msgstr "no se puede obtener el directorio actual"
+msgstr ""
 
 #: find/find.c:205
 #, fuzzy
 msgid "cannot stat current directory"
-msgstr "no se puede obtener el directorio actual"
+msgstr "<nƒóra esamo aplanko>"
 
 #: find/find.c:385
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: file system %s has recently been unmounted."
-msgstr "El sistema de ficheros %s ha sido desmontado recientemente."
+msgstr "ƒÆspƒójimas: fail≈≥ sistema %s neseniai atjungta."
 
 #: find/find.c:395
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: file system %s has recently been mounted."
-msgstr "El sistema de ficheros %s ha sido montado recientemente."
+msgstr "ƒÆspƒójimas: fail≈≥ sistema %s neseniai prijungta."
 
 #: find/find.c:491
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s%s changed during execution of %s (old device number %ld, new device "
 "number %ld, file system type is %s) [ref %ld]"
 msgstr ""
-"%s%s ha cambiado durante la ejecuciÛn de %s (n˙mero de dispositivo antiguo %"
-"ld,\n"
-"n˙mero de dispositivo nuevo %ld, el tipo de sistema de ficheros es %s [ref %"
-"ld]"
 
 #: find/find.c:528
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s%s changed during execution of %s (old inode number %<PRIuMAX>, new inode "
 "number %<PRIuMAX>, file system type is %s) [ref %ld]"
 msgstr ""
-"%s%s ha cambiado durante la ejecuciÛn de %s (n˙mero de nodo-i antiguo %ld,\n"
-"n˙mero de nodo-i nuevo %ld, tipo de sistema de ficheros %s) [ref %ld]"
 
 #: find/find.c:1012
 #, c-format
@@ -299,6 +292,7 @@ msgid_plural ""
 "directory which is %d levels higher in the file system hierarchy"
 msgstr[0] ""
 msgstr[1] ""
+msgstr[2] ""
 
 #: find/find.c:1379
 #, c-format
@@ -316,7 +310,7 @@ msgstr ""
 
 #: find/fstype.c:250
 msgid "unknown"
-msgstr "desconocido"
+msgstr "ne≈æinomas"
 
 #: find/ftsfind.c:298
 #, c-format
@@ -330,9 +324,9 @@ msgid "Warning: file %s appears to have mode 0000"
 msgstr ""
 
 #: find/ftsfind.c:610
-#, c-format
+#, fuzzy, c-format
 msgid "cannot search %s"
-msgstr ""
+msgstr "%s: nepavyko perskaityti: %s"
 
 #: find/parser.c:385
 msgid ""
@@ -349,18 +343,12 @@ msgid ""
 "as those specified after it).  Please specify options before other "
 "arguments.\n"
 msgstr ""
-"atenciÛn: ha especificado la opciÛn %s despuÈs de un argumento %s que no\n"
-"es una opciÛn, pero las opciones no son de posiciÛn (%s afecta tanto a\n"
-"las evaluaciones especificadas antes de Èl como a las especificadas\n"
-"despuÈs). Por favor especifique las opciones antes de otros argumentos.\n"
 
 #: find/parser.c:820
 msgid ""
 "warning: the -d option is deprecated; please use -depth instead, because the "
 "latter is a POSIX-compliant feature."
 msgstr ""
-"atenciÛn: la opciÛn -d est· obsoleta; por favor utilice -depth en su lugar,\n"
-"ya que se trata de una caracterÌstica que cumple con POSIX."
 
 #: find/parser.c:1070
 #, c-format
@@ -378,83 +366,28 @@ msgstr ""
 msgid "argument to -group is empty, but should be a group name"
 msgstr ""
 
-# sugerencia: si no se dan -> si no hay otros. sv
-#
-# No, aquÌ creo que no vale, ya que es "si no das operadores", esto
-# es, si no das ninguno, no que no haya otros. Se refiere al caso
-# de que no se dÈ un operador entre dos `sentencias' (adem·s claro
-# de que sÛlo se puede dar uno).
-#
-# Bueno, el plural ("others") del original tiene un sentido "respectivo",
-# Quiere decir que si en cada sitio donde puedes poner un operador o no
-# ponerlo, no pones uno que sea distinto de -and, se supone -and.
-# Obviamente para poner otro que no sea -and tienes que poner alguno...
-# La ˙nica diferencia, yo creo, es que seg˙n el original, si pones -and,
-# no le hace caso, y toma el operador por defecto, que vuelve a ser -and
-# °Mira que son retorcidos! :-) sv
-#
-# Bueno, dÈjalo asÌ si quieres, pero fÌjate en lo soso que queda el "dan",
-# queda a mil kilÛmetros de la palabra "operadores" (me refiero a lo lejos
-# que est·n el verbo y el objeto directo, me suena un poco rarillo).
-# Parece que es "si no se dan de tortas". sv
-#
-# Sugerencia: "se supone -and si no se da ning˙n operador"
-# o mejor "si no se da ninguno". sv
-#
-# Lo dejo asÌ. ipg
 #: find/parser.c:1109
-#, fuzzy
 msgid ""
 "\n"
 "default path is the current directory; default expression is -print\n"
 "expression may consist of: operators, options, tests, and actions:\n"
 msgstr ""
-"la ruta de acceso por defecto es el directorio actual; la expresiÛn por\n"
-"defecto es -print\n"
-"la expresiÛn puede ser:\n"
-"operadores (prioridad decreciente; se supone -and si no se dan):\n"
-"      ( EXPR ) ! EXPR -not EXPR EXPR1 -a EXPR2 EXPR1 -and EXPR2"
+"\n"
+"numatytasis kelias yra esamas aplankas; numatytoji i≈°rai≈°ka yra -print\n"
+"i≈°rai≈°ka gali b≈´ti sudaryta i≈° operatori≈≥, opcij≈≥, test≈≥ ir veiksm≈≥:\n"
 
-# sugerencia: si no se dan -> si no hay otros. sv
-#
-# No, aquÌ creo que no vale, ya que es "si no das operadores", esto
-# es, si no das ninguno, no que no haya otros. Se refiere al caso
-# de que no se dÈ un operador entre dos `sentencias' (adem·s claro
-# de que sÛlo se puede dar uno).
-#
-# Bueno, el plural ("others") del original tiene un sentido "respectivo",
-# Quiere decir que si en cada sitio donde puedes poner un operador o no
-# ponerlo, no pones uno que sea distinto de -and, se supone -and.
-# Obviamente para poner otro que no sea -and tienes que poner alguno...
-# La ˙nica diferencia, yo creo, es que seg˙n el original, si pones -and,
-# no le hace caso, y toma el operador por defecto, que vuelve a ser -and
-# °Mira que son retorcidos! :-) sv
-#
-# Bueno, dÈjalo asÌ si quieres, pero fÌjate en lo soso que queda el "dan",
-# queda a mil kilÛmetros de la palabra "operadores" (me refiero a lo lejos
-# que est·n el verbo y el objeto directo, me suena un poco rarillo).
-# Parece que es "si no se dan de tortas". sv
-#
-# Sugerencia: "se supone -and si no se da ning˙n operador"
-# o mejor "si no se da ninguno". sv
-#
-# Lo dejo asÌ. ipg
 #: find/parser.c:1112
-#, fuzzy
 msgid ""
 "operators (decreasing precedence; -and is implicit where no others are "
 "given):\n"
 "      ( EXPR )   ! EXPR   -not EXPR   EXPR1 -a EXPR2   EXPR1 -and EXPR2\n"
 "      EXPR1 -o EXPR2   EXPR1 -or EXPR2   EXPR1 , EXPR2\n"
 msgstr ""
-"la ruta de acceso por defecto es el directorio actual; la expresiÛn por\n"
-"defecto es -print\n"
-"la expresiÛn puede ser:\n"
-"operadores (prioridad decreciente; se supone -and si no se dan):\n"
-"      ( EXPR ) ! EXPR -not EXPR EXPR1 -a EXPR2 EXPR1 -and EXPR2"
+"operatoriai (pagal ma≈æƒójantƒØ prioritetƒÖ; -and numatytas, jei nƒóra kitokio):\n"
+"      ( EXPR )   ! EXPR   -not EXPR   EXPR1 -a EXPR2   EXPR1 -and EXPR2\n"
+"      EXPR1 -o EXPR2   EXPR1 -or EXPR2   EXPR1 , EXPR2\n"
 
 #: find/parser.c:1116
-#, fuzzy
 msgid ""
 "positional options (always true): -daystart -follow -regextype\n"
 "\n"
@@ -462,28 +395,13 @@ msgid ""
 "      -depth --help -maxdepth LEVELS -mindepth LEVELS -mount -noleaf\n"
 "      --version -xdev -ignore_readdir_race -noignore_readdir_race\n"
 msgstr ""
-"      EXPR1 -o EXPR2 EXPR1 -or EXPR2 EXPR1 , EXPR2\n"
-"opciones de posiciÛn (siempre verdaderas): -daystart -follow\n"
-"opciones normales (siempre verdaderas, se ponen despuÈs de otras "
-"expresiones):\n"
-"        -depth --help -maxdepth NIVELES -mindepth NIVELES -mount -noleaf\n"
-"        --version -xdev -ignore_readdir_race -noignore_readdir_race\n"
-"evaluaciones (N puede ser +N, -N o N): -amin N -anewer FICHERO -atime N\n"
-"                                       -cmin N"
+"pozicinƒós opcijos (visada teigiamos): -daystart -follow -regextype\n"
+"\n"
+"normalios opcijos (visada teigiamos, nurodytos prie≈° kitas i≈°rai≈°kas):\n"
+"      -depth --help -maxdepth LEVELS -mindepth LEVELS -mount -noleaf\n"
+"      --version -xdev -ignore_readdir_race -noignore_readdir_race\n"
 
-# FIXME: øCÛmo traducir pattern? Plantilla queda de pena; he dejado EXPR-REG,
-#        a ver si cuela. IPG
-#        Consulto mi "Libro gordo de Petete metido a hacker" (usÈase, mi madre)
-#        y dice que ella en todos los libros de UNIX ha visto que se le llama
-#        expresiÛn regular, y que le parece el tÈrmino m·s adecuado (cosa
-#        que a mÌ tambiÈn). Me inclino por su experiencia (que para algo es
-#        una telekita que lleva desarrollando en UN*X desde que lo inventaron)
-#        y usarÈ esta traducciÛn, hasta que salga una que parezca mejor. IPG
-#
-#        TambiÈn me han sugerido `patrÛn', pero prefiero EXPR-REG. IPG
-#
 #: find/parser.c:1121
-#, fuzzy
 msgid ""
 "tests (N can be +N or -N or N): -amin N -anewer FILE -atime N -cmin N\n"
 "      -cnewer FILE -ctime N -empty -false -fstype TYPE -gid N -group NAME\n"
@@ -491,22 +409,24 @@ msgid ""
 "PATTERN\n"
 "      -links N -lname PATTERN -mmin N -mtime N -name PATTERN -newer FILE"
 msgstr ""
-"      -cnewer FICHERO -ctime N -empty -false -fstype TIPO -gid N\n"
-"      -group NOMBRE -ilname EXPR-REG -iname EXPR-REG -inum N\n"
-"      -iwholename EXPR-REG -iregex EXPR-REG -links N -lname EXPR-REG\n"
-"      -mmin N -mtime N -name EXPR-REG -newer FICHERO"
+"testai (N gali b≈´ti +N arba -N arba N): -amin N -anewer FILE -atime N -cmin "
+"N\n"
+"      -cnewer FILE -ctime N -empty -false -fstype TYPE -gid N -group NAME\n"
+"      -ilname PATTERN -iname PATTERN -inum N -iwholename PATTERN -iregex "
+"PATTERN\n"
+"      -links N -lname PATTERN -mmin N -mtime N -name PATTERN -newer FILE"
 
 #: find/parser.c:1126
-#, fuzzy
 msgid ""
 "      -nouser -nogroup -path PATTERN -perm [+-]MODE -regex PATTERN\n"
 "      -readable -writable -executable\n"
 "      -wholename PATTERN -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n"
 "      -used N -user NAME -xtype [bcdpfls]\n"
 msgstr ""
-"      -nouser -nogroup -path EXPR-REG -perm [+-]MODO -regex EXPR-REG\n"
-"      -wholename EXPR-REG -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n"
-"      -used N -user NOMBRE -xtype [bcdpfls]"
+"      -nouser -nogroup -path PATTERN -perm [+-]MODE -regex PATTERN\n"
+"      -readable -writable -executable\n"
+"      -wholename PATTERN -size N[bcwkMG] -true -type [bcdpflsD] -uid N\n"
+"      -used N -user NAME -xtype [bcdpfls]\n"
 
 #: find/parser.c:1131
 msgid ""
@@ -515,6 +435,10 @@ msgid ""
 "      -exec COMMAND ; -exec COMMAND {} + -ok COMMAND ;\n"
 "      -execdir COMMAND ; -execdir COMMAND {} + -okdir COMMAND ;\n"
 msgstr ""
+"veiksmai: -delete -print0 -printf FORMAT -fprintf FILE FORMAT -print \n"
+"      -fprint0 FILE -fprint FILE -ls -fls FILE -prune -quit\n"
+"      -exec COMMAND ; -exec COMMAND {} + -ok COMMAND ;\n"
+"      -execdir COMMAND ; -execdir COMMAND {} + -okdir COMMAND ;\n"
 
 #: find/parser.c:1137
 msgid ""
@@ -522,14 +446,13 @@ msgid ""
 "page at http://savannah.gnu.org/ or, if you have no web access, by sending\n"
 "email to <bug-findutils@gnu.org>."
 msgstr ""
-"Informe sobre bichos (y siga el progreso de su correcciÛn) a travÈs de la\n"
-"p·gina de comunicaciÛn de bichos en http://savannah.gnu.org/ o bien, si no\n"
-"tiene acceso a web, enviando un mensaje a <bug-findutils@gnu.org>."
+"Prane≈°kite apie klaidas (ir sekite j≈≥ taisymo eigƒÖ) per findutils klaid≈≥\n"
+"prane≈°imo puslapƒØ http://savannah.gnu.org/ arba, jei neturite prieigos prie\n"
+"≈æiniatinklio, i≈°siuntƒô el. lai≈°kƒÖ adresu <bug-findutils@gnu.org>."
 
 #: find/parser.c:1191
 msgid "sanity check of the fnmatch() library function failed."
 msgstr ""
-"la comprobaciÛn de adecuaciÛn de la funciÛn de biblioteca fnmatch() fallÛ."
 
 #: find/parser.c:1205
 #, c-format
@@ -544,7 +467,7 @@ msgstr ""
 #: find/parser.c:1353
 #, c-format
 msgid "Expected a positive decimal integer argument to %s, but got %s"
-msgstr ""
+msgstr "Tikƒótasi teigiamo de≈°imtainio skaiƒçiaus argumento %s, bet gauta %s"
 
 #: find/parser.c:1504
 msgid "This system does not provide a way to find the birth time of a file."
@@ -553,7 +476,7 @@ msgstr ""
 #: find/parser.c:1525
 #, fuzzy, c-format
 msgid "The %s test needs an argument"
-msgstr "%s: la opciÛn `%s' necesita un argumento\n"
+msgstr "%s: argumentas ‚Äû%s‚Äú reikalauja parametro"
 
 #: find/parser.c:1562
 #, c-format
@@ -571,9 +494,9 @@ msgid "Mode %s is not valid when POSIXLY_CORRECT is on."
 msgstr ""
 
 #: find/parser.c:1862
-#, fuzzy, c-format
+#, c-format
 msgid "invalid mode %s"
-msgstr "modo inv·lido `%s'"
+msgstr ""
 
 #: find/parser.c:1881
 #, c-format
@@ -583,29 +506,20 @@ msgid ""
 "000; that is, while it used to match no files, it now matches all files."
 msgstr ""
 
-# Nota: No es que no se haya dado el argumento requerido a la opciÛn -size,
-# sino que se ha dado un argumento nulo, que es distinto.
-# Para ver la sutil diferencia, poner LANG=C y comparar esto:
-#
-# find . -size
-#
-# con esto otro:
-#
-# find . -size ""
-#
 #: find/parser.c:2078
+#, fuzzy
 msgid "invalid null argument to -size"
-msgstr "argumento nulo inv·lido para la opciÛn -size"
+msgstr "netaisyklingas parametras %s argumentui %s"
 
 #: find/parser.c:2126
 #, c-format
 msgid "invalid -size type `%c'"
-msgstr "tipo dado a -size inv·lido `%c'"
+msgstr "netaisyklingas -size tipas ‚Äû%c‚Äú"
 
 #: find/parser.c:2132
 #, fuzzy, c-format
 msgid "Invalid argument `%s%c' to -size"
-msgstr "argumento `%s' inv·lido para la opciÛn `%s'"
+msgstr "Galimi argumentai:"
 
 #: find/parser.c:2311
 msgid ""
@@ -616,7 +530,7 @@ msgstr ""
 #: find/parser.c:2423
 #, fuzzy, c-format
 msgid "Invalid argument %s to -used"
-msgstr "argumento %s inv·lido para %s"
+msgstr "Galimi argumentai:"
 
 #: find/parser.c:2462
 #, c-format
@@ -644,7 +558,7 @@ msgstr ""
 #: find/parser.c:2770
 #, c-format
 msgid "warning: unrecognized escape `\\%c'"
-msgstr "atenciÛn: secuencia de escape `\\%c' no reconocida"
+msgstr ""
 
 #: find/parser.c:2786
 #, c-format
@@ -652,9 +566,9 @@ msgid "error: %s at end of format string"
 msgstr ""
 
 #: find/parser.c:2825
-#, c-format
+#, fuzzy, c-format
 msgid "warning: unrecognized format directive `%%%c'"
-msgstr "atenciÛn: directiva de formato `%%%c' no reconocida"
+msgstr "%s: neatpa≈æintas argumentas ‚Äû%c%s‚Äú\n"
 
 #: find/parser.c:2969
 #, c-format
@@ -690,9 +604,8 @@ msgid "Only one instance of {} is supported with -exec%s ... +"
 msgstr ""
 
 #: find/parser.c:3159
-#, fuzzy
 msgid "The environment is too large for exec()."
-msgstr "el entorno es demasiado grande para exec"
+msgstr ""
 
 #: find/parser.c:3362
 msgid "arithmetic overflow when trying to calculate the end of today"
@@ -704,12 +617,12 @@ msgstr ""
 
 #: find/parser.c:3523
 msgid "standard output"
-msgstr ""
+msgstr "standartinis i≈°vedimas"
 
 #: find/pred.c:425
 #, c-format
 msgid "cannot delete %s"
-msgstr ""
+msgstr "nepavyko i≈°trinti %s"
 
 #: find/pred.c:1363
 #, c-format
@@ -723,70 +636,29 @@ msgstr "< %s ... %s > ? "
 
 #: find/pred.c:1875
 msgid "Cannot close standard input"
-msgstr ""
+msgstr "Nepavyko u≈æverti standartinio ƒØvedimo"
 
 #: find/pred.c:1910
-#, fuzzy
 msgid "Failed to change directory"
-msgstr "no se puede volver al directorio de partida"
+msgstr "Nepavyko pakeisti aplanko"
 
-# FIXME: øøø??? °°øøY cÛmo leches traduzco yo esto??!!  IPG
-#        DespuÈs de que me hayan llamado de todo por intentar traducir
-#        una llamada al sistema ;) sigo pensando que este mensaje es
-#        m·s claro e informativo que el original (de hecho, es un
-#        pelÌn m·s largo y no exige saber tanto UNIX ...) IPG
-#
-# Esto me parece muy muy muy largo.
-# Sugerencia: "No se puede ejecutar fork". sv
-# E insisto: Si no eres experto en programaciÛn Unix lo mismo te da
-# "duplicar un proceso" que "fork".
-# De hecho, yo todavÌa no sÈ lo que es (ninguna de las dos cosas). sv
-#
-# °°Otia!! Eso es grave ... fork() es la llamada al sistema que se usa
-# para duplicar un programa en dos idÈnticos, pero con distinto PID.
-# Una vez que vuelve, en el padre devuelve el PID del hijo, y en el
-# hijo, cero. El hijo entonces lo detecta y una de dos, o sigue, o
-# ejecuta otro programa con exec() (que solapa todo el espacio del
-# proceso con el del nuevo programa). Prefiero dejar la explicaciÛn
-# larga, en beneficio de gente como t˙ :) ipg
-#
-# Vale, pues ahora te digo:
-#
-# 1. Nada de lo anterior es evidente con la simple vista de
-#    la frase "se duplica el proceso".
-# 2. Ahora que ya me lo has explicado, lo mismo me da que me pongas
-# exclusivamente lo de fork() a que me pongas la larga parrafada que
-# tienes en este momento. sv
-#
-# øVes por quÈ no me acaba de gustar? sv
-#
-# Nota: Jim Meyering tenÌa en fileutils un mensaje parecido a este, que al
-# final conseguimos (Ulises y yo) que lo cambiara por
-# msgid "fork system call failed"
-#  que yo traduje asÌ:
-# msgstr "fallÛ la llamada al sistema `fork'"
-# øQuÈ te parece?
-#
-# Al fin y al cabo es la coletilla que tengo yo al final de mi
-# comentario, øno? Me parece lo mismo, m· o meno, pero por no meternos
-# en darle caÒa y acabar ya esto de una vez :) ...
 #: find/pred.c:1951 xargs/xargs.c:1137
 msgid "cannot fork"
-msgstr "fallÛ la llamada al sistema `fork()'"
+msgstr ""
 
 #: find/pred.c:1976
 #, c-format
 msgid "error waiting for %s"
-msgstr "error esperando al proceso %s"
+msgstr "klaida laukiant %s"
 
 #: find/pred.c:1985
 #, c-format
 msgid "%s terminated by signal %d"
-msgstr "%s terminado por la seÒal %d"
+msgstr "%s nutrauktas signalo %d"
 
 #: find/tree.c:89 find/tree.c:94 find/tree.c:174 find/tree.c:213
 msgid "invalid expression"
-msgstr "expresiÛn inv·lida"
+msgstr "netaisyklinga i≈°rai≈°ka"
 
 #: find/tree.c:99
 #, c-format
@@ -798,17 +670,16 @@ msgstr ""
 #: find/tree.c:108
 #, c-format
 msgid "expected an expression between '%s' and ')'"
-msgstr ""
+msgstr "tikƒótasi i≈°rai≈°kos tarp ‚Äû%s‚Äú ir ‚Äû)‚Äú"
 
 #: find/tree.c:117
-#, fuzzy, c-format
+#, c-format
 msgid "expected an expression after '%s'"
-msgstr "predicado extra inesperado"
+msgstr "tikƒótasi i≈°rai≈°kos po ‚Äû%s‚Äú"
 
 #: find/tree.c:121
-#, fuzzy
 msgid "invalid expression; you have too many ')'"
-msgstr "expresiÛn inv·lida"
+msgstr "netaisyklinga i≈°rai≈°ka; per daug ‚Äû)‚Äú"
 
 #: find/tree.c:143
 #, c-format
@@ -819,157 +690,79 @@ msgstr ""
 
 #: find/tree.c:149
 msgid "invalid expression; empty parentheses are not allowed."
-msgstr ""
+msgstr "netaisyklinga i≈°rai≈°ka; tu≈°ti skliausteliai neleistini."
 
 #: find/tree.c:154
 msgid ""
 "invalid expression; I was expecting to find a ')' somewhere but did not see "
 "one."
-msgstr ""
+msgstr "netaisyklinga i≈°rai≈°ka; tikƒótasi rasti, bet nerasta ‚Äû)‚Äú."
 
-# Creo que la traducciÛn ideal de oops serÌa °huy! sv
-# Y si no: øA alg˙n espaÒol le has visto que diga "oops"?
-#
-# Si :) Todas las maÒanas en el espejo. De todas maneras,
-# `°huy!' creo que no expresa exactamente el `indicar que
-# parece que hay un problema' ... yo creo que quedarÌa
-# mejor `oh, oh' (Rainman ... :). ipg
-#
-# Pero si despuÈs del huy te dicen que la expresiÛn no es v·lida, est·
-# claro que habÌa un problema...
-# Ya, pero puestos, casi podrÌamos buscar una expresiÛn com˙n para
-# los `oops'
-# Pon `oh, oh', si crees que es lo apropiado.
-# Lo decÌa m·s que nada por no dejarlo en inglÈs siendo el espaÒol
-# tan rico y variado para las interjecciones.
-# (Y me consta que t˙ sabes bastante de esto :-)
-# °°Carajo!! øyo?. Voy a dejar `oh, oh', y si a la gente le gusta
-# (a mÌ me parece coÒero), lo dejamos, y si no, ponemos `huy'. ipg
-# Vale. sv
-#
-# AquÌ tambiÈn tengo pensado hacer publicidad ;-) sv
-#
-# Aparte de lo anterior. Si vas a dejar "oh, oh", øno serÌa mejor
-# ponerlo sin tantas exclamaciones? (no me pegan)
-#
-# Ok. ipg
-#
-# Pero yo decÌa al revÈs... (como en el original).
-# Lo cambio. sv
-# E incluso si te parece, no ponemos ninguna exclamaciÛn en ninguno
-# de los dos sitios.
-# (Donde menos me pegan es en el "oh, oh", parece cosa de Pap· Noel...). sv
-#
-# Ser· por las fechas ... ;) ok, claudico. ipg
 #: find/tree.c:159 find/tree.c:788
 msgid "oops -- invalid expression type!"
-msgstr "oh, oh -- °tipo de expresiÛn inv·lido!"
+msgstr "ne≈æinomas i≈°rai≈°kos tipas!"
 
-# Creo que la traducciÛn ideal de oops serÌa °huy! sv
-# Y si no: øA alg˙n espaÒol le has visto que diga "oops"?
-#
-# Si :) Todas las maÒanas en el espejo. De todas maneras,
-# `°huy!' creo que no expresa exactamente el `indicar que
-# parece que hay un problema' ... yo creo que quedarÌa
-# mejor `oh, oh' (Rainman ... :). ipg
-#
-# Pero si despuÈs del huy te dicen que la expresiÛn no es v·lida, est·
-# claro que habÌa un problema...
-# Ya, pero puestos, casi podrÌamos buscar una expresiÛn com˙n para
-# los `oops'
-# Pon `oh, oh', si crees que es lo apropiado.
-# Lo decÌa m·s que nada por no dejarlo en inglÈs siendo el espaÒol
-# tan rico y variado para las interjecciones.
-# (Y me consta que t˙ sabes bastante de esto :-)
-# °°Carajo!! øyo?. Voy a dejar `oh, oh', y si a la gente le gusta
-# (a mÌ me parece coÒero), lo dejamos, y si no, ponemos `huy'. ipg
-# Vale. sv
-#
-# AquÌ tambiÈn tengo pensado hacer publicidad ;-) sv
-#
-# Aparte de lo anterior. Si vas a dejar "oh, oh", øno serÌa mejor
-# ponerlo sin tantas exclamaciones? (no me pegan)
-#
-# Ok. ipg
-#
-# Pero yo decÌa al revÈs... (como en el original).
-# Lo cambio. sv
-# E incluso si te parece, no ponemos ninguna exclamaciÛn en ninguno
-# de los dos sitios.
-# (Donde menos me pegan es en el "oh, oh", parece cosa de Pap· Noel...). sv
-#
-# Ser· por las fechas ... ;) ok, claudico. ipg
 #: find/tree.c:231
-#, fuzzy, c-format
+#, c-format
 msgid "oops -- invalid expression type (%d)!"
-msgstr "oh, oh -- °tipo de expresiÛn inv·lido!"
+msgstr "ne≈æinomas i≈°rai≈°kos tipas (%d)!"
 
 #: find/tree.c:1228
-#, fuzzy, c-format
+#, c-format
 msgid "paths must precede expression: %s"
-msgstr "Las rutas-de-acceso deben preceder la expresiÛn"
+msgstr "keliai turi b≈´ti prie≈° i≈°rai≈°kƒÖ: %s"
 
 #: find/tree.c:1237
-#, fuzzy, c-format
+#, c-format
 msgid "unknown predicate `%s'"
-msgstr "predicado inv·lido `%s'"
+msgstr "ne≈æinomas predikatas ‚Äû%s‚Äú"
 
 #: find/tree.c:1257
 #, c-format
 msgid "invalid predicate `%s'"
-msgstr "predicado inv·lido `%s'"
+msgstr "netaisyklingas predikatas ‚Äû%s‚Äú"
 
 #: find/tree.c:1262
-#, c-format
+#, fuzzy, c-format
 msgid "invalid argument `%s' to `%s'"
-msgstr "argumento `%s' inv·lido para la opciÛn `%s'"
+msgstr "‚Äû%s‚Äú tr≈´ksta parametro"
 
 #: find/tree.c:1269
 #, c-format
 msgid "missing argument to `%s'"
-msgstr "falta el argumento de `%s'"
+msgstr "‚Äû%s‚Äú tr≈´ksta parametro"
 
 #: find/tree.c:1345
 msgid "you have too many ')'"
-msgstr ""
+msgstr "per daug ‚Äû)‚Äú"
 
 #: find/tree.c:1350
 #, fuzzy, c-format
 msgid "unexpected extra predicate '%s'"
-msgstr "predicado extra inesperado"
+msgstr "netikƒóta leksema ‚Äû%s‚Äú, tikƒótasi ‚Äû)‚Äú"
 
 #: find/tree.c:1352
 msgid "unexpected extra predicate"
-msgstr "predicado extra inesperado"
+msgstr ""
 
 #: find/tree.c:1468
 msgid "oops -- invalid default insertion of and!"
-msgstr "oh, oh -- °inserciÛn por defecto de `and' inv·lida!"
+msgstr ""
 
-#  øCÛmo traducir "path"? Me inclino por ahora por camino, pero quiz· serÌa
-#  m·s mejor que bueno poner directorio o algo asÌ. IPG
-#  °OlÈ! Gracias a tos los de es@li.org que me habeis dado "ruta de acceso".
-#  No se quÈ significado tendrÌa mi vida sin vuestra ayuda ;), snif ... :~)
-#  IPG
 #: find/util.c:158
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-H] [-L] [-P] [-Olevel] [-D "
-msgstr "Modo de empleo: %s [-H] [-L] [-P] [ruta-de-acceso...] [expresiÛn]\n"
+msgstr "Naudojimas: %s  [-H] [-L] [-P] [-Olygmuo] [-D "
 
-#  øCÛmo traducir "path"? Me inclino por ahora por camino, pero quiz· serÌa
-#  m·s mejor que bueno poner directorio o algo asÌ. IPG
-#  °OlÈ! Gracias a tos los de es@li.org que me habeis dado "ruta de acceso".
-#  No se quÈ significado tendrÌa mi vida sin vuestra ayuda ;), snif ... :~)
-#  IPG
 #: find/util.c:160
-#, fuzzy, c-format
+#, c-format
 msgid "] [path...] [expression]\n"
-msgstr "Modo de empleo: %s [ruta-de-acceso...] [expresiÛn]\n"
+msgstr "] [kelias...] [i≈°rai≈°ka]\n"
 
 #: find/util.c:749
-#, fuzzy, c-format
+#, c-format
 msgid "Ignoring unrecognised debug flag %s"
-msgstr "atenciÛn: secuencia de escape `\\%c' no reconocida"
+msgstr ""
 
 #: find/util.c:756
 msgid "Empty argument to the -D option."
@@ -986,7 +779,7 @@ msgstr ""
 #: find/util.c:794 find/util.c:798
 #, c-format
 msgid "Invalid optimisation level %s"
-msgstr ""
+msgstr "Netaisyklingas optimizacijos lygmuo %s"
 
 #: find/util.c:805
 #, c-format
@@ -994,44 +787,43 @@ msgid ""
 "Optimisation level %lu is too high.  If you want to find files very quickly, "
 "consider using GNU locate."
 msgstr ""
+"Optimizacijos lygmuo %lu per auk≈°tas.  Jei norite rasti failus labai "
+"greitai, i≈°bandykite GNU locate."
 
 #: find/util.c:948
 msgid ""
 "The environment variable FIND_BLOCK_SIZE is not supported, the only thing "
 "that affects the block size is the POSIXLY_CORRECT environment variable"
 msgstr ""
-"La variable de entorno FIND_BLOCK_SIZE no est· soportada, lo ˙nico que\n"
-"afecta al tamaÒo del bloque es la variable de entorno POSIXLY_CORRECT"
 
 #: lib/buildcmd.c:197
 msgid "command too long"
-msgstr "orden demasiado larga"
+msgstr "komanda per ilga"
 
 #: lib/buildcmd.c:289
 msgid "can not fit single argument within argument list size limit"
 msgstr ""
-"Un argumento no cabe dentro del tamaÒo lÌmite de la lista de argumentos"
 
 #: lib/buildcmd.c:294
 msgid "argument list too long"
-msgstr "lista de argumentos demasiado larga"
+msgstr "argument≈≥ sƒÖra≈°as per ilgas"
 
 #: lib/findutils-version.c:60
 msgid "Eric B. Decker"
-msgstr ""
+msgstr "Eric B. Decker"
 
 #: lib/findutils-version.c:61
 msgid "James Youngman"
-msgstr ""
+msgstr "James Youngman"
 
 #: lib/findutils-version.c:62
 msgid "Kevin Dalley"
-msgstr ""
+msgstr "Kevin Dalley"
 
 #: lib/findutils-version.c:64
-#, fuzzy, c-format
+#, c-format
 msgid "Built using GNU gnulib version %s\n"
-msgstr "GNU findutils versiÛn %s\n"
+msgstr ""
 
 #: lib/regextype.c:106
 #, c-format
@@ -1044,9 +836,8 @@ msgid ""
 "Usage: %s [--version | --help]\n"
 "or     %s most_common_bigrams < file-list > locate-database\n"
 msgstr ""
-"Modo de empleo: %s [--version | --help]\n"
-"o bien  %s bigramas_m·s_comunes < lista-de-ficheros > base-de-datos-de-"
-"locate\n"
+"Naudojimas: %s [--version | --help]\n"
+"arba     %s da≈æniausios_bigramos < fail≈≥_sƒÖra≈°as > locate-db\n"
 
 #: locate/code.c:134 locate/frcode.c:171 locate/locate.c:1423
 #: xargs/xargs.c:1379
@@ -1055,12 +846,12 @@ msgid ""
 "Report bugs to <bug-findutils@gnu.org>.\n"
 msgstr ""
 "\n"
-"Comunicar bichos a <bug-findutils@gnu.org>.\n"
+"Prane≈°kite apie klaidas adresu <bug-findutils@gnu.org>.\n"
 
 #: locate/frcode.c:169
 #, c-format
 msgid "Usage: %s [-0 | --null] [--version] [--help]\n"
-msgstr ""
+msgstr "Naudojimas: %s [-0 | --null] [--version] [--help]\n"
 
 #: locate/frcode.c:188
 msgid "You need to specify a security level as a decimal integer."
@@ -1082,50 +873,50 @@ msgid "slocate security level %ld is unsupported."
 msgstr ""
 
 #: locate/frcode.c:296
+#, fuzzy
 msgid "Failed to write to standard output"
-msgstr ""
+msgstr "standartinis i≈°vedimas"
 
 #: locate/locate.c:151
 msgid "days"
-msgstr "dÌas"
+msgstr "dien≈≥"
 
 #: locate/locate.c:198
 msgid "The argument for option --max-database-age must not be empty"
 msgstr ""
 
 #: locate/locate.c:214 locate/locate.c:221
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid argument %s for option --max-database-age"
-msgstr "argumento %s inv·lido para %s"
+msgstr ""
 
 #: locate/locate.c:473
-#, fuzzy, c-format
+#, c-format
 msgid "locate database %s contains a filename longer than locate can handle"
 msgstr ""
-"atenciÛn: la ruta de acceso de la base de datos de locate `%s' comienza\n"
-"por dos puntos, no es un nombre v·lido de base de datos"
 
 #: locate/locate.c:608
-#, fuzzy, c-format
+#, c-format
 msgid "locate database %s is corrupt or invalid"
-msgstr "la base de datos de locate `%s' est· corrupta o es inv·lida"
+msgstr ""
 
 #: locate/locate.c:898
 #, c-format
 msgid "Locate database size: %s byte\n"
 msgid_plural "Locate database size: %s bytes\n"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Locate duomen≈≥ bazƒós dydis: %s baitas\n"
+msgstr[1] "Locate duomen≈≥ bazƒós dydis: %s baitai\n"
+msgstr[2] "Locate duomen≈≥ bazƒós dydis: %s bait≈≥\n"
 
 #: locate/locate.c:905
 #, c-format
 msgid "Matching Filenames: %s\n"
-msgstr ""
+msgstr "Atitinkantys fail≈≥ vardai: %s\n"
 
 #: locate/locate.c:906
 #, c-format
 msgid "All Filenames: %s\n"
-msgstr ""
+msgstr "Visi fail≈≥ vardai: %s\n"
 
 #: locate/locate.c:912
 #, c-format
@@ -1148,12 +939,12 @@ msgstr ""
 #: locate/locate.c:939
 #, c-format
 msgid "Compression ratio %4.2f%% (higher is better)\n"
-msgstr ""
+msgstr "Suspaudimo laipsnis %4.2f%% (didesnis geriau)\n"
 
 #: locate/locate.c:946
 #, c-format
 msgid "Compression ratio is undefined\n"
-msgstr ""
+msgstr "Suspaudimo laipsnis neapibrƒó≈ætas\n"
 
 #: locate/locate.c:1001
 #, c-format
@@ -1168,6 +959,8 @@ msgid ""
 "%s is an slocate database.  Support for these is new, expect problems for "
 "now."
 msgstr ""
+"%s yra slocate duomen≈≥ bazƒó.  J≈≥ palaikymas atsirado neseniai, galite "
+"tikƒótis nesklandum≈≥."
 
 #: locate/locate.c:1132
 #, c-format
@@ -1188,14 +981,14 @@ msgid "%s is an slocate database.  Turning on the '-e' option."
 msgstr ""
 
 #: locate/locate.c:1198
-#, fuzzy, c-format
+#, c-format
 msgid "Old-format locate database %s is too short to be valid"
-msgstr "la base de datos de locate `%s' est· corrupta o es inv·lida"
+msgstr ""
 
 #: locate/locate.c:1350
 #, c-format
 msgid "Database %s is in the %s format.\n"
-msgstr ""
+msgstr "Duomen≈≥ bazƒós %s formatas yra %s.\n"
 
 #: locate/locate.c:1371
 msgid "The database has little-endian machine-word encoding.\n"
@@ -1248,9 +1041,9 @@ msgid "time system call failed"
 msgstr ""
 
 #: locate/locate.c:1867
-#, fuzzy, c-format
+#, c-format
 msgid "warning: database %s is more than %d %s old (actual age is %.1f %s)"
-msgstr "atenciÛn: la base de datos `%s' tiene una antig¸edad de m·s de %d %s"
+msgstr ""
 
 #: locate/word_io.c:97
 #, c-format
@@ -1260,12 +1053,12 @@ msgstr ""
 #: locate/word_io.c:144
 #, c-format
 msgid "unexpected EOF in %s"
-msgstr ""
+msgstr "netikƒóta failo pabaiga %s"
 
 #: locate/word_io.c:146
-#, fuzzy, c-format
+#, c-format
 msgid "error reading a word from %s"
-msgstr "error esperando al proceso %s"
+msgstr "klaida skaitant ≈æodƒØ i≈° %s"
 
 #: xargs/xargs.c:303
 #, c-format
@@ -1302,7 +1095,7 @@ msgstr ""
 
 #: xargs/xargs.c:398
 msgid "environment is too large for exec"
-msgstr "el entorno es demasiado grande para exec"
+msgstr ""
 
 #: xargs/xargs.c:583
 #, c-format
@@ -1310,37 +1103,35 @@ msgid "Warning: value %ld for -s option is too large, using %ld instead"
 msgstr ""
 
 #: xargs/xargs.c:653
-#, c-format
+#, fuzzy, c-format
 msgid "Cannot open input file %s"
-msgstr ""
+msgstr "%s: nepavyko atverti laikinojo failo: %s"
 
 #: xargs/xargs.c:689
-#, fuzzy, c-format
+#, c-format
 msgid "Your environment variables take up %lu bytes\n"
-msgstr "Las variables de entorno ocupan %ld bytes\n"
+msgstr ""
 
 #: xargs/xargs.c:692
-#, fuzzy, c-format
+#, c-format
 msgid "POSIX upper limit on argument length (this system): %lu\n"
 msgstr ""
-"LÌmites POSIX inferior y superior sobre la longitud del argumento: %ld, %ld\n"
 
 #: xargs/xargs.c:695
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "POSIX smallest allowable upper limit on argument length (all systems): %lu\n"
 msgstr ""
-"LÌmites POSIX inferior y superior sobre la longitud del argumento: %ld, %ld\n"
 
 #: xargs/xargs.c:698
 #, c-format
 msgid "Maximum length of command we could actually use: %ld\n"
-msgstr "M·xima longitud de orden que se podrÌa usar realmente: %ld\n"
+msgstr ""
 
 #: xargs/xargs.c:702
-#, fuzzy, c-format
+#, c-format
 msgid "Size of command buffer we are actually using: %lu\n"
-msgstr "TamaÒo del b˙fer de Ûrdenes que se est· usando realmente: %ld\n"
+msgstr ""
 
 #: xargs/xargs.c:708
 #, c-format
@@ -1364,17 +1155,14 @@ msgid ""
 "unmatched %s quote; by default quotes are special to xargs unless you use "
 "the -0 option"
 msgstr ""
-"comilla %s desemparejada; por omisiÛn las comillas son especiales para "
-"xargs\n"
-"a menos que utilice la opciÛn -0"
 
 #: xargs/xargs.c:843 xargs/xargs.c:936
 msgid "double"
-msgstr "doble"
+msgstr ""
 
 #: xargs/xargs.c:843 xargs/xargs.c:936
 msgid "single"
-msgstr "simple"
+msgstr ""
 
 #: xargs/xargs.c:955
 msgid ""
@@ -1384,70 +1172,49 @@ msgstr ""
 
 #: xargs/xargs.c:965 xargs/xargs.c:1022
 msgid "argument line too long"
-msgstr "lÌnea de argumentos demasiado larga"
+msgstr "argument≈≥ eilutƒó per ilga"
 
 #: xargs/xargs.c:1233
 msgid "error waiting for child process"
-msgstr "error esperando al proceso hijo"
+msgstr ""
 
 #: xargs/xargs.c:1255
 #, c-format
 msgid "Warning: Lost track of %d child processes"
 msgstr ""
 
-# Pregunta (no es por crear polÈmica): ø"status" o "estado"? sv
-#
-# "Estado", aunque tambiÈn existe "status". øDejamos "status"? ipg
-#
-# No sÈ, si se refiere a lo que en MS-DOG se llama ERRORLEVEL,
-# y al resultado numÈrico que devuelve el main() del proceso, la
-# pregunta serÌa: øcÛmo se le llama a eso en espaÒol? sv
-#
-# Creo que podrÌamos dejar `status', ya que existe en castellano,
-#  (Nota: Ver http://www.anaya.es/dict por ejemplo).
-# y expresa un estado de actividad, siendo m·s preciso que `estado'
-# (°ahora, que el/la que lo confunda con el Estado EspaÒol, es pa
-# matal-le! :). ipg
-#
-# Me quedo con la duda de cÛmo se llama eso en espaÒol.
-# Esperemos que lo vea otro. sv
-#
 #: xargs/xargs.c:1275
 #, c-format
 msgid "%s: exited with status 255; aborting"
-msgstr "%s: acabÛ con status 255; abortando"
+msgstr "%s: grƒÖ≈æino klaidos kodƒÖ 255; nutraukiama"
 
 #: xargs/xargs.c:1277
 #, c-format
 msgid "%s: stopped by signal %d"
-msgstr "%s: interrumpido por la seÒal %d"
+msgstr "%s: sustabdytas signalo %d"
 
 #: xargs/xargs.c:1279
 #, c-format
 msgid "%s: terminated by signal %d"
-msgstr "%s: terminado por la seÒal %d"
+msgstr "%s: nutrauktas signalo %d"
 
 #: xargs/xargs.c:1329
-#, c-format
+#, fuzzy, c-format
 msgid "%s: invalid number for -%c option\n"
-msgstr "%s: n˙mero inv·lido para la opciÛn -%c\n"
+msgstr "%s: netaisyklingas argumentas"
 
-# Me he tomado la libertad de poner mayor o igual que en lugar de >= ...
-# queda mucho mejor. Si a alguien no le gusta, que me lo diga ;). IPG
-# Me parece acertado y lo digo :-) sv
-# falen ... :) ... ipg
 #: xargs/xargs.c:1336
 #, c-format
 msgid "%s: value for -%c option should be >= %ld\n"
-msgstr "%s: el valor para la opciÛn -%c deberÌa ser mayor o igual que %ld\n"
+msgstr ""
 
 #: xargs/xargs.c:1350
 #, c-format
 msgid "%s: value for -%c option should be < %ld\n"
-msgstr "%s: el valor para la opciÛn -%c deberÌa ser menor que %ld\n"
+msgstr ""
 
 #: xargs/xargs.c:1368
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n"
 "       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n"
@@ -1459,132 +1226,575 @@ msgid ""
 "       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=file]\n"
 "       [--version] [--help] [command [initial-arguments]]\n"
 msgstr ""
-"Modo de empleo: %s [-0prtx] [-e[cadena-eof]] [-i[cadena-de-reemplazo]]\n"
-"       [-l[m·x-lÌneas]] [-n m·x-argumentos] [-s m·x-caracteres]\n"
-"       [-P m·x-procesos] [--null] [--eof[=cadena-eof]]\n"
-"       [--replace[=cadena-de-reemplazo]] [--max-lines[=m·x-lÌneas]]\n"
-"       [--interactive] [--max-chars=m·x-caracteres] [--verbose] [--exit]\n"
-"       [--max-procs=m·x-procesos] [--max-args=m·x-argumentos]\n"
-"       [--no-run-if-empty] [--version] [--help]\n"
-"       [orden [argumentos-iniciales]]\n"
 
-#~ msgid "block size"
-#~ msgstr "tamaÒo del bloque"
+#~ msgid "%s: cannot create: %s"
+#~ msgstr "%s: nepavyko sukurti: %s"
 
-#~ msgid "Predicate List:\n"
-#~ msgstr "Lista Predicado:\n"
+#~ msgid "%s: first non-whitespace character is not `\"'"
+#~ msgstr "%s: pirmas ne tarpo simbolis nƒóra ‚Äû\"‚Äú"
 
-#~ msgid "Eval Tree:\n"
-#~ msgstr "¡rbol de EvaluaciÛn:\n"
+#~ msgid "no closing `%c' in %s"
+#~ msgstr "nƒóra u≈ædaranƒçiojo ‚Äû%c‚Äú %s"
 
-#~ msgid "Optimized Eval Tree:\n"
-#~ msgstr "¡rbol de EvaluaciÛn Optimizado:\n"
+#~ msgid "%s: missing colon separator"
+#~ msgstr "%s: tr≈´ksta dvita≈°kio skirtuko"
 
-# Propongo eliminar la palabra virtual. En un sistema GNU, la memoria virtual
-# y la otra son la misma cosa, desde el punto de vista de las aplicaciones
-# no se distinguen una de otra. QuedarÌa m·s corto, m·s sencillo y m·s bonito.
-# Y adem·s Javier RomaÒach (hello) est· de acuerdo conmigo. sv
-# Y a mÌ me apoya Richard Stallman };) (qui malo soy :)
-# Fuera coÒas ... sÌ, estoy de acuerdo ipg
-#
-# En cualquier caso, me gustarÌa saber por quÈ en GNU se empeÒan en poner
-# siempre "virtual". Parece como si hacerlo asÌ estuviera el mensaje
-# m·s orientado al usuario final [ quitando el virtual el mensaje estarÌa
-# escrito desde el punto de vista de la aplicaciÛn (para la cual, todos
-# los malloc()'s son iguales ante la ley...) ]
-#
-# No estoy completamente convencido de quÈ deberÌamos hacer.
-# De hecho, esto contradice mis principios (la fidelidad ante todo).
-# (Creo que tendrÈ que revisar mis principios...). sv
-#
-# SÌ ... a fondo :) ipg
-#
-# FIXME: Preguntar a Richard Stallman por quÈ se empeÒa en usar la
-# palabra virtual. sv
-#~ msgid "virtual memory exhausted"
-#~ msgstr "memoria agotada"
+#~ msgid "`%s': invalid keymap name"
+#~ msgstr "‚Äû%s‚Äú: netaisyklingas keymap'o pavadinimas"
 
-#~ msgid "error in %s: %s"
-#~ msgstr "error en %s: %s"
+#~ msgid "`%s': unknown function name"
+#~ msgstr "‚Äû%s‚Äú: ne≈æinomas funkcijos pavadinimas"
+
+#~ msgid "%s is not bound to any keys.\n"
+#~ msgstr "%s nƒóra priskirtas jokiam klavi≈°ui.\n"
+
+#~ msgid "%s can be invoked via "
+#~ msgstr "%s gali b≈´ti i≈°kviestas su"
+
+#~ msgid "only meaningful in a `for', `while', or `until' loop"
+#~ msgstr "prasminga tik ‚Äûfor‚Äú, ‚Äûwhile‚Äú arba ‚Äûuntil‚Äú cikle"
+
+#~ msgid " "
+#~ msgstr " "
+
+#~ msgid "HOME not set"
+#~ msgstr "HOME nenustatytas"
+
+#~ msgid "OLDPWD not set"
+#~ msgstr "OLDPWD nenustatytas"
+
+#~ msgid "too many arguments"
+#~ msgstr "per daug argument≈≥"
+
+#~ msgid "%s: numeric argument required"
+#~ msgstr "%s: reikia skaitinio argumento"
+
+#~ msgid "%s: not found"
+#~ msgstr "%s: nerasta"
+
+#~ msgid "%s: invalid option name"
+#~ msgstr "%s: netaisyklingas argumento pavadinimas"
+
+#~ msgid "`%s': not a valid identifier"
+#~ msgstr "`%s': netaisyklingas identifikatorius"
+
+#~ msgid "%s: invalid number"
+#~ msgstr "%s: netaisyklingas skaiƒçius"
+
+#, fuzzy
+#~ msgid "%s: invalid signal specification"
+#~ msgstr "%s: netaisyklinga signalo specifikacija"
+
+#~ msgid "`%s': not a pid or valid job spec"
+#~ msgstr "‚Äû%s‚Äú: ne pid'as ar taisyklinga darbo specifikacija"
+
+#~ msgid "%s: readonly variable"
+#~ msgstr "%s: kintamasis tik skaitymui"
+
+#~ msgid "%s: %s out of range"
+#~ msgstr "%s: %s i≈°ƒójo u≈æ rib≈≥"
+
+#~ msgid "argument"
+#~ msgstr "argumentas"
+
+#~ msgid "%s out of range"
+#~ msgstr "%s u≈æ rib≈≥"
+
+#~ msgid "%s: no such job"
+#~ msgstr "%s: nƒóra tokio darbo"
+
+#~ msgid "%s: no job control"
+#~ msgstr "%s: nƒóra darb≈≥ valdymo"
+
+#~ msgid "no job control"
+#~ msgstr "nƒóra darb≈≥ valdymo"
+
+#~ msgid "%s: restricted"
+#~ msgstr "%s: apribota"
+
+#~ msgid "restricted"
+#~ msgstr "apribota"
+
+#~ msgid "%s: not a shell builtin"
+#~ msgstr "%s: ne vidinƒó aplinkos komanda"
+
+#~ msgid "write error: %s"
+#~ msgstr "ra≈°ymo klaida: %s"
+
+#~ msgid "%s: error retrieving current directory: %s: %s\n"
+#~ msgstr "%s: klaida skaitant esamƒÖ aplankƒÖ: %s: %s\n"
+
+#~ msgid "%s: ambiguous job spec"
+#~ msgstr "%s: dviprasmis darbo apra≈°ymas"
+
+#, fuzzy
+#~ msgid "%s: invalid action name"
+#~ msgstr "%s: netaisyklingas argumentas -- %c\n"
+
+#~ msgid "%s: no completion specification"
+#~ msgstr "%s: nƒóra baigimo specifikacijos"
+
+#~ msgid "warning: -F option may not work as you expect"
+#~ msgstr "ƒØspƒójimas: parametras -F gali neveikti taip, kaip tikitƒós"
+
+#~ msgid "warning: -C option may not work as you expect"
+#~ msgstr "ƒØspƒójimas: parametras -C gali neveikti taip, kaip tikitƒós"
+
+#~ msgid "can only be used in a function"
+#~ msgstr "galima naudoti tik funkcijoje"
+
+#~ msgid "cannot use `-f' to make functions"
+#~ msgstr "negalima naudoti ‚Äû-f‚Äú funkcijoms kurti"
+
+#~ msgid "%s: readonly function"
+#~ msgstr "%s: funkcija tik skaitymui"
+
+#~ msgid "%s: cannot destroy array variables in this way"
+#~ msgstr "%s: negalima tokiu b≈´du sunaikinti masyv≈≥ kintam≈≥j≈≥"
+
+#~ msgid "dynamic loading not available"
+#~ msgstr "dinaminis ƒØkrovimas negalimas"
+
+#~ msgid "cannot open shared object %s: %s"
+#~ msgstr "nepavyko atverti bendrojo objekto %s: %s"
+
+#~ msgid "cannot find %s in shared object %s: %s"
+#~ msgstr "nepavyko rasti %s bendrajame objekte %s: %s"
+
+#~ msgid "%s: not dynamically loaded"
+#~ msgstr "%s: nedinami≈°kai ƒØkrauta"
+
+#~ msgid "%s: is a directory"
+#~ msgstr "%s: aplankas"
+
+#~ msgid "%s: not a regular file"
+#~ msgstr "%s: ne paprastas failas"
+
+#~ msgid "%s: file is too large"
+#~ msgstr "%s: failas per didelis"
+
+#~ msgid "%s: cannot execute: %s"
+#~ msgstr "%s: nepavyko paleisti: %s"
+
+#~ msgid "There are stopped jobs.\n"
+#~ msgstr "Yra sustabdyt≈≥ darb≈≥.\n"
+
+#~ msgid "%s: hash table empty\n"
+#~ msgstr "%s: mai≈°os lentelƒó tu≈°ƒçia\n"
 
 #~ msgid ""
-#~ "actions: -exec COMMAND ; -fprint FILE -fprint0 FILE -fprintf FILE FORMAT\n"
-#~ "      -fls FILE -ok COMMAND ; -print -print0 -printf FORMAT -prune -ls -"
-#~ "delete\n"
-#~ "      -quit\n"
+#~ "no help topics match `%s'.  Try `help help' or `man -k %s' or `info %s'."
 #~ msgstr ""
-#~ "acciones: -exec ORDEN ; -fprint FICHERO -fprint0 FICHERO\n"
-#~ "      -fprintf FICHERO FORMATO -fls FICHERO -ok ORDEN ;\n"
-#~ "      -print -print0 -printf FORMATO -prune -ls -delete -quit\n"
+#~ "nƒóra ≈æinyno tem≈≥, atitinkanƒçi≈≥ ‚Äû%s‚Äú. Bandykite ‚Äûhelp help‚Äú, ‚Äûman -k %s‚Äú "
+#~ "arba ‚Äûinfo %s‚Äú."
+
+#~ msgid "%s: cannot open: %s"
+#~ msgstr "%s: nepavyko atverti: %s"
+
+#~ msgid "cannot use more than one of -anrw"
+#~ msgstr "negalima naudoti daugiau negu vieno i≈° -anrw"
+
+#~ msgid "Unknown error"
+#~ msgstr "Ne≈æinoma klaida"
+
+#~ msgid "expression expected"
+#~ msgstr "tikƒótasi i≈°rai≈°kos"
+
+#~ msgid "`%s': missing format character"
+#~ msgstr "‚Äû%s‚Äú: tr≈´ksta formato simbolio"
+
+#~ msgid "`%c': invalid format character"
+#~ msgstr "‚Äû%c‚Äú: netaisyklingas formato simbolis"
+
+#~ msgid "missing hex digit for \\x"
+#~ msgstr "tr≈´ksta ≈°e≈°ioliktainio skaitmens i≈°rai≈°koje \\x"
+
+#, fuzzy
+#~ msgid "%s: invalid timeout specification"
+#~ msgstr "%s: klaidingas skaiƒçius -%c argumentui\n"
+
+#~ msgid "%s: invalid file descriptor specification"
+#~ msgstr "%s: netaisyklinga failo deskriptoriaus specifikacija"
+
+#~ msgid "%d: invalid file descriptor: %s"
+#~ msgstr "%d: netaisyklingas failo deskriptorius: %s"
+
+#~ msgid "read error: %d: %s"
+#~ msgstr "skaitymo klaida: %d: %s"
+
+#~ msgid "can only `return' from a function or sourced script"
+#~ msgstr "galima grƒØ≈æti (return) tik i≈° funkcijos ar scenarijaus"
+
+#~ msgid "%s: not an array variable"
+#~ msgstr "%s: ne masyvo kintamasis"
+
+#~ msgid "%s: not a function"
+#~ msgstr "%s: ne funkcija"
+
+#~ msgid "shift count"
+#~ msgstr "post≈´mi≈≥ skaiƒçius"
+
+#, fuzzy
+#~ msgid "%s: invalid shell option name"
+#~ msgstr "%s: netaisyklingas argumentas -- %c\n"
+
+#~ msgid "filename argument required"
+#~ msgstr "reikia failo pavadinimo argumento"
+
+#~ msgid "%s: file not found"
+#~ msgstr "%s: failas nerastas"
+
+#~ msgid "cannot suspend"
+#~ msgstr "nepavyko sustabdyti"
+
+#~ msgid "%s is aliased to `%s'\n"
+#~ msgstr "%s yra ‚Äû%s‚Äú sinonimas\n"
+
+#~ msgid "%s is a shell keyword\n"
+#~ msgstr "%s yra aplinkos raktinis ≈æodis\n"
+
+#~ msgid "%s is a function\n"
+#~ msgstr "%s yra funkcija\n"
+
+#~ msgid "%s is a shell builtin\n"
+#~ msgstr "%s yra aplinkos vidinƒó komanda\n"
+
+#~ msgid "%s is %s\n"
+#~ msgstr "%s yra %s\n"
+
+#~ msgid "`%c': bad command"
+#~ msgstr "`%c': bloga komanda"
+
+#~ msgid "%s: cannot get limit: %s"
+#~ msgstr "%s: nepavyko gauti limito: %s"
+
+#~ msgid "%s: cannot modify limit: %s"
+#~ msgstr "%s: nepayko pakeisti limito: %s"
+
+#~ msgid "octal number"
+#~ msgstr "a≈°tuntainis skaiƒçius"
+
+#~ msgid "last command: %s\n"
+#~ msgstr "paskutinƒó komanda: %s\n"
+
+#~ msgid "Aborting..."
+#~ msgstr "Nutraukiama..."
+
+#~ msgid "%s: warning: "
+#~ msgstr "%s: ƒØspƒójimas: "
+
+#~ msgid "bad command type"
+#~ msgstr "blogas komandos tipas"
+
+#~ msgid "bad connector"
+#~ msgstr "blogas jungtukas"
+
+#~ msgid "%s: unbound variable"
+#~ msgstr "%s: nepriskirtas kintamasis"
+
+#~ msgid "\atimed out waiting for input: auto-logout\n"
+#~ msgstr "\alaukiant ƒØvedimo baigƒósi laikas: automati≈°kai atsijungta\n"
+
+#~ msgid "TIMEFORMAT: `%c': invalid format character"
+#~ msgstr "TIMEFORMAT: ‚Äû%c‚Äú: netaisyklingas formato simbolis"
+
+#~ msgid "%s: restricted: cannot specify `/' in command names"
+#~ msgstr "%s: apribota: negalima naudoti ‚Äû/‚Äú komand≈≥ pavadinimuose"
+
+#~ msgid "%s: %s: bad interpreter"
+#~ msgstr "%s: %s: blogas interpretatorius"
+
+#~ msgid "%s: cannot execute binary file"
+#~ msgstr "%s: negalima vykdyti dvejetaini≈≥ fail≈≥"
+
+#~ msgid "expression recursion level exceeded"
+#~ msgstr "vir≈°ytas i≈°rai≈°kos rekursijos lygis"
+
+#~ msgid "recursion stack underflow"
+#~ msgstr "rekursijos steko atvirk≈°tinis perpildymas"
+
+#~ msgid "syntax error in expression"
+#~ msgstr "sintaksƒós klaida i≈°rai≈°koje"
+
+#~ msgid "attempted assignment to non-variable"
+#~ msgstr "bandymas priskirti ne kintamajam"
+
+#~ msgid "division by 0"
+#~ msgstr "dalyba i≈° 0"
+
+#~ msgid "bug: bad expassign token"
+#~ msgstr "klaida: bloga expassign leksema"
+
+#~ msgid "`:' expected for conditional expression"
+#~ msgstr "sƒÖlygos i≈°rai≈°koje tikƒótasi ‚Äû:‚Äú"
+
+#~ msgid "exponent less than 0"
+#~ msgstr "eksponentas ma≈æesnis u≈æ 0"
+
+#~ msgid "missing `)'"
+#~ msgstr "Tr≈´ksta ‚Äû)‚Äú"
+
+#~ msgid "syntax error: operand expected"
+#~ msgstr "sintaksƒós klaida: tikƒótasi operando"
+
+#~ msgid "syntax error: invalid arithmetic operator"
+#~ msgstr "sintaksƒós klaida: netaisyklingas aritmetinis operatorius"
+
+#~ msgid "invalid number"
+#~ msgstr "netaisyklingas skaiƒçius"
+
+#~ msgid "invalid arithmetic base"
+#~ msgstr "netaisyklingas aritmetinis pagrindas"
+
+#~ msgid "value too great for base"
+#~ msgstr "per didelƒó pagrindo reik≈°mƒó"
+
+#~ msgid "getcwd: cannot access parent directories"
+#~ msgstr "getcwd: nepavyko pasiekti auk≈°tesni≈≥ aplank≈≥"
+
+#~ msgid "describe_pid: %ld: no such pid"
+#~ msgstr "describe_pid: %ld: tokio pid nƒóra"
+
+#~ msgid "wait_for: No record of process %ld"
+#~ msgstr "wait_for: nƒóra proceso %ld ƒØra≈°o"
+
+#~ msgid "wait_for_job: job %d is stopped"
+#~ msgstr "wait_for_job: darbas %d yra sustabdytas"
+
+#~ msgid "%s: job has terminated"
+#~ msgstr "%s: darbas baigtas"
+
+#~ msgid "%s: job %d already in background"
+#~ msgstr "%s: darbas %d jau fone"
+
+#~ msgid "no job control in this shell"
+#~ msgstr "≈°ioje aplinkoje nƒóra darb≈≥ valdymo"
+
+#~ msgid "malloc: failed assertion: %s\n"
+#~ msgstr "malloc: pa≈æeista prielaida: %s\n"
 
 #~ msgid ""
-#~ "warning: the predicate -ipath is deprecated; please use -iwholename "
-#~ "instead."
+#~ "\r\n"
+#~ "malloc: %s:%d: assertion botched\r\n"
 #~ msgstr ""
-#~ "atenciÛn: el predicado -ipath est· obsoleto; por favor use -iwholename "
-#~ "en\n"
-#~ "su lugar"
+#~ "\r\n"
+#~ "malloc: %s:%d: prielaida pa≈æeista\r\n"
 
-#~ msgid "GNU find version %s\n"
-#~ msgstr "GNU find versiÛn %s\n"
+#~ msgid "allocated"
+#~ msgstr "i≈°skirta"
 
-#~ msgid "inserting %s\n"
-#~ msgstr "insertando %s\n"
+#~ msgid "freed"
+#~ msgstr "atlaisvinta"
 
-#~ msgid "    type: %s    %s  "
-#~ msgstr "    tipo: %s    %s  "
+#~ msgid "requesting resize"
+#~ msgstr "pra≈°oma dyd≈æio keitimo"
 
-#~ msgid "left:\n"
-#~ msgstr "izquierda:\n"
+#~ msgid "just resized"
+#~ msgstr "tik kƒÖ pakeistas dydis"
 
-#~ msgid "right:\n"
-#~ msgstr "derecha:\n"
+#~ msgid "bug: unknown operation"
+#~ msgstr "klaida: ne≈æinoma operacija"
 
-#~ msgid "Normalized Eval Tree:\n"
-#~ msgstr "¡rbol de EvaluaciÛn Normalizado:\n"
+#, fuzzy
+#~ msgid "%s: invalid service"
+#~ msgstr "%s: netaisyklingas argumentas -- %c\n"
 
-#~ msgid ""
-#~ "Usage: %s [-d path | --database=path] [-e | --existing]\n"
-#~ "      [-i | --ignore-case] [--wholepath] [--basename] [--limit=N | -l N]\n"
-#~ "      [--version] [--help] pattern...\n"
-#~ msgstr ""
-#~ "Modo de empleo: %s [-d ruta-de-acceso | --database=ruta-de-acceso]\n"
-#~ "   [-e | --existing] [-i | --ignore-case] [--wholepath] [--basename]\n"
-#~ "   [--limit=N | -l N] [--version] [--help] expr-reg...\n"
+#~ msgid "%s: bad network path specification"
+#~ msgstr "%s: netaisyklingas tinklo kelias"
 
-#~ msgid ""
-#~ "warning: locate database path `%s' contains a trailing colon, which is "
-#~ "not a valid database name"
-#~ msgstr ""
-#~ "atenciÛn: la ruta de acceso de la base de datos de locate `%s'\n"
-#~ "contiene dos puntos al final, no es un nombre v·lido de base de datos"
+#~ msgid "network operations not supported"
+#~ msgstr "tinklo operacijos nepalaikomos"
 
-#~ msgid "GNU locate version %s\n"
-#~ msgstr "GNU locate versiÛn %s\n"
+#~ msgid "You have new mail in $_"
+#~ msgstr "Turite nauj≈≥ lai≈°k≈≥ $_"
 
-#~ msgid "argument to --limit"
-#~ msgstr "argumento para --limit"
+#~ msgid "The mail in %s has been read\n"
+#~ msgstr "Pa≈°tas %s perskaitytas\n"
 
-#~ msgid "GNU xargs version %s\n"
-#~ msgstr "GNU xargs versiÛn %s\n"
+#~ msgid "syntax error: arithmetic expression required"
+#~ msgstr "sintaksƒós klaida: reikia aritmetinƒós i≈°rai≈°kos"
 
-#~ msgid "Reducing arg_max (%ld) to arg_size (%ld)\n"
-#~ msgstr "Se reduce arg_max (%ld) a arg_size (%ld)\n"
+#~ msgid "syntax error: `;' unexpected"
+#~ msgstr "sintaksƒós klaida: netikƒótas ‚Äû;‚Äú"
 
-#~ msgid "%s changed during execution of %s"
-#~ msgstr "%s cambiÛ durante la ejecuciÛn de %s"
+#~ msgid "syntax error: `((%s))'"
+#~ msgstr "sintaksƒós klaida: ‚Äû((%s))‚Äú"
 
-#~ msgid "%s/.. changed during execution of %s"
-#~ msgstr "%s/.. cambiÛ durante la ejecuciÛn de %s"
+#~ msgid "make_here_document: bad instruction type %d"
+#~ msgstr "make_here_document: blogas instrukcijos tipas %d"
 
-#~ msgid "unmatched %s quote"
-#~ msgstr "comilla %s desemparejada"
+#~ msgid "make_redirection: redirection instruction `%d' out of range"
+#~ msgstr "make_redirection: nukreipimo instrukcija ‚Äû%d‚Äú u≈æ rib≈≥"
 
-#~ msgid "cannot open current directory"
-#~ msgstr "no se puede abrir el directorio actual"
+#~ msgid "unexpected EOF while looking for matching `%c'"
+#~ msgstr "netikƒóta failo pabaiga ie≈°kant atitinkamo ‚Äû%c‚Äú"
 
-#~ msgid "wait got pid %d, expected pid %d"
-#~ msgstr "wait obtuvo el pid %d, y se esperaba un pid %d"
+#~ msgid "syntax error in conditional expression: unexpected token `%s'"
+#~ msgstr "sintaksƒós klaida sƒÖlygos i≈°rai≈°koje: netikƒóta leksema ‚Äû%s‚Äú"
 
-#~ msgid "%s stopped by signal %d"
-#~ msgstr "%s interrumpido por la seÒal %d"
+#~ msgid "syntax error in conditional expression"
+#~ msgstr "sintaksƒós klaida sƒÖlygos i≈°rai≈°koje"
+
+#~ msgid "expected `)'"
+#~ msgstr "tikƒótasi ‚Äû)‚Äú"
+
+#~ msgid "unexpected argument `%s' to conditional unary operator"
+#~ msgstr "netikƒótas argumentas ‚Äû%s‚Äú sƒÖlygos unariniam operatoriui"
+
+#~ msgid "unexpected argument to conditional unary operator"
+#~ msgstr "netikƒótas argumentas sƒÖlygos unariniam operatoriui"
+
+#~ msgid "unexpected token `%s', conditional binary operator expected"
+#~ msgstr "netikƒóta leksema ‚Äû%s‚Äú, tikƒótasi sƒÖlyginio binarinio operatoriaus"
+
+#~ msgid "conditional binary operator expected"
+#~ msgstr "tikƒótasi sƒÖlygos binarinio operatoriaus"
+
+#~ msgid "unexpected argument `%s' to conditional binary operator"
+#~ msgstr "netikƒótas argumentas ‚Äû%s‚Äú sƒÖlygos binariniam operatoriui"
+
+#~ msgid "unexpected argument to conditional binary operator"
+#~ msgstr "netikƒótas argumentas sƒÖlygos binariniam operatoriui"
+
+#~ msgid "unexpected token `%c' in conditional command"
+#~ msgstr "netikƒóta leksema ‚Äû%c‚Äú sƒÖlygos komandoje"
+
+#~ msgid "unexpected token `%s' in conditional command"
+#~ msgstr "netikƒóta leksema ‚Äû%s‚Äú sƒÖlygos komandoje"
+
+#~ msgid "unexpected token %d in conditional command"
+#~ msgstr "netikƒóta leksema %d sƒÖlygos komandoje"
+
+#~ msgid "syntax error near unexpected token `%s'"
+#~ msgstr "sintaksƒós klaida prie netikƒótos leksemos: ‚Äû%s‚Äú"
+
+#~ msgid "syntax error near `%s'"
+#~ msgstr "sintaksƒós klaida prie ‚Äû%s‚Äú"
+
+#~ msgid "syntax error: unexpected end of file"
+#~ msgstr "sintaksƒós klaida: netikƒóta failo pabaiga"
+
+#~ msgid "syntax error"
+#~ msgstr "sintaksƒós klaida"
+
+#~ msgid "Use \"%s\" to leave the shell.\n"
+#~ msgstr "Naudokite ‚Äû%s‚Äú, jei norite i≈°eiti i≈° ap.\n"
+
+#~ msgid "unexpected EOF while looking for matching `)'"
+#~ msgstr "netikƒóta failo pabaiga ie≈°kant atitinkamo ‚Äû)‚Äú"
+
+#~ msgid "completion: function `%s' not found"
+#~ msgstr "completion: funkcija ‚Äû%s‚Äú nerasta"
+
+#~ msgid "progcomp_insert: %s: NULL COMPSPEC"
+#~ msgstr "progcomp_insert: %s: NULL COMPSPEC"
+
+#~ msgid "print_command: bad connector `%d'"
+#~ msgstr "print_command: blogas jungtukas ¬†‚Äû%d‚Äú"
+
+#~ msgid "cprintf: `%c': invalid format character"
+#~ msgstr "cprintf: ‚Äû%c‚Äú: netaisyklingas formato simbolis"
+
+#~ msgid "file descriptor out of range"
+#~ msgstr "failo deskriptorius u≈æ rib≈≥"
+
+#~ msgid "%s: ambiguous redirect"
+#~ msgstr "%s: ambiguous redirect"
+
+#~ msgid "%s: cannot overwrite existing file"
+#~ msgstr "%s: negalima perra≈°yti egzistuojanƒçio failo"
+
+#~ msgid "%s: restricted: cannot redirect output"
+#~ msgstr "%s: apribota: negalima peradresuoti i≈°vedimo"
+
+#~ msgid "cannot create temp file for here document: %s"
+#~ msgstr "nepavyko sukurti laikino failo ‚Äûhere‚Äú dokumentui: %s"
+
+#~ msgid "/dev/(tcp|udp)/host/port not supported without networking"
+#~ msgstr "/dev/(tcp|udp)/komp/prievadas nepalaikoma be tinklo"
+
+#~ msgid "redirection error: cannot duplicate fd"
+#~ msgstr "nukreipimo klaida: nepavyko dublikuoti fd"
+
+#~ msgid "could not find /tmp, please create!"
+#~ msgstr "nepavyko rasti /tmp, sukurkite ≈°ƒØ aplankƒÖ!"
+
+#~ msgid "/tmp must be a valid directory name"
+#~ msgstr "/tmp turi b≈´ti taisyklingas aplanko pavadinimas"
+
+#~ msgid "%c%c: invalid option"
+#~ msgstr "%c%s: netaisyklingas argumentas"
+
+#~ msgid "I have no name!"
+#~ msgstr "Neturiu vardo!"
+
+#~ msgid "sigprocmask: %d: invalid operation"
+#~ msgstr "sigprocmask: %d: netaisyklinga operacija"
+
+#~ msgid "%s: parameter null or not set"
+#~ msgstr "%s: parametras tu≈°ƒçias arba nenustatytas"
+
+#~ msgid "$%s: cannot assign in this way"
+#~ msgstr "$%s: negalima tokiu b≈´du priskirti"
+
+#~ msgid "no match: %s"
+#~ msgstr "nƒóra atitikmen≈≥: %s"
+
+#~ msgid "argument expected"
+#~ msgstr "tikƒótasi argumento"
+
+#~ msgid "%s: integer expression expected"
+#~ msgstr "%s: tikƒótasi skaitinƒós i≈°rai≈°kos"
+
+#~ msgid "`)' expected"
+#~ msgstr "tikƒótasi ‚Äû)‚Äú"
+
+#~ msgid "`)' expected, found %s"
+#~ msgstr "tikƒótasi ‚Äû)‚Äú, rasta %s"
+
+#~ msgid "%s: unary operator expected"
+#~ msgstr "%s: tikƒótasi unarinio operatoriaus"
+
+#~ msgid "%s: binary operator expected"
+#~ msgstr "%s: tikƒótasi binarinio operatoriaus"
+
+#~ msgid "missing `]'"
+#~ msgstr "tr≈´ksta ‚Äû]‚Äú"
+
+#~ msgid "invalid signal number"
+#~ msgstr "netaisyklingas signalo numeris"
+
+#~ msgid "run_pending_traps: bad value in trap_list[%d]: %p"
+#~ msgstr "run_pending_traps: bloga trap_list[%d] reik≈°mƒó: %p"
+
+#~ msgid "trap_handler: bad signal %d"
+#~ msgstr "trap_handler: blogas signalas %d"
+
+#~ msgid "error importing function definition for `%s'"
+#~ msgstr "klaida importuojant funkcijos apibrƒó≈æimƒÖ ‚Äû%s‚Äú"
+
+#, fuzzy
+#~ msgid "make_local_variable: no function context at current scope"
+#~ msgstr "make_local_variable: "
+
+#, fuzzy
+#~ msgid "invalid character %d in exportstr for %s"
+#~ msgstr "netaisyklingas parametras %s argumentui %s"
+
+#~ msgid "Copyright (C) 2006 Free Software Foundation, Inc.\n"
+#~ msgstr "Autorinƒós teisƒós (C) 2006 Free Software Foundation, Inc.\n"
+
+#~ msgid "xmalloc: cannot allocate %lu bytes (%lu bytes allocated)"
+#~ msgstr "xmalloc: nepavyko i≈°skirti %lu bait≈≥ (%lu bait≈≥ i≈°skirta)"
+
+#~ msgid "xmalloc: cannot allocate %lu bytes"
+#~ msgstr "xmalloc: nepavyko i≈°skirti %lu bait≈≥"
+
+#~ msgid "xrealloc: cannot allocate %lu bytes"
+#~ msgstr "xrealloc: nepavyko i≈°skirti %lu bait≈≥"
+
+#~ msgid "xmalloc: %s:%d: cannot allocate %lu bytes"
+#~ msgstr "xmalloc: %s:%d: nepavyko i≈°skirti %lu bait≈≥"
+
+#~ msgid "xrealloc: %s:%d: cannot allocate %lu bytes"
+#~ msgstr "xrealloc: %s:%d: nepavyko i≈°skirti %lu bait≈≥"

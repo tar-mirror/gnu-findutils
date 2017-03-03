@@ -1,6 +1,61 @@
 GNU findutils NEWS - User visible changes.	-*- outline -*- (allout)
 
-* Major changes in release 4.4.0
+* Major changes in release 4.4.1, 2009-04-21
+
+** Bug Fixes
+
+On some systems without support for a boolean type (for example some
+versions of the AIX C compiler), find's regular expression
+implementation fails to support case-insensitive regular expression
+matching, causing -iregex to behave like -regex.  This is now fixed.
+
+#25764: remove duplicate entry for 'proc' in updatedb's $PRUNEFS.
+
+#25154: Allow compilation with C compilers that don't allow
+declarations to follow statements.
+
+#25144: Misleading error message when argument to find -user is an
+unknown user or is missing.
+
+#24283: -printf %TY causes NULL pointer dereference on Solaris.
+
+#24169: find would segfault if the -newerXY test was not followed by
+any argument.
+
+#23996: integer overflow on some platforms when parsing "-used 3".
+
+#23663: crash in some locales for -printf %AX (this problem seems to
+have affected only the CVS code for 4.5.x, and not any public
+releases, but it was a problem with the original fix for bug #22662)
+
+#22662: find -printf %AX appends nanoseconds in the right place now.
+
+** Functional Enhancements to find
+
+If the POSIXLY_CORRECT environment variable is set, the system's
+definition of "yes" and "no" responses are used to interpret the
+response to questions from -ok and -okdir.  The default is still to
+use information from the findutils message translations.  
+
+** Documentation Enhancements
+
+Both the Texinfo manual and the find manual page now include a more
+precise description of how your locale configuration affects the
+interpretation of regular expressions and how your response to prompts
+from the -ok action are interpreted.
+
+Added a worked example describing how to find the shallowest instances
+of a given directory name (or names) in a directory hierarchy.
+
+The file README-CVS has been renamed to README-hacking and improved.
+
+** Translations
+
+Updated translations: Catalan, French, German, Indonesian, Irish,
+Dutch, Polish, Slovenian, Swedish, Vietnamese, Chinese (simplified),
+Lithuanian.
+
+* Major changes in release 4.4.0, 2008-03-15
 
 The 4.4.0 release of findutils is a stable release, succeeding the
 final release in the previous development series, 4.3.13.  However,
