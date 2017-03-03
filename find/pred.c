@@ -449,6 +449,8 @@ new_impl_pred_exec (const char *pathname, struct stat *stat_buf,
 {
   struct exec_val *execp = &pred_ptr->args.exec_vec;
   size_t len = strlen(pathname);
+
+  (void) stat_buf;
   
   if (execp->multiple)
     {
@@ -635,14 +637,23 @@ pred_fprintf (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 	case 'h':		/* leading directories part of path */
 	  {
 	    char cc;
-
+	    
 	    cp = strrchr (pathname, '/');
 	    if (cp == NULL)	/* No leading directories. */
-	      break;
-	    cc = *cp;
-	    *cp = '\0';
-	    fprintf (fp, segment->text, pathname);
-	    *cp = cc;
+	      {
+		/* If there is no slash in the pathname, we still
+		 * print the string because it contains characters
+		 * other than just '%s'.  The %h expands to ".".
+		 */
+		fprintf (fp, segment->text, ".");
+	      }
+	    else
+	      {
+		cc = *cp;
+		*cp = '\0';
+		fprintf (fp, segment->text, pathname);
+		*cp = cc;
+	      }
 	    break;
 	  }
 	case 'H':		/* ARGV element file was found under */
@@ -1255,14 +1266,16 @@ pred_size (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 boolean
 pred_samefile (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
-  /* Potential optimisation: because of the loop protection, we 
-   * always know the device of the current directory, hence the 
-   * device number of the current filesystem.  If -L is not in 
-   * effect, and the device number of the file we're looking for 
-   * is not the same as the device number of the current directory,
-   * this predicate cannot return true.   Hence there would be no 
-   * need to stat the file.
+  /* Potential optimisation: because of the loop protection, we always
+   * know the device of the current directory, hence the device number
+   * of the file we're currently considering.  If -L is not in effect,
+   * and the device number of the file we're looking for is not the
+   * same as the device number of the current directory, this
+   * predicate cannot return true.  Hence there would be no need to
+   * stat the file we're lookingn at.
    */
+  (void) pathname;
+  
   return stat_buf->st_ino == pred_ptr->args.fileid.ino
     &&   stat_buf->st_dev == pred_ptr->args.fileid.dev;
 }

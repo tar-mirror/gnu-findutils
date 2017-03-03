@@ -1,5 +1,5 @@
-This is ../../findutils/doc/find.info, produced by makeinfo version 4.7
-from ../../findutils/doc/find.texi.
+This is find.info, produced by makeinfo version 4.7 from
+/home/jay/src/GNU/findutils/cvs/trunk/findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
 START-INFO-DIR-ENTRY
@@ -39,7 +39,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.  This is
-edition 4.2.18, for `find' version 4.2.18.
+edition 4.2.20, for `find' version 4.2.20.
 
 * Menu:
 
@@ -1309,7 +1309,11 @@ File: find.info,  Node: Name Directives,  Next: Ownership Directives,  Up: Forma
 
 `%h'
      Leading directories of file's name (all but the last element and
-     the slash before it).
+     the slash before it).  If the file's name contains no slashes (for
+     example because it was named on the command line and is in the
+     current working directory), then "%h" expands to ".".  This
+     prevents "%h/%f" expanding to "/foo", which would be surprising
+     and probably not desirable.
 
 `%P'
      File's name with the name of the command line argument under which
@@ -3405,16 +3409,16 @@ of your system.
 
 * Menu:
 
-* O_FOLLOW::                       Safely changing directory using fchdir().
+* O_NOFOLLOW::                     Safely changing directory using fchdir().
 * Systems without O_NOFOLLOW::     Checking for symbolic links after chdir().
 * Working with automounters::      These can look like race condition exploits
-* Problems with dead NFS servers:: If you don't have O_FOLLOW, this ia a problem.
+* Problems with dead NFS servers:: If you don't have O_NOFOLLOW, this is a problem.
 
 
-File: find.info,  Node: O_FOLLOW,  Next: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
+File: find.info,  Node: O_NOFOLLOW,  Next: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
 
-8.2.1.1 O_FOLLOW
-................
+8.2.1.1 O_NOFOLLOW
+..................
 
 If your system supports the O_NOFOLLOW flag (1) to the `open(2)' system
 call, `find' uses it when safely changing directory.  The target
@@ -3452,7 +3456,7 @@ system and version number; when this happens you will see
 (3.0-CURRENT and later) support this
 
 
-File: find.info,  Node: Systems without O_NOFOLLOW,  Next: Working with automounters,  Prev: O_FOLLOW,  Up: Changing the Current Working Directory
+File: find.info,  Node: Systems without O_NOFOLLOW,  Next: Working with automounters,  Prev: O_NOFOLLOW,  Up: Changing the Current Working Directory
 
 8.2.1.2 Systems without O_NOFOLLOW
 ..................................
@@ -3462,11 +3466,11 @@ support for the O_NOFOLLOW flag is more complex.  Each time `find'
 changes directory, it examines the directory it is about to move to,
 issues the `chdir()' system call, and then checks that it has ended up
 in the subdirectory it expected.  If not, an error message is issued
-and `find' exits immediately.  This method also prevents filesystem
+and `find' exits immediately.  This method prevents filesystem
 manipulation attacks from persuading `find' to search parts of the
 filesystem it did not intend.  However, we heve to take special steps
-in order not to be unneccessarily concluding that there is a problem
-aut "automount" mount points.
+in order not to unneccessarily conclude that there is a problem with
+any "automount" mount points.
 
 
 File: find.info,  Node: Working with automounters,  Next: Problems with dead NFS servers,  Prev: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
@@ -3474,15 +3478,16 @@ File: find.info,  Node: Working with automounters,  Next: Problems with dead NFS
 8.2.1.3 Working with automounters
 .................................
 
-Where an automounter is in use on systems that do not support O_FOLLOW,
-it can be the case that the use of the `chdir()' system call can itself
-cause a new filesystem to be mounted at that point.  This will cause
-`find''s security check to fail.  However, this does not normally
-represent a security problem (since the automounter configuration is
-normally set up by the system administrator).  Therefore, if the
-`chdir()' sanity check fails, `find' will check to see if a new
-filesystem has been mounted at the current directory; if so, `find'
-will issue a warning message and continue.
+Where an automounter is in use it can be the case that the use of the
+`chdir()' system call can itself cause a new filesystem to be mounted
+at that point.  On systems that do not support O_NOFOLLOW, this will
+cause `find''s security check to fail.
+
+   However, this does not normally represent a security problem (since
+the automounter configuration is normally set up by the system
+administrator).  Therefore, if the `chdir()' sanity check fails, `find'
+will check to see if a new filesystem has been mounted at the current
+directory; if so, `find' will issue a warning message and continue.
 
    To make this solution work, `find' reads the list of mounted
 filesystems at startup, and again when the sanity check fails.  It
@@ -3504,7 +3509,7 @@ affected mount point is not within the directory tree that find would
 have searched anyway.
 
    This is very unfortunate.  However, this problem only affects systems
-that have no support for O_FOLLOW.  As far as I can tell, it is not
+that have no support for O_NOFOLLOW.  As far as I can tell, it is not
 possible on such systems to fix all three problems (the race condition,
 the false-alarm at automount mount points, and the hang at startup if
 there is a dead NFS server) at once.  If you have some ideas about how
@@ -3948,107 +3953,107 @@ Expressions::, for more information on expressions.
 
 
 Tag Table:
-Node: Top1523
-Node: Introduction2489
-Node: Scope3731
-Node: Overview5656
-Node: find Expressions7419
-Node: Finding Files9044
-Node: Name9511
-Node: Base Name Patterns10139
-Node: Full Name Patterns10853
-Node: Fast Full Name Search12351
-Node: Shell Pattern Matching14771
-Node: Links16860
-Node: Symbolic Links17295
-Node: Hard Links21422
-Node: Time23897
-Node: Age Ranges24485
-Node: Comparing Timestamps25883
-Node: Size27175
-Node: Type28973
-Node: Owner29829
-Node: Permissions30656
-Node: Contents33011
-Node: Directories34184
-Node: Filesystems38834
-Node: Combining Primaries With Operators40185
-Node: Actions41705
-Node: Print File Name42270
-Node: Print File Information42884
-Node: Escapes45440
-Node: Format Directives46169
-Node: Name Directives47312
-Node: Ownership Directives48016
-Node: Size Directives48570
-Node: Location Directives49108
-Node: Time Directives50229
-Node: Time Formats51132
-Node: Time Components51568
-Node: Date Components52074
-Node: Combined Time Formats52897
-Node: Formatting Flags53614
-Node: Run Commands54226
-Node: Single File54584
-Node: Multiple Files56005
-Node: Unsafe File Name Handling59822
-Node: Safe File Name Handling61385
-Node: Limiting Command Size62912
-Node: Interspersing File Names64847
-Node: Querying65966
-Node: Delete Files66890
-Node: Adding Tests67294
-Node: Common Tasks69945
-Node: Viewing And Editing70362
-Node: Archiving71368
-Node: Cleaning Up73000
-Node: Strange File Names74789
-Node: Fixing Permissions76424
-Node: Classifying Files76988
-Node: Databases77706
-Node: Database Locations78429
-Node: Database Formats79437
-Node: New Database Format80224
-Node: Sample Database81892
-Node: Old Database Format82540
-Node: Newline Handling84600
-Node: File Permissions86040
-Node: Mode Structure86609
-Node: Symbolic Modes88742
-Node: Setting Permissions89744
-Node: Copying Permissions92289
-Node: Changing Special Permissions93099
-Node: Conditional Executability94943
-Node: Multiple Changes95569
-Node: Umask and Protection97225
-Node: Numeric Modes98323
-Node: Reference100138
-Node: Invoking find100447
-Node: Warning Messages102628
-Node: Invoking locate104394
-Node: Invoking updatedb108322
-Node: Invoking xargs110607
-Node: Security Considerations113845
-Node: Levels of Risk115380
-Ref: Levels of Risk-Footnote-1118174
-Node: Security Considerations for find118353
-Ref: Security Considerations for find-Footnote-1120577
-Node: Changing the Current Working Directory120650
-Node: O_FOLLOW122522
-Ref: O_FOLLOW-Footnote-1124156
-Node: Systems without O_NOFOLLOW124258
-Node: Working with automounters125130
-Node: Problems with dead NFS servers126185
-Node: Race Conditions with -exec127280
-Node: Race Conditions with -print and -print0130145
-Node: Security Considerations for xargs131066
-Node: Security Considerations for locate133142
-Node: Security Summary133838
-Node: Error Messages134561
-Node: Error Messages From find135613
-Node: Error Messages From xargs140489
-Node: Error Messages From locate141939
-Node: Error Messages From updatedb143165
-Node: Primary Index143579
+Node: Top1535
+Node: Introduction2501
+Node: Scope3743
+Node: Overview5668
+Node: find Expressions7431
+Node: Finding Files9056
+Node: Name9523
+Node: Base Name Patterns10151
+Node: Full Name Patterns10865
+Node: Fast Full Name Search12363
+Node: Shell Pattern Matching14783
+Node: Links16872
+Node: Symbolic Links17307
+Node: Hard Links21434
+Node: Time23909
+Node: Age Ranges24497
+Node: Comparing Timestamps25895
+Node: Size27187
+Node: Type28985
+Node: Owner29841
+Node: Permissions30668
+Node: Contents33023
+Node: Directories34196
+Node: Filesystems38846
+Node: Combining Primaries With Operators40197
+Node: Actions41717
+Node: Print File Name42282
+Node: Print File Information42896
+Node: Escapes45452
+Node: Format Directives46181
+Node: Name Directives47324
+Node: Ownership Directives48308
+Node: Size Directives48862
+Node: Location Directives49400
+Node: Time Directives50521
+Node: Time Formats51424
+Node: Time Components51860
+Node: Date Components52366
+Node: Combined Time Formats53189
+Node: Formatting Flags53906
+Node: Run Commands54518
+Node: Single File54876
+Node: Multiple Files56297
+Node: Unsafe File Name Handling60114
+Node: Safe File Name Handling61677
+Node: Limiting Command Size63204
+Node: Interspersing File Names65139
+Node: Querying66258
+Node: Delete Files67182
+Node: Adding Tests67586
+Node: Common Tasks70237
+Node: Viewing And Editing70654
+Node: Archiving71660
+Node: Cleaning Up73292
+Node: Strange File Names75081
+Node: Fixing Permissions76716
+Node: Classifying Files77280
+Node: Databases77998
+Node: Database Locations78721
+Node: Database Formats79729
+Node: New Database Format80516
+Node: Sample Database82184
+Node: Old Database Format82832
+Node: Newline Handling84892
+Node: File Permissions86332
+Node: Mode Structure86901
+Node: Symbolic Modes89034
+Node: Setting Permissions90036
+Node: Copying Permissions92581
+Node: Changing Special Permissions93391
+Node: Conditional Executability95235
+Node: Multiple Changes95861
+Node: Umask and Protection97517
+Node: Numeric Modes98615
+Node: Reference100430
+Node: Invoking find100739
+Node: Warning Messages102920
+Node: Invoking locate104686
+Node: Invoking updatedb108614
+Node: Invoking xargs110899
+Node: Security Considerations114137
+Node: Levels of Risk115672
+Ref: Levels of Risk-Footnote-1118466
+Node: Security Considerations for find118645
+Ref: Security Considerations for find-Footnote-1120869
+Node: Changing the Current Working Directory120942
+Node: O_NOFOLLOW122816
+Ref: O_NOFOLLOW-Footnote-1124456
+Node: Systems without O_NOFOLLOW124558
+Node: Working with automounters125427
+Node: Problems with dead NFS servers126487
+Node: Race Conditions with -exec127584
+Node: Race Conditions with -print and -print0130449
+Node: Security Considerations for xargs131370
+Node: Security Considerations for locate133446
+Node: Security Summary134142
+Node: Error Messages134865
+Node: Error Messages From find135917
+Node: Error Messages From xargs140793
+Node: Error Messages From locate142243
+Node: Error Messages From updatedb143469
+Node: Primary Index143883
 
 End Tag Table
