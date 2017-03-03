@@ -1,5 +1,5 @@
 /* Return the canonical absolute name of a given file.
-   Copyright (C) 1996-2005 Free Software Foundation, Inc.
+   Copyright (C) 1996-2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,23 +16,12 @@
    If not, write to the Free Software Foundation,
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #include "canonicalize.h"
 
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#else
-void free ();
-#endif
-
-#if defined STDC_HEADERS || defined HAVE_STRING_H
-# include <string.h>
-#else
-# include <strings.h>
-#endif
+#include <stdlib.h>
+#include <string.h>
 
 #if HAVE_SYS_PARAM_H
 # include <sys/param.h>
@@ -40,19 +29,19 @@ void free ();
 
 #include <sys/stat.h>
 
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 #include <errno.h>
 #include <stddef.h>
 
 #include "cycle-check.h"
 #include "filenamecat.h"
-#include "stat-macros.h"
 #include "xalloc.h"
 #include "xgetcwd.h"
 
+#ifndef ELOOP
+# define ELOOP 0
+#endif
 #ifndef __set_errno
 # define __set_errno(Val) errno = (Val)
 #endif

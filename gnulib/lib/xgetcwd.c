@@ -1,6 +1,6 @@
 /* xgetcwd.c -- return current directory with unlimited length
 
-   Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,15 +18,13 @@
 
 /* Written by Jim Meyering.  */
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #include "xgetcwd.h"
 
 #include <errno.h>
+#include <unistd.h>
 
-#include "getcwd.h"
 #include "xalloc.h"
 
 /* Return the current directory, newly allocated.

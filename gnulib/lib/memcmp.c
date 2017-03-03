@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1993, 1995, 1997, 1998, 2003 Free Software
+/* Copyright (C) 1991, 1993, 1995, 1997, 1998, 2003, 2006 Free Software
    Foundation, Inc.
 
    Contributed by Torbjorn Granlund (tege@sics.se).
@@ -21,8 +21,8 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
+#ifndef _LIBC
+# include <config.h>
 #endif
 
 #include <string.h>

@@ -1,5 +1,5 @@
 /* Declarations for getopt.
-   Copyright (C) 1989-1994,1996-1999,2001,2003,2004
+   Copyright (C) 1989-1994,1996-1999,2001,2003,2004,2005,2006
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -34,9 +34,7 @@
 #if defined __GETOPT_PREFIX && !defined __need_getopt
 # include <stdlib.h>
 # include <stdio.h>
-# if HAVE_UNISTD_H
-#  include <unistd.h>
-# endif
+# include <unistd.h>
 # undef __need_getopt
 # undef getopt
 # undef getopt_long
@@ -198,9 +196,10 @@ struct option
    scanning, explicitly telling `getopt' that there are no more
    options.
 
-   If OPTS begins with `--', then non-option arguments are treated as
-   arguments to the option '\0'.  This behavior is specific to the GNU
-   `getopt'.  */
+   If OPTS begins with `-', then non-option arguments are treated as
+   arguments to the option '\1'.  This behavior is specific to the GNU
+   `getopt'.  If OPTS begins with `+', or POSIXLY_CORRECT is set in
+   the environment, then do not permute arguments.  */
 
 extern int getopt (int ___argc, char *const *___argv, const char *__shortopts)
        __THROW;

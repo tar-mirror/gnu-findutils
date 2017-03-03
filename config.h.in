@@ -1,10 +1,61 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
+/* Define this to an absolute name of <fcntl.h>. */
+#undef ABSOLUTE_FCNTL_H
+
+/* Define this to an absolute name of <inttypes.h>. */
+#undef ABSOLUTE_INTTYPES_H
+
+/* Define this to an absolute name of <stdint.h>. */
+#undef ABSOLUTE_STDINT_H
+
+/* Define this to an absolute name of <stdlib.h>. */
+#undef ABSOLUTE_STDLIB_H
+
+/* Define this to an absolute name of <string.h>. */
+#undef ABSOLUTE_STRING_H
+
+/* Define this to an absolute name of <sys/stat.h>. */
+#undef ABSOLUTE_SYS_STAT_H
+
+/* Define this to an absolute name of <time.h>. */
+#undef ABSOLUTE_TIME_H
+
+/* Define this to an absolute name of <unistd.h>. */
+#undef ABSOLUTE_UNISTD_H
+
+/* Define this to an absolute name of <wchar.h>. */
+#undef ABSOLUTE_WCHAR_H
+
+/* Define this to an absolute name of <wctype.h>. */
+#undef ABSOLUTE_WCTYPE_H
+
+/* Define to the number of bits in type 'ptrdiff_t'. */
+#undef BITSIZEOF_PTRDIFF_T
+
+/* Define to the number of bits in type 'sig_atomic_t'. */
+#undef BITSIZEOF_SIG_ATOMIC_T
+
+/* Define to the number of bits in type 'size_t'. */
+#undef BITSIZEOF_SIZE_T
+
+/* Define to the number of bits in type 'wchar_t'. */
+#undef BITSIZEOF_WCHAR_T
+
+/* Define to the number of bits in type 'wint_t'. */
+#undef BITSIZEOF_WINT_T
+
 /* Define if you want find -nouser and -nogroup to make tables of used UIDs
    and GIDs at startup instead of using getpwuid or getgrgid when needed.
    Speeds up -nouser and -nogroup unless you are running NIS or Hesiod, which
    make password and group calls very expensive. */
 #undef CACHE_IDS
+
+/* Define if chown is not POSIX compliant regarding IDs of -1. */
+#undef CHOWN_FAILS_TO_HONOR_ID_OF_NEGATIVE_ONE
+
+/* Define if chown modifies symlinks. */
+#undef CHOWN_MODIFIES_SYMLINK
 
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 #undef CLOSEDIR_VOID
@@ -24,6 +75,19 @@
    call */
 #undef DEBUG_STAT
 
+/* the name of the file descriptor member of DIR */
+#undef DIR_FD_MEMBER_NAME
+
+#ifdef DIR_FD_MEMBER_NAME
+# define DIR_TO_FD(Dir_p) ((Dir_p)->DIR_FD_MEMBER_NAME)
+#else
+# define DIR_TO_FD(Dir_p) -1
+#endif
+
+
+/* Define to 1 if // is a file system root distinct from /. */
+#undef DOUBLE_SLASH_IS_DISTINCT_ROOT
+
 /* Define if there is a member named d_ino in the struct describing directory
    headers. */
 #undef D_INO_IN_DIRENT
@@ -41,29 +105,44 @@
    separator. */
 #undef FILE_SYSTEM_BACKSLASH_IS_FILE_NAME_SEPARATOR
 
-#if FILE_SYSTEM_ACCEPTS_DRIVE_LETTER_PREFIX
-# define FILE_SYSTEM_PREFIX_LEN(Filename) \
-  ((Filename)[0] && (Filename)[1] == ':' ? 2 : 0)
-#else
-# define FILE_SYSTEM_PREFIX_LEN(Filename) 0
-#endif
+/* Define if a drive letter prefix denotes a relative path if it is not
+   followed by a file name component separator. */
+#undef FILE_SYSTEM_DRIVE_PREFIX_CAN_BE_RELATIVE
 
 /* Define if we are compiling GNU findutils */
 #undef FINDUTILS
 
+/* Define to nothing if C supports flexible array members, and to 1 if it does
+   not. That way, with a declaration like `struct s { int n; double
+   d[FLEXIBLE_ARRAY_MEMBER]; };', the struct hack can be used with pre-C99
+   compilers. When computing the size of such an object, don't use 'sizeof
+   (struct s)' as it overestimates the size. Use 'offsetof (struct s, d)'
+   instead. Don't use 'offsetof (struct s, d[0])', as this doesn't work with
+   MSVC and with C++ compilers. */
+#undef FLEXIBLE_ARRAY_MEMBER
+
+/* Define to 1 when using the gnulib module canonicalize. */
+#undef GNULIB_CANONICALIZE
+
+/* Define to 1 when using the gnulib module close-stream. */
+#undef GNULIB_CLOSE_STREAM
+
+/* Define to 1 when using the gnulib module fcntl-safer. */
+#undef GNULIB_FCNTL_SAFER
+
+/* Define to 1 when using the gnulib module fopen-safer. */
+#undef GNULIB_FOPEN_SAFER
+
 /* Define to 1 if you have the `alarm' function. */
 #undef HAVE_ALARM
 
-/* Define to 1 if you have `alloca' after including <alloca.h>, a header that
+/* Define to 1 if you have 'alloca' after including <alloca.h>, a header that
    may be supplied by this distribution. */
 #undef HAVE_ALLOCA
 
 /* Define HAVE_ALLOCA_H for backward compatibility with older code that
    includes <alloca.h> only if HAVE_ALLOCA_H is defined. */
 #undef HAVE_ALLOCA_H
-
-/* Define to 1 if you have the `atexit' function. */
-#undef HAVE_ATEXIT
 
 /* Define to 1 if you have the `btowc' function. */
 #undef HAVE_BTOWC
@@ -79,17 +158,64 @@
    the CoreFoundation framework. */
 #undef HAVE_CFPREFERENCESCOPYAPPVALUE
 
+/* Define to 1 if your system has a working `chown' function. */
+#undef HAVE_CHOWN
+
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #undef HAVE_DCGETTEXT
+
+/* Define to 1 if you have the declaration of `canonicalize_file_name', and to
+   0 if you don't. */
+#undef HAVE_DECL_CANONICALIZE_FILE_NAME
+
+/* Define to 1 if you have the declaration of `dirfd', and to 0 if you don't.
+   */
+#undef HAVE_DECL_DIRFD
 
 /* Define to 1 if you have the declaration of `getcwd', and to 0 if you don't.
    */
 #undef HAVE_DECL_GETCWD
 
+/* Define to 1 if you have the declaration of `getc_unlocked', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETC_UNLOCKED
+
+/* Define to 1 if you have the declaration of `getdelim', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETDELIM
+
 /* Define to 1 if you have the declaration of `getenv', and to 0 if you don't.
    */
 #undef HAVE_DECL_GETENV
+
+/* Define to 1 if you have the declaration of `getline', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETLINE
+
+/* Define to 1 if you have the declaration of `imaxabs', and to 0 if you
+   don't. */
+#undef HAVE_DECL_IMAXABS
+
+/* Define to 1 if you have the declaration of `imaxdiv', and to 0 if you
+   don't. */
+#undef HAVE_DECL_IMAXDIV
+
+/* Define to 1 if you have the declaration of `isblank', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ISBLANK
+
+/* Define to 1 if you have the declaration of `lchown', and to 0 if you don't.
+   */
+#undef HAVE_DECL_LCHOWN
+
+/* Define to 1 if you have the declaration of `memrchr', and to 0 if you
+   don't. */
+#undef HAVE_DECL_MEMRCHR
+
+/* Define to 1 if you have the declaration of `mkdir', and to 0 if you don't.
+   */
+#undef HAVE_DECL_MKDIR
 
 /* Define to 1 if you have the declaration of `strdup', and to 0 if you don't.
    */
@@ -98,6 +224,18 @@
 /* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRERROR_R
+
+/* Define to 1 if you have the declaration of `strmode', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRMODE
+
+/* Define to 1 if you have the declaration of `strndup', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNDUP
+
+/* Define to 1 if you have the declaration of `strnlen', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNLEN
 
 /* Define to 1 if you have the declaration of `strtoimax', and to 0 if you
    don't. */
@@ -127,6 +265,9 @@
    */
 #undef HAVE_DIRENT_H
 
+/* Define to 1 if you have the `dirfd' function. */
+#undef HAVE_DIRFD
+
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
 
@@ -145,8 +286,17 @@
 /* Define to 1 if you have the `fchdir' function. */
 #undef HAVE_FCHDIR
 
+/* Define to 1 if you have the `fchmodat' function. */
+#undef HAVE_FCHMODAT
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the `fdopendir' function. */
+#undef HAVE_FDOPENDIR
+
+/* Define to 1 if you have the `flockfile' function. */
+#undef HAVE_FLOCKFILE
 
 /* Define to 1 if you have the `forcefindlib' function. */
 #undef HAVE_FORCEFINDLIB
@@ -157,8 +307,8 @@
 /* Define to 1 if you have the `fs_stat_dev' function. */
 #undef HAVE_FS_STAT_DEV
 
-/* Define if struct statfs has the f_fstypename member. */
-#undef HAVE_F_FSTYPENAME_IN_STATFS
+/* Define to 1 if you have the `funlockfile' function. */
+#undef HAVE_FUNLOCKFILE
 
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
@@ -178,11 +328,22 @@
 /* Define to 1 if you have the `getopt_long_only' function. */
 #undef HAVE_GETOPT_LONG_ONLY
 
+/* Define to 1 if you have the `getpagesize' function. */
+#undef HAVE_GETPAGESIZE
+
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
+/* Define to 1 if you have the `hasmntopt' function. */
+#undef HAVE_HASMNTOPT
+
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
+
+/* Define to 1 if the compiler supports one of the keywords 'inline',
+   '__inline__', '__inline' and effectively inlines functions marked as such.
+   */
+#undef HAVE_INLINE
 
 /* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
 #undef HAVE_INTMAX_T
@@ -190,21 +351,23 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
-   declares uintmax_t. */
-#undef HAVE_INTTYPES_H_WITH_UINTMAX
+/* Define to 1 if you have the <io.h> header file. */
+#undef HAVE_IO_H
 
-/* Define to 1 if you have the `isascii' function. */
-#undef HAVE_ISASCII
+/* Define to 1 if you have the `iswcntrl' function. */
+#undef HAVE_ISWCNTRL
 
-/* Define to 1 if you have the `isblank' function. */
-#undef HAVE_ISBLANK
-
-/* Define to 1 if you have the `iswprint' function. */
-#undef HAVE_ISWPRINT
+/* Define to 1 if you have the `iswctype' function. */
+#undef HAVE_ISWCTYPE
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
+
+/* Define to 1 if you have the `lchmod' function. */
+#undef HAVE_LCHMOD
+
+/* Define to 1 if you have the `lchown' function. */
+#undef HAVE_LCHOWN
 
 /* Define to 1 if you have the `sun' library (-lsun). */
 #undef HAVE_LIBSUN
@@ -220,6 +383,12 @@
 
 /* Define if you have the 'long long' type. */
 #undef HAVE_LONG_LONG
+
+/* Define to 1 if the system has the type `long long int'. */
+#undef HAVE_LONG_LONG_INT
+
+/* Define to 1 if you have the `lstat' function. */
+#undef HAVE_LSTAT
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
@@ -252,8 +421,14 @@
 /* Define to 1 if you have the `mempcpy' function. */
 #undef HAVE_MEMPCPY
 
+/* Define to 1 if you have the `memrchr' function. */
+#undef HAVE_MEMRCHR
+
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
+
+/* Define to 1 if you have the `mkdirat' function. */
+#undef HAVE_MKDIRAT
 
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
@@ -264,11 +439,17 @@
 /* Define to 1 if you have the `next_dev' function. */
 #undef HAVE_NEXT_DEV
 
+/* Define to 1 if you have the `openat' function. */
+#undef HAVE_OPENAT
+
 /* Define to 1 if getcwd works, except it sometimes fails when it shouldn't,
    setting errno to ERANGE, ENAMETOOLONG, or ENOENT. If __GETCWD_PREFIX is not
    defined, it doesn't matter whether HAVE_PARTLY_WORKING_GETCWD is defined.
    */
 #undef HAVE_PARTLY_WORKING_GETCWD
+
+/* Define to 1 if you have the `pipe' function. */
+#undef HAVE_PIPE
 
 /* Define to 1 if you have the `readlink' function. */
 #undef HAVE_READLINK
@@ -289,6 +470,15 @@
 /* Define to 1 if you have the `setmntent' function. */
 #undef HAVE_SETMNTENT
 
+/* Define to 1 if 'sig_atomic_t' is a signed integer type. */
+#undef HAVE_SIGNED_SIG_ATOMIC_T
+
+/* Define to 1 if 'wchar_t' is a signed integer type. */
+#undef HAVE_SIGNED_WCHAR_T
+
+/* Define to 1 if 'wint_t' is a signed integer type. */
+#undef HAVE_SIGNED_WINT_T
+
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
 
@@ -297,10 +487,6 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
-
-/* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
-   uintmax_t. */
-#undef HAVE_STDINT_H_WITH_UINTMAX
 
 /* Define to 1 if you have the <stdio_ext.h> header file. */
 #undef HAVE_STDIO_EXT_H
@@ -328,6 +514,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define if you have the strndup() function and it works. */
+#undef HAVE_STRNDUP
 
 /* Define to 1 if you have the `strspn' function. */
 #undef HAVE_STRSPN
@@ -359,6 +548,9 @@
 /* Define to 1 if `f_fstypename' is member of `struct fsstat'. */
 #undef HAVE_STRUCT_FSSTAT_F_FSTYPENAME
 
+/* Define to 1 if `f_fstypename' is member of `struct statfs'. */
+#undef HAVE_STRUCT_STATFS_F_FSTYPENAME
+
 /* Define to 1 if `st_blocks' is member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLOCKS
 
@@ -372,12 +564,21 @@
    `HAVE_STRUCT_STAT_ST_BLOCKS' instead. */
 #undef HAVE_ST_BLOCKS
 
+/* Define if struct stat has an st_dm_mode member. */
+#undef HAVE_ST_DM_MODE
+
+/* Define to 1 if you have the <sys/bitypes.h> header file. */
+#undef HAVE_SYS_BITYPES_H
+
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
 #undef HAVE_SYS_DIR_H
 
 /* Define to 1 if you have the <sys/fs_types.h> header file. */
 #undef HAVE_SYS_FS_TYPES_H
+
+/* Define to 1 if you have the <sys/inttypes.h> header file. */
+#undef HAVE_SYS_INTTYPES_H
 
 /* Define to 1 if you have the <sys/mkdev.h> header file. */
 #undef HAVE_SYS_MKDEV_H
@@ -401,6 +602,9 @@
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
 
+/* Define to 1 if you have the <sys/statvfs.h> header file. */
+#undef HAVE_SYS_STATVFS_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -419,9 +623,8 @@
 /* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
 #undef HAVE_SYS_WAIT_H
 
-/* Define to 1 if localtime_r, etc. have the type signatures that POSIX
-   requires. */
-#undef HAVE_TIME_R_POSIX
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
 
 /* Define if struct tm has the tm_gmtoff member. */
 #undef HAVE_TM_GMTOFF
@@ -437,14 +640,11 @@
 /* Define to 1 if you have the `tzset' function. */
 #undef HAVE_TZSET
 
-/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
-#undef HAVE_UINTMAX_T
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define if you have the 'unsigned long long' type. */
-#undef HAVE_UNSIGNED_LONG_LONG
+/* Define to 1 if the system has the type `unsigned long long int'. */
+#undef HAVE_UNSIGNED_LONG_LONG_INT
 
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF
@@ -455,6 +655,9 @@
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
+/* Define if you have the 'wchar_t' type. */
+#undef HAVE_WCHAR_T
+
 /* Define to 1 if you have the `wcrtomb' function. */
 #undef HAVE_WCRTOMB
 
@@ -464,6 +667,9 @@
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
+/* Define if you have the 'wint_t' type. */
+#undef HAVE_WINT_T
+
 /* Define to 1 if you have the `wmemchr' function. */
 #undef HAVE_WMEMCHR
 
@@ -472,6 +678,12 @@
 
 /* Define to 1 if you have the `wmempcpy' function. */
 #undef HAVE_WMEMPCPY
+
+/* Define to 1 if O_NOATIME works. */
+#undef HAVE_WORKING_O_NOATIME
+
+/* Define to 1 if O_NOFOLLOW works. */
+#undef HAVE_WORKING_O_NOFOLLOW
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
@@ -532,8 +744,14 @@
 #undef MOUNTED_GETMNTENT2
 
 /* Define if there is a function named getmntinfo for reading the list of
-   mounted file systems. (4.4BSD, Darwin) */
+   mounted file systems and it returns an array of 'struct statfs'. (4.4BSD,
+   Darwin) */
 #undef MOUNTED_GETMNTINFO
+
+/* Define if there is a function named getmntinfo for reading the list of
+   mounted file systems and it returns an array of 'struct statvfs'. (NetBSD
+   3.0) */
+#undef MOUNTED_GETMNTINFO2
 
 /* Define if there is a function named listmntent that can be used to list all
    mounted file systems. (UNICOS) */
@@ -565,8 +783,23 @@
 /* the number of pending output bytes on stream `fp' */
 #undef PENDING_OUTPUT_N_BYTES
 
+/* Define if <inttypes.h> exists and defines unusable PRI* macros. */
+#undef PRI_MACROS_BROKEN
+
 /* Define to 1 if the C compiler supports function prototypes. */
 #undef PROTOTYPES
+
+/* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
+   'ptrdiff_t'. */
+#undef PTRDIFF_T_SUFFIX
+
+/* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
+   'sig_atomic_t'. */
+#undef SIG_ATOMIC_T_SUFFIX
+
+/* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
+   'size_t'. */
+#undef SIZE_T_SUFFIX
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
@@ -585,9 +818,6 @@
 /* Define to 1 if strerror_r returns char *. */
 #undef STRERROR_R_CHAR_P
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#undef TIME_WITH_SYS_TIME
-
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
 
@@ -596,6 +826,14 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
+   'wchar_t'. */
+#undef WCHAR_T_SUFFIX
+
+/* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
+   'wint_t'. */
+#undef WINT_T_SUFFIX
 
 /* Define to 1 if on AIX 3.
    System headers sometimes define this.
@@ -625,6 +863,9 @@
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 #undef _POSIX_SOURCE
 
+/* Define if you want regoff_t to be at least as wide POSIX requires. */
+#undef _REGEX_LARGE_OFFSETS
+
 /* Enable extensions on Solaris.  */
 #ifndef __EXTENSIONS__
 # undef __EXTENSIONS__
@@ -632,22 +873,25 @@
 #ifndef _POSIX_PTHREAD_SEMANTICS
 # undef _POSIX_PTHREAD_SEMANTICS
 #endif
-
-/* Define to rpl_ if the getcwd replacement function should be used. */
-#undef __GETCWD_PREFIX
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
 
 /* Define to rpl_ if the getopt replacement functions and variables should be
    used. */
 #undef __GETOPT_PREFIX
 
+/* Define to rpl_ if the openat replacement function should be used. */
+#undef __OPENAT_PREFIX
+
 /* Define like PROTOTYPES; this can be used by system headers. */
 #undef __PROTOTYPES
 
-/* Define to empty if `const' does not conform to ANSI C. */
-#undef const
-
 /* Define to `unsigned long' if <sys/types.h> does not define. */
 #undef dev_t
+
+/* Define to rpl_fchownat if the replacement function should be used. */
+#undef fchownat
 
 /* Define to a replacement function name for fnmatch(). */
 #undef fnmatch
@@ -692,8 +936,53 @@
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
 
+/* Define to rpl_re_comp if the replacement should be used. */
+#undef re_comp
+
+/* Define to rpl_re_compile_fastmap if the replacement should be used. */
+#undef re_compile_fastmap
+
+/* Define to rpl_re_compile_pattern if the replacement should be used. */
+#undef re_compile_pattern
+
+/* Define to rpl_re_exec if the replacement should be used. */
+#undef re_exec
+
+/* Define to rpl_re_match if the replacement should be used. */
+#undef re_match
+
+/* Define to rpl_re_match_2 if the replacement should be used. */
+#undef re_match_2
+
+/* Define to rpl_re_search if the replacement should be used. */
+#undef re_search
+
+/* Define to rpl_re_search_2 if the replacement should be used. */
+#undef re_search_2
+
+/* Define to rpl_re_set_registers if the replacement should be used. */
+#undef re_set_registers
+
+/* Define to rpl_re_set_syntax if the replacement should be used. */
+#undef re_set_syntax
+
+/* Define to rpl_re_syntax_options if the replacement should be used. */
+#undef re_syntax_options
+
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
+
+/* Define to rpl_regcomp if the replacement should be used. */
+#undef regcomp
+
+/* Define to rpl_regerror if the replacement should be used. */
+#undef regerror
+
+/* Define to rpl_regexec if the replacement should be used. */
+#undef regexec
+
+/* Define to rpl_regfree if the replacement should be used. */
+#undef regfree
 
 /* Define to equivalent of C99 restrict keyword, or to nothing if this is not
    supported. Do not define if restrict is supported directly. */
@@ -705,9 +994,8 @@
 /* Define to `int' if <sys/types.h> does not define. */
 #undef ssize_t
 
+/* Define to rpl_strnlen if the replacement function should be used. */
+#undef strnlen
+
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
-
-/* Define to unsigned long or unsigned long long if <stdint.h> and
-   <inttypes.h> don't define. */
-#undef uintmax_t

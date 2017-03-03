@@ -1,6 +1,7 @@
 /* xreadlink.c -- readlink wrapper to return the link name in malloc'd storage
 
-   Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,9 +20,7 @@
 
 /* Written by Jim Meyering <jim@meyering.net>  */
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #include "xreadlink.h"
 
@@ -30,15 +29,20 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <stdlib.h>
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 #ifndef SIZE_MAX
 # define SIZE_MAX ((size_t) -1)
 #endif
 #ifndef SSIZE_MAX
 # define SSIZE_MAX ((ssize_t) (SIZE_MAX / 2))
+#endif
+
+/* SYMLINK_MAX is used only for an initial memory-allocation sanity
+   check, so it's OK to guess too small on hosts where there is no
+   arbitrary limit to symbolic link length.  */
+#ifndef SYMLINK_MAX
+# define SYMLINK_MAX 1024
 #endif
 
 #define MAXSIZE (SIZE_MAX < SSIZE_MAX ? SIZE_MAX : SSIZE_MAX)
@@ -56,9 +60,17 @@
 char *
 xreadlink (char const *file, size_t size)
 {
-  /* The initial buffer size for the link value.  A power of 2
-     detects arithmetic overflow earlier, but is not required.  */
-  size_t buf_size = size < MAXSIZE ? size + 1 : MAXSIZE;
+  /* Some buggy file systems report garbage in st_size.  Defend
+     against them by ignoring outlandish st_size values in the initial
+     memory allocation.  */
+  size_t symlink_max = SYMLINK_MAX;
+  size_t INITIAL_LIMIT_BOUND = 8 * 1024;
+  size_t initial_limit = (symlink_max < INITIAL_LIMIT_BOUND
+			  ? symlink_max + 1
+			  : INITIAL_LIMIT_BOUND);
+
+  /* The initial buffer size for the link value.  */
+  size_t buf_size = size < initial_limit ? size + 1 : initial_limit;
 
   while (1)
     {

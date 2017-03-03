@@ -40,7 +40,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.30, for `find' version 4.2.30.
+   This is edition 4.2.31, for `find' version 4.2.31.
 
 * Menu:
 
@@ -1851,6 +1851,20 @@ However, some types of error (for example not being able to invoke
 In this situation, any partially-built command lines will not be
 invoked (this prevents possible infinite loops).
 
+   At first sight, it looks like the list of filenames to be processed
+can only be at the end of the command line, and that this might be a
+problem for some comamnds (`cp' and `rsync' for example).
+
+   However, there is a slightly obscure but powerful workarouund for
+this problem which takes advantage of the behaviour of `sh -c':-
+
+     find startpoint -tests ... -exec sh -c 'scp "$@" remote:/dest' sh {} +
+
+   In the example above, the filenames we want to work on need to occur
+on the `scp' command line before the name of the destination.  We use
+the shell to invoke the command `scp "$@" remote:/dest' and the shell
+expands `"$@"' to the list of filenames we want to process.
+
    Another, but less secure, way to run a command on more than one file
 at once, is to use the `xargs' command, which is invoked like this:
 
@@ -2421,6 +2435,11 @@ File: find.info,  Node: Old Database Format,  Prev: Sample Database,  Up: Databa
 The old database format is used by Unix `locate' and `find' programs
 and earlier releases of the GNU ones.  `updatedb' produces this format
 if given the `--old-format' option.
+
+   All versions of GNU `locate' prior to 4.2.31 fail to correctly
+handle very long file names, possibly leading to security problems
+relating to a heap buffer overrun.  *Note Security Considerations for
+locate::, for a detailed explanation.
 
    `updatedb' runs programs called `bigram' and `code' to produce
 old-format databases.  The old format differs from the new one in the
@@ -3278,7 +3297,9 @@ the environment.
      option means that `locate' will not be able to properly handle
      non-ASCII characters in file names (that is, file names containing
      characters which have the eighth bit set, such as many of the
-     characters from the ISO-8859-1 character set).
+     characters from the ISO-8859-1 character set).  Versions of
+     `locate' prior to 4.2.31 fail to correctly handle long filenames
+     in old-format databases.
 
 `--help'
      Print a summary of the command line usage and exit.
@@ -5407,13 +5428,47 @@ File: find.info,  Node: Security Considerations for locate,  Next: Security Summ
 9.4 Security Considerations for `locate'
 ========================================
 
+9.4.1 Race Conditions
+---------------------
+
 It is fairly unusual for the output of `locate' to be fed into another
 command.  However, if this were to be done, this would raise the same
-set of security issues as the use of `find ... -print'.  Although the
-problems relating to whitespace in file names can be resolved by using
-`locate''s `-0' option, this still leaves the race condition problems
-associated with `find ... -print0'.  There is no way to avoid these
+set of security issues as the use of `find ...  -print'.  Although the
+problems relating to whitespace in file names can be resolved by the
+`-0' option of `locate', this still leaves the race condition problems
+associated with `find ...  -print0'.  There is no way to avoid these
 problems in the case of `locate'.
+
+9.4.2 Long File Name Bugs with Old-Format Databases
+---------------------------------------------------
+
+All versions of `locate' prior to 4.2.31 have a bug in the way that
+old-format databases are read.  They read file names into a
+fixed-length 1026 byte buffer, allocated on the heap.  This buffer is
+not extended if file names are too long to fit into the buffer.  No
+range checking on the length of the filename is performed.  This could
+in theory lead to a privilege escalation attack.  Findutils versions
+4.3.0 to 4.3.6 are also affected.
+
+   On systems using the old database format and affected versions of
+`locate', carefully-chosen long file names could in theory allow
+malicious users to run code of their choice as any user invoking locate.
+
+   If remote users can choose the names of files stored on your system,
+and these files are indexed by `updatedb', this may be a remote
+security vulnerability.  Findutils version 4.2.31 fixes this problem.
+The `updatedb', `bigram' and `code' programs do no appear to be
+affected.
+
+   If you are also using GNU coreutils, you can use the following
+command to determine the length of the longest file name on a given
+system:
+
+     find / -print0 | tr -c '\0' 'x' | tr '\0' '\n' | wc -L
+
+   Although this problem is significant, the old database format is not
+the default, and use of the old database format is not common.  Most
+installations and most users will not be affected by this problem.
 
 
 File: find.info,  Node: Security Summary,  Prev: Security Considerations for locate,  Up: Security Considerations
@@ -5778,79 +5833,79 @@ Node: Formatting Flags61419
 Node: Run Commands62031
 Node: Single File62389
 Node: Multiple Files64311
-Node: Unsafe File Name Handling68163
-Node: Safe File Name Handling69726
-Node: Unusual Characters in File Names71302
-Node: Limiting Command Size74338
-Node: Interspersing File Names76631
-Node: Querying79086
-Node: Delete Files80616
-Node: Adding Tests81020
-Node: Databases83660
-Node: Database Locations84378
-Node: Database Formats85386
-Node: New Database Format86290
-Node: Sample Database87957
-Node: Old Database Format88605
-Node: Newline Handling90665
-Node: File Permissions92111
-Node: Mode Structure92680
-Node: Symbolic Modes95821
-Node: Setting Permissions96918
-Node: Copying Permissions99466
-Node: Changing Special Permissions100280
-Node: Conditional Executability101824
-Node: Multiple Changes102356
-Node: Umask and Protection104013
-Node: Numeric Modes105111
-Node: Reference106803
-Node: Invoking find107151
-Node: Warning Messages109483
-Node: Invoking locate111171
-Node: Invoking updatedb117062
-Node: Invoking xargs120745
-Node: Regular Expressions125775
-Node: findutils-default regular expression syntax126970
-Node: awk regular expression syntax129475
-Node: egrep regular expression syntax131360
-Node: emacs regular expression syntax133571
-Node: gnu-awk regular expression syntax136099
-Node: grep regular expression syntax138439
-Node: posix-awk regular expression syntax141164
-Node: posix-basic regular expression syntax143435
-Node: posix-egrep regular expression syntax146073
-Node: posix-extended regular expression syntax148446
-Node: Environment Variables150921
-Node: Common Tasks152865
-Node: Viewing And Editing153290
-Node: Archiving154296
-Node: Cleaning Up155928
-Node: Strange File Names157717
-Node: Fixing Permissions159367
-Node: Classifying Files159931
-Node: Worked Examples160649
-Node: Deleting Files161286
-Node: Updating A Timestamp File174305
-Node: Security Considerations181035
-Node: Levels of Risk182569
-Ref: Levels of Risk-Footnote-1185367
-Node: Security Considerations for find185546
-Ref: Security Considerations for find-Footnote-1187868
-Node: Problems with -exec and filenames187941
-Node: Changing the Current Working Directory189204
-Node: O_NOFOLLOW190973
-Ref: O_NOFOLLOW-Footnote-1192617
-Node: Systems without O_NOFOLLOW192719
-Node: Race Conditions with -exec194823
-Node: Race Conditions with -print and -print0197734
-Node: Security Considerations for xargs198654
-Node: Security Considerations for locate200724
-Node: Security Summary201421
-Node: Error Messages202178
-Node: Error Messages From find203190
-Node: Error Messages From xargs208047
-Node: Error Messages From locate209807
-Node: Error Messages From updatedb211039
-Node: Primary Index211442
+Node: Unsafe File Name Handling68847
+Node: Safe File Name Handling70410
+Node: Unusual Characters in File Names71986
+Node: Limiting Command Size75022
+Node: Interspersing File Names77315
+Node: Querying79770
+Node: Delete Files81300
+Node: Adding Tests81704
+Node: Databases84344
+Node: Database Locations85062
+Node: Database Formats86070
+Node: New Database Format86974
+Node: Sample Database88641
+Node: Old Database Format89289
+Node: Newline Handling91591
+Node: File Permissions93037
+Node: Mode Structure93606
+Node: Symbolic Modes96747
+Node: Setting Permissions97844
+Node: Copying Permissions100392
+Node: Changing Special Permissions101206
+Node: Conditional Executability102750
+Node: Multiple Changes103282
+Node: Umask and Protection104939
+Node: Numeric Modes106037
+Node: Reference107729
+Node: Invoking find108077
+Node: Warning Messages110409
+Node: Invoking locate112097
+Node: Invoking updatedb117988
+Node: Invoking xargs121784
+Node: Regular Expressions126814
+Node: findutils-default regular expression syntax128009
+Node: awk regular expression syntax130514
+Node: egrep regular expression syntax132399
+Node: emacs regular expression syntax134610
+Node: gnu-awk regular expression syntax137138
+Node: grep regular expression syntax139478
+Node: posix-awk regular expression syntax142203
+Node: posix-basic regular expression syntax144474
+Node: posix-egrep regular expression syntax147112
+Node: posix-extended regular expression syntax149485
+Node: Environment Variables151960
+Node: Common Tasks153904
+Node: Viewing And Editing154329
+Node: Archiving155335
+Node: Cleaning Up156967
+Node: Strange File Names158756
+Node: Fixing Permissions160406
+Node: Classifying Files160970
+Node: Worked Examples161688
+Node: Deleting Files162325
+Node: Updating A Timestamp File175344
+Node: Security Considerations182074
+Node: Levels of Risk183608
+Ref: Levels of Risk-Footnote-1186406
+Node: Security Considerations for find186585
+Ref: Security Considerations for find-Footnote-1188907
+Node: Problems with -exec and filenames188980
+Node: Changing the Current Working Directory190243
+Node: O_NOFOLLOW192012
+Ref: O_NOFOLLOW-Footnote-1193656
+Node: Systems without O_NOFOLLOW193758
+Node: Race Conditions with -exec195862
+Node: Race Conditions with -print and -print0198773
+Node: Security Considerations for xargs199693
+Node: Security Considerations for locate201763
+Node: Security Summary203954
+Node: Error Messages204711
+Node: Error Messages From find205723
+Node: Error Messages From xargs210580
+Node: Error Messages From locate212340
+Node: Error Messages From updatedb213572
+Node: Primary Index213975
 
 End Tag Table

@@ -1,5 +1,6 @@
 /* Invoke dup, but avoid some glitches.
-   Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+
+   Copyright (C) 2001, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,17 +18,13 @@
 
 /* Written by Paul Eggert.  */
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #include "unistd-safer.h"
 
 #include <fcntl.h>
 
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
+#include <unistd.h>
 #ifndef STDERR_FILENO
 # define STDERR_FILENO 2
 #endif
@@ -38,7 +35,7 @@
 int
 dup_safer (int fd)
 {
-#ifdef F_DUPFD
+#if defined F_DUPFD && !defined FCHDIR_REPLACEMENT
   return fcntl (fd, F_DUPFD, STDERR_FILENO + 1);
 #else
   /* fd_safer calls us back, but eventually the recursion unwinds and

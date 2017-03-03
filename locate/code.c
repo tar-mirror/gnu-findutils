@@ -77,6 +77,7 @@
 #include "locatedb.h"
 #include <getline.h>
 #include "closeout.h"
+#include "gnulib-version.h"
 
 char *xmalloc PARAMS((size_t));
 
@@ -163,6 +164,7 @@ main (int argc, char **argv)
   else if (0 == strcmp(argv[1], "--version"))
     {
       printf (_("GNU findutils version %s\n"), version_string);
+      printf (_("Built using GNU gnulib version %s\n"), gnulib_version);
       return 0;
     }
   
@@ -178,9 +180,8 @@ main (int argc, char **argv)
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);
 
-  /* Set to anything not starting with a slash, to force the first
-     prefix count to 0.  */
-  strcpy (oldpath, " ");
+  /* Set to empty string, to force the first prefix count to 0.  */
+  oldpath[0] = '\0';
   oldcount = 0;
 
   /* Copy the list of most common bigrams to the output,
