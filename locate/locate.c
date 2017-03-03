@@ -70,10 +70,11 @@
 #include <getopt.h>
 #include <xstrtol.h>
 
-#ifdef HAVE_UNISTD_H
+/* The presence of unistd.h is assumed by gnulib these days, so we 
+ * might as well assume it too. 
+ */
 /* We need <unistd.h> for isatty(). */
 #include <unistd.h>
-#endif
 
 
 #define NDEBUG
@@ -133,6 +134,7 @@ extern int errno;
 #include "quote.h"
 #include "quotearg.h"
 #include "printquoted.h"
+#include "regextype.h"
 
 
 /* Note that this evaluates C many times.  */
@@ -290,7 +292,6 @@ struct stringbuf
 {
   char *buffer;
   size_t buffersize;
-  size_t *soffs;
   size_t *preqlen;
 };
 static struct stringbuf casebuf;
@@ -304,7 +305,7 @@ struct casefolder
 
 struct regular_expression
 {
-  regex_t re;
+  struct re_pattern_buffer regex; /* for --regex */
 };
 
 
@@ -703,11 +704,19 @@ static int
 visit_regex(struct process_data *procdata, void *context)
 {
   struct regular_expression *p = context;
-  
-  if (0 == regexec(&p->re, procdata->munged_filename, 0u, NULL, 0))
-    return VISIT_ACCEPTED;	/* match */
-  else
-    return VISIT_REJECTED;	/* no match */
+  const size_t len = strlen(procdata->munged_filename);
+
+  int rv = re_search (&p->regex, procdata->munged_filename,
+		      len, 0, len, 
+		      (struct re_registers *) NULL);
+  if (rv < 0)
+    {
+      return VISIT_REJECTED;	/* no match (-1), or internal error (-2) */
+    }
+  else 
+    {
+      return VISIT_ACCEPTED;	/* match */
+    }
 }
 
 
@@ -748,6 +757,30 @@ visit_stats(struct process_data *procdata, void *context)
 }
 
 
+static int
+visit_limit(struct process_data *procdata, void *context)
+{
+  struct locate_limits *p = context;
+
+  (void) procdata;
+
+  if (++p->items_accepted >= p->limit)
+    return VISIT_ABORT;
+  else
+    return VISIT_CONTINUE;
+}
+
+static int
+visit_count(struct process_data *procdata, void *context)
+{
+  struct locate_limits *p = context;
+
+  (void) procdata;
+
+  ++p->items_accepted;
+  return VISIT_CONTINUE;
+}
+
 /* Emit the statistics.
  */
 static void
@@ -785,8 +818,8 @@ print_stats(int argc, size_t database_file_size)
 }
 
 
-/* Print the entries in DBFILE that match shell globbing patterns in ARGV.
-   Return the number of entries printed.  */
+/* Print or count the entries in DBFILE that match shell globbing patterns in 
+   ARGV. Return the number of entries matched. */
 
 static unsigned long
 locate (int argc,
@@ -799,7 +832,8 @@ locate (int argc,
 	struct locate_limits *plimit,
 	int stats,
 	int op_and,
-	int regex)
+	int regex,
+	int regex_options)
 {
   char *pathpart; 		/* A pattern to consider. */
   int argn;			/* Index to current pattern in argv. */
@@ -816,6 +850,9 @@ locate (int argc,
   time_t now;
 
 
+  if (ignore_case)
+    regex_options |= RE_ICASE;
+  
   procdata.len = procdata.count = 0;
   if (!strcmp (dbfile, "-"))
     {
@@ -898,7 +935,6 @@ locate (int argc,
     {
       add_visitor(visit_casefold, &casebuf);
       casebuf.preqlen = &procdata.pathsize;
-      casebuf.soffs = &procdata.count;
     }
   
   /* Add an inspector for each pattern we're looking for. */
@@ -908,16 +944,26 @@ locate (int argc,
       if (regex)
 	{
 	  struct regular_expression *p = xmalloc(sizeof(*p));
-	  int cflags = REG_EXTENDED | REG_NOSUB 
-	    | (ignore_case ? REG_ICASE : 0);
-	  errno = 0;
-	  if (0 == regcomp(&p->re, pathpart, cflags))
+	  const char *error_message = NULL;
+	  
+	  memset (&p->regex, 0, sizeof (p->regex));
+	  
+	  re_set_syntax(regex_options);
+	  p->regex.allocated = 100;
+	  p->regex.buffer = (unsigned char *) xmalloc (p->regex.allocated);
+	  p->regex.fastmap = NULL;
+	  p->regex.syntax = regex_options;
+	  p->regex.translate = NULL;
+
+	  error_message = re_compile_pattern (pathpart, strlen (pathpart),
+					      &p->regex);
+	  if (error_message)
 	    {
-	      add_visitor(visit_regex, p);
+	      error (1, 0, "%s", error_message);
 	    }
 	  else 
 	    {
-	      error (1, errno, "Invalid regular expression; %s", pathpart);
+	      add_visitor(visit_regex, p);
 	    }
 	}
       else if (contains_metacharacter(pathpart))
@@ -989,7 +1035,13 @@ locate (int argc,
       else
 	add_visitor(visit_justprint_unquoted, NULL);
     }
-  
+
+
+  if (use_limit)
+    add_visitor(visit_limit, plimit);
+  else
+    add_visitor(visit_count, plimit);
+
 
   if (argc > 1)
     {
@@ -1008,24 +1060,18 @@ locate (int argc,
 	       procdata.dbfile,
 	       old_format ? _("old") : "LOCATE02");
     }
-  
+
+
   procdata.c = getc (procdata.fp);
-  while ( (procdata.c != EOF) && (!use_limit || (plimit->limit > 0)) )
+  /* If we are searching for filename patterns, the inspector list 
+   * will contain an entry for each pattern for which we are searching.
+   */
+  while ( (procdata.c != EOF) &&
+          (VISIT_ABORT != (mainprocessor)(&procdata)) )
     {
-
-      /* If we are searching for filename patterns, the inspector list 
-       * will contain an entry for each pattern for which we are searching.
-       */
-      if ((VISIT_ACCEPTED | VISIT_CONTINUE) & (mainprocessor)(&procdata))
-	{
-	  if ((++plimit->items_accepted >= plimit->limit) && use_limit)
-	    {
-	      break;
-	    }
-	}
+      /* Do nothing; all the work is done in the visitor functions. */
     }
-
-      
+  
   if (stats)
     {
       print_stats(argc, st.st_size);
@@ -1061,11 +1107,17 @@ Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n\
       [-i | --ignore-case] [-w | --wholename] [-b | --basename] \n\
       [--limit=N | -l N] [-S | --statistics] [-0 | --null] [-c | --count]\n\
       [-P | -H | --nofollow] [-L | --follow] [-m | --mmap ] [ -s | --stdio ]\n\
-      [-A | --all] [-p | --print] [-r | --regex ] [--version] [--help]\n\
+      [-A | --all] [-p | --print] [-r | --regex ] [--regextype=TYPE]\n\
+      [-version] [--help]\n\
       pattern...\n"),
 	   program_name);
   fputs (_("\nReport bugs to <bug-findutils@gnu.org>.\n"), stream);
 }
+enum
+  {
+    REGEXTYPE_OPTION = CHAR_MAX + 1
+  };
+
 
 static struct option const longopts[] =
 {
@@ -1086,6 +1138,7 @@ static struct option const longopts[] =
   {"mmap",  no_argument, NULL, 'm'},
   {"limit",  required_argument, NULL, 'l'},
   {"regex",  no_argument, NULL, 'r'},
+  {"regextype",  required_argument, NULL, REGEXTYPE_OPTION},
   {"statistics",  no_argument, NULL, 'S'},
   {"follow",      no_argument, NULL, 'L'},
   {"nofollow",    no_argument, NULL, 'P'},
@@ -1104,6 +1157,7 @@ main (int argc, char **argv)
   int basename_only = 0;
   int use_limit = 0;
   int regex = 0;
+  int regex_options = RE_SYNTAX_EMACS;
   int stats = 0;
   int op_and = 0;
   char *e;
@@ -1185,6 +1239,10 @@ main (int argc, char **argv)
 	regex = 1;
 	break;
 
+      case REGEXTYPE_OPTION:
+	regex_options = get_regex_type(optarg);
+	break;
+	
       case 'S':
 	stats = 1;
 	break;
@@ -1251,7 +1309,10 @@ main (int argc, char **argv)
     stdout_is_a_tty = false;
 
   next_element (dbpath, 0);	/* Initialize.  */
-  while ((e = next_element ((char *) NULL, 0)) != NULL)
+
+  /* Bail out early if limit already reached. */
+  while ((e = next_element ((char *) NULL, 0)) != NULL  &&
+	 (!use_limit || limits.limit > limits.items_accepted))
     {
       statistics.compressed_bytes = 
       statistics.total_filename_count = 
@@ -1269,7 +1330,7 @@ main (int argc, char **argv)
 	  e = LOCATE_DB;
 	}
 	  
-      found = locate (argc - optind, &argv[optind], e, ignore_case, print, basename_only, use_limit, &limits, stats, op_and, regex);
+      found = locate (argc - optind, &argv[optind], e, ignore_case, print, basename_only, use_limit, &limits, stats, op_and, regex, regex_options);
     }
   
   if (just_count)

@@ -40,6 +40,7 @@ xargs.posix/EEOFe.exp \
 xargs.posix/EEOF.exp \
 xargs.posix/E_.exp \
 xargs.posix/E_-IARG.exp \
+xargs.posix/childfail.exp \
 xargs.posix/empty_def.exp \
 xargs.posix/empty.exp \
 xargs.posix/hithere.exp \
@@ -47,8 +48,7 @@ xargs.posix/IARG-E_.exp \
 xargs.posix/IARG.exp \
 xargs.posix/IARG-s15.exp \
 xargs.posix/L2_2.exp \
-xargs.posix/l2.exp \
-xargs.posix/L2.exp \
+xargs.posix/uc_L2.exp \
 xargs.posix/L2-n2.exp \
 xargs.posix/L3.exp \
 xargs.posix/n1.exp \
@@ -83,7 +83,7 @@ xargs.sysv/eEOF.exp \
 xargs.sysv/e.exp \
 xargs.sysv/empty_def-t.exp \
 xargs.sysv/empty-t.exp \
-xargs.sysv/eof.exp \
+xargs.sysv/eof1.exp \
 xargs.sysv/iARG.exp \
 xargs.sysv/idef.exp \
 xargs.sysv/idef-s26.exp \
@@ -91,7 +91,7 @@ xargs.sysv/iquotes.exp \
 xargs.sysv/l1_2.exp \
 xargs.sysv/l1.exp \
 xargs.sysv/l1n4.exp \
-xargs.sysv/l2.exp \
+xargs.sysv/lc_l2.exp \
 xargs.sysv/s30-t.exp \
 xargs.sysv/space-t.exp \
 xargs.sysv/trace.exp
@@ -137,8 +137,7 @@ xargs.posix/IARG-s15.xo \
 xargs.posix/IARG.xo \
 xargs.posix/L2_2.xo \
 xargs.posix/L2-n2.xo \
-xargs.posix/l2.xo \
-xargs.posix/L2.xo \
+xargs.posix/uc_L2.xo \
 xargs.posix/L3.xo \
 xargs.posix/n1.xo \
 xargs.posix/n2-s26.xo \
@@ -163,7 +162,7 @@ xargs.posix/unmatched.xo \
 xargs.sysv/eEOF.xo \
 xargs.sysv/empty_def-t.xo \
 xargs.sysv/empty-t.xo \
-xargs.sysv/eof.xo \
+xargs.sysv/eof1.xo \
 xargs.sysv/e.xo \
 xargs.sysv/iARG.xo \
 xargs.sysv/idef-s26.xo \
@@ -172,7 +171,7 @@ xargs.sysv/iquotes.xo \
 xargs.sysv/l1_2.xo \
 xargs.sysv/l1n4.xo \
 xargs.sysv/l1.xo \
-xargs.sysv/l2.xo \
+xargs.sysv/lc_l2.xo \
 xargs.sysv/s30-t.xo \
 xargs.sysv/space-t.xo \
 xargs.sysv/trace.xo
@@ -195,7 +194,7 @@ inputs/EOFb.xi \
 inputs/EOFe.xi \
 inputs/eofstr.xi \
 inputs/eof_.xi \
-inputs/eof.xi \
+inputs/eof1.xi \
 inputs/EOF.xi \
 inputs/ett.xi \
 inputs/files0.xi \
@@ -232,3 +231,12 @@ EXTRA_DIST = $(EXTRA_DIST_EXP) $(EXTRA_DIST_XO) $(EXTRA_DIST_XI) $(EXTRA_DIST_XE
 CLEANFILES = *.log *.sum site.exp site.bak
 
 FORCE:
+
+checklists:
+	cd $(srcdir) && \
+	( find config inputs xargs.gnu xargs.posix xargs.sysv \( -name "*.exp" -o -name "*.xo" -o -name "*.xi" -o -name "*.xe" \) -print ; \
+	  ls $(EXTRA_DIST_XI)  ; \
+	  ls $(EXTRA_DIST_XE)  ; \
+	  ls $(EXTRA_DIST_XO)  ; \
+	  ls  $(EXTRA_DIST_EXP)  ; ) | \
+	sort | uniq -c | awk '$$1 != 2 { print; }'

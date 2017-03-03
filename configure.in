@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([GNU findutils], 4.2.23, [bug-findutils@gnu.org])
+AC_INIT([GNU findutils], 4.2.25, [bug-findutils@gnu.org])
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_SRCDIR([find/pred.c])
@@ -8,7 +8,7 @@ AC_CANONICAL_HOST
 AC_CONFIG_MACRO_DIR(gnulib/m4)
 
 dnl Set of available languages.
-ALL_LINGUAS="be ca da de el eo es et fi fr ga gl hr hu id it ja ko lg ms nl pl pt pt_BR ro ru sk sl sr sv tr vi zh_CN rw"
+ALL_LINGUAS="be ca da de el eo es et fi fr ga gl hr hu id it ja ko lg ms nl pl pt pt_BR ro ru sk sl sr sv tr vi zh_CN zh_TW rw"
 
 AC_SUBST(INCLUDES)dnl
 AC_ARG_ENABLE(id-cache,
@@ -22,6 +22,10 @@ AC_ARG_ENABLE(id-cache,
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING(--enable-debug,Enable debugging output which is likely to be interesting to people debugging findutils),
 	[ac_cv_debug=$enableval],[ac_cv_debug=no])
+
+AC_ARG_ENABLE(leaf-optimisation,
+	AS_HELP_STRING(--enable-leaf-optimisation,Enable an optimisation which saves lstat calls to identify subdirectories on filesystems having traditional Unix semantics),
+	[ac_cv_leaf_optimisation=$enableval],[ac_cv_leaf_optimisation=yes])
 
 AC_ARG_ENABLE(d_type-optimization,
 	AS_HELP_STRING(--enable-d_type-optimization,Make use of the file type data returned in struct dirent.d_type by readdir()),
@@ -42,6 +46,14 @@ else
    AC_MSG_RESULT([yes])
    AC_DEFINE(DEBUG, 1, [Define if you want to see find's innards])
    AC_DEFINE(DEBUG_STAT, 1, [Define if you want to see a message every time find calls the stat() system call])
+fi
+
+AC_MSG_CHECKING([for leaf optimisation])
+if test x$ac_cv_leaf_optimisation = xno; then
+   AC_MSG_RESULT([no])
+else
+   AC_MSG_RESULT([yes])
+   AC_DEFINE(LEAF_OPTIMISATION, 1, [Define if you want to use the leaf optimisation (this can still be turned off with -noleaf)])
 fi
 
 
@@ -71,6 +83,11 @@ AC_SYS_LARGEFILE
 
 gl_INIT
 
+dnl lib/regexprops needs to be a native program, because we need to 
+dnl run it in order to generate the documentation about the properties
+dnl of regular expressions.  See lib/Makefile.am.
+AM_CONDITIONAL(CROSS_COMPILING, [[test "x$cross_compiling" = xyes]])
+
 dnl Try to get a POSIX.1 environment.
 
 dnl Checks for libraries.  If getpwnam() isn't present in the 
@@ -80,7 +97,8 @@ AC_CHECK_FUNC(getpwnam, [],
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h string.h limits.h unistd.h errno.h stdlib.h stddef.h)
+dnl Assume unistd.h is present - coreutils does too.
+AC_CHECK_HEADERS(fcntl.h string.h limits.h errno.h stdlib.h stddef.h)
 AC_CHECK_HEADERS(unistd.h sys/types.h inttypes.h fcntl.h locale.h stdint.h)
 AC_CHECK_HEADERS(sys/param.h mntent.h sys/mnttab.h sys/mntio.h sys/mkdev.h)
 dnl find.c needs sys/utsname.h because it calls uname(2).
@@ -182,6 +200,14 @@ AC_CHECK_MEMBER(struct dirent.d_type,,,[
 
 dnl internationalization macros
 AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION(0.14.5)
+
+dnl regextype.c and regexprops.c are designed to be usable outside findutils,
+dnl but findutils doesn't want to support all the regex types in gnulib,
+dnl and wants to support an additional one (RE_SYNTAX_EMACS|RE_DOT_NEWLINE).
+dnl Hence they need to know if they are being compiled into findutils or not.
+AC_DEFINE([FINDUTILS], 1, [Define if we are compiling GNU findutils])
+
 
 # This is necessary so that .o files in LIBOBJS are also built via
 # the ANSI2KNR-filtering rules.

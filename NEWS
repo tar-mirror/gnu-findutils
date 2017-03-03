@@ -1,4 +1,107 @@
 GNU findutils NEWS - User visible changes.	-*- outline -*- (allout)
+* Major changes in release 4.2.25
+
+** Bug Fixes
+
+find -perm /440 (which should succeed if a file is readable by its
+owner or group) now works.  Previously there was a bug which caused
+this to be treated as "find -perm 440".
+
+Some files in the xargs test suite have been renamed to avoid problems
+on operating systems whoch cannot distinguish filenames on the basis
+of upper/lower case distinctions.
+
+The software now builds on Cygwin, including the generated file
+regexprops.texi.
+
+Findutils should now build once again on systems supporting AFS, but
+this support has not recently been fully tested.  Findutils should
+also (once again) build on Cygwin.
+
+** Other Changes
+
+The test suite for find is now much more extensive.
+
+* Major changes in release 4.2.24
+
+** Documentation Changes
+
+The manual now includes a "Worked Examples" section which talks about
+the various ways in which findutils can be used to perform common
+tasks, and why some of these alternatives are better than others.
+
+The -I option of xargs (which is required by the POSIX standard) is
+now documented.
+
+We now document the fact that find ensures that commands run by -ok
+and -okdir don't steal find's input.  Find does this by redirecting
+the command's standard input from stdin.
+
+Many documentation readability enhancements and proofreading fixes
+were contributed by Aaron Hawley.
+
+** Functional Changes
+
+*** Functional changes in locate
+
+The "--regex" option of locate now assumes the regular expression to
+be in the same syntax as is used in GNU Emacs, though this can be
+changed with the new option --regextype.  This is a change from the
+existing behaviour (which was to use POSIX Basic Regular Expressions).
+Since this feature is releatively new anyway, I though it was more
+useful to have compatibility between regular expression handling in
+find and locate than to maintain the short-lived previous behaviour of
+locate.
+
+The locate program now also supports a "--regextype" long option which
+controls which regular expression syntax is understood by locate.
+This is a long option and has no single-letter 'short option'
+equivalent.
+
+*** Functional changes in find
+
+The regular expression syntax understood by "find" can be changed with
+the -regextype option; this option is positional, meaning that you can
+have several tests, each using a distinct syntax (this is not
+recommended practice however).
+
+The default regular expression syntax is substantially the same as
+that recognised by GNU Emacs, except for the fact that "." will match
+a newline.
+
+The leaf optimisation can be disabled with the configure option
+"--disable-leaf-optimisation", which is equivalent to specifying
+"-noleaf" on all find command lines.  This is useful for systems
+having filesystems which do not provide traditional Unix behaviour for
+the link count on directories (for example Cygwin and the Solaris 9
+HSFS implementation).
+
+** Bug Fixes
+
+*** Bug Fixes for find
+
+The -iregex test now works once again on systems that lack
+re_search() (that is, systems on which findutils needs to use the
+gnulib version of this function).
+
+find -regex now once again uses GNU Emacs-compatible regular
+expressions.
+
+If invoked with stderr closed, the -fprint and -fprintf actions now no
+longer cause error messages to be sent into the output file.
+
+If the link count of a directory is less that two, the leaf
+optimisation is now disabled for that directory.  This should allow
+searching of non-Unix filesystems to be more reliable on systems that
+don't take the trouble to make their filesystems look like traditional
+Unix filesystems.   Some filesystems don't even take the trouble to
+have a link count of less than two and for these, -noleaf is still
+required unless --disable-leaf-optimisation was used at configure time.
+
+The "%Y" directive for the -printf action now no longer changes find's
+idea of the mode of the file, so this means among other things that
+"-printf %Y %y" now works properly.  This is Savannah bug #13973.
+
 * Major changes in release 4.2.23
 
 ** Documentation Changes

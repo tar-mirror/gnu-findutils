@@ -558,6 +558,21 @@ pred_fprint0 (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 
 
 
+static char*
+mode_to_filetype(mode_t m)
+{
+  return
+    m == S_IFSOCK ? "s" :
+    m == S_IFLNK  ? "l" :
+    m == S_IFREG  ? "f" :
+    m == S_IFBLK  ? "b" :
+    m == S_IFDIR  ? "d" :
+    m == S_IFCHR  ? "c" :
+#ifdef S_IFDOOR
+    m == S_IFDOOR ? "D" :
+#endif
+    m == S_IFIFO  ? "p" : "U";
+}
 
 
 boolean
@@ -643,7 +658,7 @@ pred_fprintf (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 	  break;
 	case 'F':		/* filesystem type */
 	  /* trusted */
-	  print_quoted (fp, qopts, ttyflag, segment->text, filesystem_type (stat_buf));
+	  print_quoted (fp, qopts, ttyflag, segment->text, filesystem_type (stat_buf, pathname));
 	  break;
 	case 'g':		/* group name */
 	  /* trusted */
@@ -869,33 +884,28 @@ pred_fprintf (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 		/* exit_status = 1;
 		return (false); */
 	      }
-	      stat_buf->st_mode = sbuf.st_mode;
+	      fprintf (fp, segment->text,
+		       mode_to_filetype(sbuf.st_mode & S_IFMT));
 	    }
 #endif /* S_ISLNK */
+	  else
+	    {
+	      fprintf (fp, segment->text,
+		       mode_to_filetype(stat_buf->st_mode & S_IFMT));
+	    }
 	  }
-	  /* FALLTHROUGH */
+	  break;
+
 	case 'y':
 	  /* trusted */
 	  {
-	    mode_t m = stat_buf->st_mode & S_IFMT;
-
 	    fprintf (fp, segment->text,
-		( m == S_IFSOCK ? "s" :
-		  m == S_IFLNK  ? "l" :
-		  m == S_IFREG  ? "f" :
-		  m == S_IFBLK  ? "b" :
-		  m == S_IFDIR  ? "d" :
-		  m == S_IFCHR  ? "c" :
-#ifdef S_IFDOOR
-		  m == S_IFDOOR ? "D" :
-#endif
-		  m == S_IFIFO  ? "p" : "U" ) );
-
+		     mode_to_filetype(stat_buf->st_mode & S_IFMT));
 	  }
 	  break;
 	}
     }
-  return (true);
+  return true;
 }
 
 boolean
@@ -903,7 +913,7 @@ pred_fstype (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 {
   (void) pathname;
   
-  if (strcmp (filesystem_type (stat_buf), pred_ptr->args.str) == 0)
+  if (strcmp (filesystem_type (stat_buf, pathname), pred_ptr->args.str) == 0)
     return true;
   else
     return false;
@@ -1491,20 +1501,23 @@ pred_xtype (char *pathname, struct stat *stat_buf, struct predicate *pred_ptr)
 
 
 static void
-prep_child_for_exec (void)
+prep_child_for_exec (boolean close_stdin)
 {
-  const char inputfile[] = "/dev/null";
-  /* fprintf(stderr, "attaching stdin to /dev/null\n"); */
-  
-  close(0);
-  if (open(inputfile, O_RDONLY) < 0)
+  if (close_stdin)
     {
-      /* This is not entirely fatal, since 
-       * executing the child with a closed
-       * stdin is almost as good as executing it
-       * with its stdin attached to /dev/null.
-       */
-      error (0, errno, "%s", inputfile);
+      const char inputfile[] = "/dev/null";
+      /* fprintf(stderr, "attaching stdin to /dev/null\n"); */
+      
+      close(0);
+      if (open(inputfile, O_RDONLY) < 0)
+	{
+	  /* This is not entirely fatal, since 
+	   * executing the child with a closed
+	   * stdin is almost as good as executing it
+	   * with its stdin attached to /dev/null.
+	   */
+	  error (0, errno, "%s", inputfile);
+	}
     }
 }
 
@@ -1539,7 +1552,7 @@ launch (const struct buildcmd_control *ctl,
   if (child_pid == 0)
     {
       /* We be the child. */
-      prep_child_for_exec();
+      prep_child_for_exec(execp->close_stdin);
 
       /* For -exec and -ok, change directory back to the starting directory.
        * for -execdir and -okdir, stay in the directory we are searching
@@ -1842,3 +1855,70 @@ print_optlist (FILE *fp, struct predicate *p)
 }
 
 #endif	/* DEBUG */
+
+
+void
+pred_sanity_check(const struct predicate *predicates)
+{
+  const struct predicate *p;
+  
+  for (p=predicates; p != NULL; p=p->pred_next)
+    {
+      /* All predicates must do something. */
+      assert(p->pred_func != NULL);
+
+      /* All predicates must have a parser table entry. */
+      assert(p->parser_entry != NULL);
+      
+      /* If the parser table tells us that just one predicate function is 
+       * possible, verify that that is still the one that is in effect.
+       * If the parser has NULL for the predicate function, that means that 
+       * the parse_xxx function fills it in, so we can't check it.
+       */
+      if (p->parser_entry->pred_func)
+	{
+	  assert(p->parser_entry->pred_func == p->pred_func);
+	}
+      
+      switch (p->parser_entry->type)
+	{
+	  /* Options all take effect during parsing, so there should
+	   * be no predicate entries corresponding to them.  Hence we
+	   * should not see any ARG_OPTION or ARG_POSITIONAL_OPTION
+	   * items.
+	   *
+	   * This is a silly way of coding this test, but it prevents
+	   * a compiler warning (i.e. otherwise it would think that
+	   * there would be case statements missing).
+	   */
+	case ARG_OPTION:
+	case ARG_POSITIONAL_OPTION:
+	  assert(p->parser_entry->type != ARG_OPTION);
+	  assert(p->parser_entry->type != ARG_POSITIONAL_OPTION);
+	  break;
+	  
+	case ARG_ACTION:
+	  assert(p->side_effects); /* actions have side effects. */
+	  if (p->pred_func != pred_prune && p->pred_func != pred_quit)
+	    {
+	      /* actions other than -prune and -quit should
+	       * inhibit the default -print
+	       */
+	      assert(p->no_default_print);
+	    }
+	  break;
+
+	case ARG_PUNCTUATION:
+	case ARG_TEST:
+	  /* Punctuation and tests should have no side
+	   * effects and not inhibit default print.
+	   */
+	  assert(!p->no_default_print);
+	  assert(!p->side_effects);
+	  break;
+	  
+	}
+    }
+}
+
+

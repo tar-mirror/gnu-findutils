@@ -48,6 +48,9 @@
 # define FILE_SYSTEM_PREFIX_LEN(Filename) 0
 #endif
 
+/* Define if we are compiling GNU findutils */
+#undef FINDUTILS
+
 /* Define to 1 if you have the `alarm' function. */
 #undef HAVE_ALARM
 
@@ -190,8 +193,14 @@
 /* Define to 1 if you have the `isascii' function. */
 #undef HAVE_ISASCII
 
+/* Define to 1 if you have the `isblank' function. */
+#undef HAVE_ISBLANK
+
 /* Define to 1 if you have the `iswprint' function. */
 #undef HAVE_ISWPRINT
+
+/* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
+#undef HAVE_LANGINFO_CODESET
 
 /* Define to 1 if you have the `sun' library (-lsun). */
 #undef HAVE_LIBSUN
@@ -208,10 +217,6 @@
 /* Define if you have the 'long long' type. */
 #undef HAVE_LONG_LONG
 
-/* Define to 1 if `lstat' has the bug that it succeeds when given the
-   zero-length file name argument. */
-#undef HAVE_LSTAT_EMPTY_STRING_BUG
-
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
@@ -222,7 +227,7 @@
 /* Define to 1 if you have the `mbrlen' function. */
 #undef HAVE_MBRLEN
 
-/* Define to 1 if mbrtowc and mbstate_t are properly declared. */
+/* Define to 1 if you have the `mbrtowc' function. */
 #undef HAVE_MBRTOWC
 
 /* Define to 1 if you have the `mbsinit' function. */
@@ -274,18 +279,11 @@
 /* Define to 1 if you have the `rpmatch' function. */
 #undef HAVE_RPMATCH
 
-/* Define to 1 if you have run the test for working tzset. */
-#undef HAVE_RUN_TZSET_TEST
-
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
 
 /* Define to 1 if you have the `setmntent' function. */
 #undef HAVE_SETMNTENT
-
-/* Define to 1 if `stat' has the bug that it succeeds when given the
-   zero-length file name argument. */
-#undef HAVE_STAT_EMPTY_STRING_BUG
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
@@ -453,6 +451,12 @@
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
+/* Define to 1 if you have the `wcrtomb' function. */
+#undef HAVE_WCRTOMB
+
+/* Define to 1 if you have the `wcscoll' function. */
+#undef HAVE_WCSCOLL
+
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
@@ -476,6 +480,10 @@
 #else
 # define ISSLASH(C) ((C) == '/')
 #endif
+
+/* Define if you want to use the leaf optimisation (this can still be turned
+   off with -noleaf) */
+#undef LEAF_OPTIMISATION
 
 /* Define to 1 if `lstat' dereferences a symlink specified with a trailing
    slash. */
@@ -579,9 +587,6 @@
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
 
-/* Define if tzset clobbers localtime's static buffer. */
-#undef TZSET_CLOBBERS_LOCALTIME_BUFFER
-
 /* Defined if you specify --enable-d_type-optimisation to configure. */
 #undef USE_STRUCT_DIRENT_D_TYPE
 
@@ -646,14 +651,8 @@
 /* Define to a replacement function name for getline(). */
 #undef getline
 
-/* Define to rpl_gettimeofday if the replacement function should be used. */
-#undef gettimeofday
-
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
-
-/* Define to rpl_gmtime if the replacement function should be used. */
-#undef gmtime
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
@@ -667,9 +666,6 @@
 /* Define to signed long or signed long long if <stdint.h> and <inttypes.h>
    don't define. */
 #undef intmax_t
-
-/* Define to rpl_localtime if the replacement function should be used. */
-#undef localtime
 
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
@@ -704,9 +700,6 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef ssize_t
-
-/* Define to rpl_tzset if the wrapper function should be used. */
-#undef tzset
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t

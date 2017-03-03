@@ -122,12 +122,14 @@ command line will be dereferenced, and those before it will not).
 .P
 .SH EXPRESSIONS
 The expression is made up of options (which affect overall operation
-rather than the processing of a specific file, and always return true),
-tests (which return a true or false value), and actions (which have side
-effects and return a true or false value), all separated by operators.
-\-and is assumed where the operator is omitted.  If the expression contains
-no actions other than \-prune, \-print is performed on all files
-for which the expression is true.
+rather than the processing of a specific file, and always return
+true), tests (which return a true or false value), and actions (which
+have side effects and return a true or false value), all separated by
+operators.  \-and is assumed where the operator is omitted.  
+
+If the expression contains no actions other than \-prune, \-print is
+performed on all files for which the expression is true.
+
 .SS OPTIONS
 .P
 All options always return true.  Except for \-follow and \-daystart,
@@ -196,6 +198,15 @@ than the directory's link count, it knows that the rest of the entries
 in the directory are non-directories (`leaf' files in the directory
 tree).  If only the files' names need to be examined, there is no need
 to stat them; this gives a significant increase in search speed.
+.IP "\-regextype \fItype\fR"
+Changes the regular expression syntax understood by 
+.B \-regex
+and 
+.B -iregex
+tests which occur later on the command line.  Currently-implemented
+types are emacs, posix-awk, posix-basic (this is the default),
+posix-egrep and posix-extended.
+
 .IP "\-version, \-\-version"
 Print the \fBfind\fR version number and exit.
 .IP "\-warn, \-nowarn"
@@ -233,7 +244,7 @@ When find figures out how many 24-hour periods ago the file
 was last accessed, any fractional part is ignored, so to match 
 .B \-atime 
 .BR +1 ,
-a file has to have been modified at least 
+a file has to have been accessed at least 
 .I two
 days ago.
 .IP "\-cmin \fIn\fR"
@@ -274,7 +285,9 @@ patterns `fo*' and `F??' match the file names `Foo', `FOO', `foo',
 `fOo', etc.   In these patterns, unlike filename expansion by the
 shell, an initial '.' can be matched by '*'.  That is, 
 .B find \-name *bar 
-will match the file `.foobar'.
+will match the file `.foobar'.   Please note that you should quote
+patterns as a matter of course, otherwise the shell will expand any
+wildcard characters in them.
 
 .IP "\-inum \fIn\fR"
 File has inode number \fIn\fR.  It is normally easier to use the 
@@ -357,12 +370,10 @@ on the whole path, not a search.  For example, to match a file named
 `./fubar3', you can use the regular expression `.*bar.' or `.*b.*3',
 but not `f.*r3'.  The regular expressions understood by 
 .B find 
-follow the conventions for the 
-.B re_match 
-system library function where this is present (i.e. on systems using
-the GNU C Library).  On other systems, the implementation within
-Gnulib is used; by default, Gnulib provides ``basic'' regular
-expressions.
+are by default POSIX Basic Regular Expressions, but this can be
+changed with the 
+.B \-regextype 
+option.
 .IP "\-samefile \fIname\fR"
 File refers to the same inode as \fIname\fR.   When -L is in effect,
 this can include symbolic links.
@@ -406,8 +417,9 @@ named pipe (FIFO)
 .IP f
 regular file
 .IP l
-symbolic link (never true if the \-L option or the \-follow option is
-in effect, unless the symbolic link is broken).
+symbolic link; this is never true if the \-L option or the \-follow
+option is in effect, unless the symbolic link is broken.  If you want
+to search for symbolic links when \-L is in effect, use \-xtype.
 .IP s
 socket
 .IP D
@@ -447,7 +459,8 @@ the type of the file that \-type does not check.
 .SS ACTIONS
 .IP "\-delete\fR"
 Delete files; true if removal succeeded.  If the removal failed, an
-error message is issued.
+error message is issued.  Use of this action automatically turns on
+the '\-depth' option.
 
 .IP "\-exec \fIcommand\fR ;"
 Execute \fIcommand\fR; true if 0 status is returned.  All following
@@ -531,7 +544,10 @@ section for information about how unusual characters in filenames are handled.
 .IP "\-ok \fIcommand\fR ;"
 Like \-exec but ask the user first (on the standard input); if the
 response does not start with `y' or `Y', do not run the command, and
-return false.
+return false.  If the command is run, its standard input is redirected
+from
+.BR /dev/null .
+
 .IP \-print
 True; print the full file name on the standard output, followed by a
 newline.   If you are piping the output of 
@@ -545,7 +561,9 @@ section for information about how unusual characters in filenames are handled.
 .IP "\-okdir \fIcommand\fR ;"
 Like \-execdir but ask the user first (on the standard input); if the
 response does not start with `y' or `Y', do not run the command, and
-return false.
+return false.  If the command is run, its standard input is redirected
+from
+.BR /dev/null .
 .IP \-print0
 True; print the full file name on the standard output, followed by a
 null character (instead of the newline character that `\-print' uses).
@@ -1041,15 +1059,15 @@ been used in that case also.
 
 .P
 .nf
-.B find /  \t( \-perm +4000 \-fprintf /root/suid.txt '%#m %u %p\en' ) , \e
-.B         \t\t( \-size +100M \-fprintf /root/big.txt  '%\-10s %p\en'  )
+.B find /  \t\e( \-perm +4000 \-fprintf /root/suid.txt '%#m %u %p\en' \e) , \e
+.B       \t\t\e( \-size +100M \-fprintf /root/big.txt  '%\-10s %p\en' \e)
 
 .fi
 Traverse the filesystem just once, listing setuid files and
 directories into
 .B /root/suid.txt
 and large files into 
-.BR /root/big/txt .
+.BR /root/big.txt .
 
 .P
 .nf
@@ -1058,9 +1076,9 @@ and large files into
 .fi
 Search for files in your home directory which have been modified in
 the last twenty-four hours.  This command works this way because the
-time since each file was last accessed is divided by 24 hours and any 
+time since each file was last modified is divided by 24 hours and any 
 remainder is discarded.  That means that to match 
-.B -atime 
+.B -mtime 
 .BR 0 ,
 a file will have to have a modification in the past which is less than
 24 hours ago.
@@ -1072,20 +1090,19 @@ a file will have to have a modification in the past which is less than
 
 .fi
 Search for files which have read and write permission for their owner,
-and group, but which the rest of the world can read but not write to.  
-Files which meet these criteria but have other permissions bits set
-(for example if someone can execute the file) will not be matched.
+and group, but which other users can read but not write to.  Files
+which meet these criteria but have other permissions bits set (for
+example if someone can execute the file) will not be matched.
 
 .P
 .nf
 .B find . -perm -664
 
 .fi
-Search for files which have read and write permission for their owner,
-and group, but which the rest of the world can read but not write to,
-without regard to the presence of any extra permission bits (for
-example the executable bit).  This will match a file which has mode
-0777, for example.
+Search for files which have read and write permission for their owner
+and group, and which other users can read, without regard to the
+presence of any extra permission bits (for example the executable
+bit).  This will match a file which has mode 0777, for example.
 
 .P
 .nf

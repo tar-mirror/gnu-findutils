@@ -1,5 +1,6 @@
 /* find -- search for files in a directory hierarchy
-   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000, 
+                 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,7 +22,9 @@
    Jay Plett <jay@silence.princeton.nj.us>,
    and Tim Wood <axolotl!tim@toad.com>.
    The idea for -print0 and xargs -0 came from
-   Dan Bernstein <brnstnd@kramden.acf.nyu.edu>.  */
+   Dan Bernstein <brnstnd@kramden.acf.nyu.edu>.  
+   Improvements have been made by James Youngman <jay@gnu.org>.
+*/
 
 
 #include "defs.h"
@@ -52,6 +55,8 @@
 #include "savedirinfo.h"
 #include "buildcmd.h"
 #include "dirname.h"
+#include "quote.h"
+#include "quotearg.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -385,11 +390,13 @@ int
 main (int argc, char **argv)
 {
   int i;
-  PARSE_FUNC parse_function; /* Pointer to the function which parses. */
+  const struct parser_table *parse_entry; /* Pointer to the parsing table entry for this expression. */
   struct predicate *cur_pred;
   char *predicate_name;		/* Name of predicate being parsed. */
   int end_of_leading_options = 0; /* First arg after any -H/-L etc. */
   program_name = argv[0];
+  const struct parser_table *entry_close, *entry_print, *entry_open;
+
 
   /* We call check_nofollow() before setlocale() because the numbers 
    * for which we check (in the results of uname) definitiely have "."
@@ -403,6 +410,7 @@ main (int argc, char **argv)
   options.open_nofollow_available = false;
 #endif
 
+  options.regex_options = RE_SYNTAX_EMACS;
   
 #ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
@@ -448,7 +456,14 @@ main (int argc, char **argv)
       error (1, 0, _("The environment variable FIND_BLOCK_SIZE is not supported, the only thing that affects the block size is the POSIXLY_CORRECT environment variable"));
     }
 
+#if LEAF_OPTIMISATION
+  /* The leaf optimisation is enabled. */
   options.no_leaf_check = false;
+#else
+  /* The leaf optimisation is disabled. */
+  options.no_leaf_check = true;
+#endif
+
   set_follow_state(SYMLINK_NEVER_DEREF); /* The default is equivalent to -P. */
 
 #ifdef DEBUG
@@ -505,19 +520,32 @@ main (int argc, char **argv)
   
   /* Enclose the expression in `( ... )' so a default -print will
      apply to the whole expression. */
-  parse_open (argv, &argc);
+  entry_open  = find_parser("(");
+  entry_close = find_parser(")");
+  entry_print = find_parser("print");
+  assert(entry_open  != NULL);
+  assert(entry_close != NULL);
+  assert(entry_print != NULL);
+  
+  parse_open (entry_open, argv, &argc);
+  parse_begin_user_args(argv, argc, last_pred, predicates);
+  pred_sanity_check(last_pred);
+  
   /* Build the input order list. */
   while (i < argc)
     {
       if (strchr ("-!(),", argv[i][0]) == NULL)
 	usage (_("paths must precede expression"));
       predicate_name = argv[i];
-      parse_function = find_parser (predicate_name);
-      if (parse_function == NULL)
-	/* Command line option not recognized */
-	error (1, 0, _("invalid predicate `%s'"), predicate_name);
+      parse_entry = find_parser (predicate_name);
+      if (parse_entry == NULL)
+	{
+	  /* Command line option not recognized */
+	  error (1, 0, _("invalid predicate `%s'"), predicate_name);
+	}
+      
       i++;
-      if (!(*parse_function) (argv, &i))
+      if (!(*(parse_entry->parser_func)) (parse_entry, argv, &i))
 	{
 	  if (argv[i] == NULL)
 	    /* Command line option requires an argument */
@@ -526,7 +554,12 @@ main (int argc, char **argv)
 	    error (1, 0, _("invalid argument `%s' to `%s'"),
 		   argv[i], predicate_name);
 	}
+
+      pred_sanity_check(last_pred);
+      pred_sanity_check(predicates); /* XXX: expensive */
     }
+  parse_end_user_args(argv, argc, last_pred, predicates);
+  
   if (predicates->pred_next == NULL)
     {
       /* No predicates that do something other than set a global variable
@@ -534,7 +567,9 @@ main (int argc, char **argv)
       cur_pred = predicates;
       predicates = last_pred = predicates->pred_next;
       free ((char *) cur_pred);
-      parse_print (argv, &argc);
+      parse_print (entry_print, argv, &argc);
+      pred_sanity_check(last_pred); 
+      pred_sanity_check(predicates); /* XXX: expensive */
     }
   else if (!default_prints (predicates->pred_next))
     {
@@ -542,13 +577,17 @@ main (int argc, char **argv)
 	 remove the unneeded initial `('. */
       cur_pred = predicates;
       predicates = predicates->pred_next;
+      pred_sanity_check(predicates); /* XXX: expensive */
       free ((char *) cur_pred);
     }
   else
     {
       /* `( user-supplied-expression ) -print'. */
-      parse_close (argv, &argc);
-      parse_print (argv, &argc);
+      parse_close (entry_close, argv, &argc);
+      pred_sanity_check(last_pred);
+      parse_print (entry_print, argv, &argc);
+      pred_sanity_check(last_pred);
+      pred_sanity_check(predicates); /* XXX: expensive */
     }
 
 #ifdef	DEBUG
@@ -556,6 +595,9 @@ main (int argc, char **argv)
   print_list (stderr, predicates);
 #endif /* DEBUG */
 
+  /* do a sanity check */
+  pred_sanity_check(predicates);
+  
   /* Done parsing the predicates.  Build the evaluation tree. */
   cur_pred = predicates;
   eval_tree = get_expr (&cur_pred, NO_PREC);
@@ -860,17 +902,18 @@ wd_sanity_check(const char *thing_to_stat,
   const char *fstype;
   char *specific_what = NULL;
   int silent = 0;
+  const char *current_dir = ".";
   
   *changed = false;
   
-  if ((*options.xstat) (".", newinfo) != 0)
+  if ((*options.xstat) (current_dir, newinfo) != 0)
     error (1, errno, "%s", thing_to_stat);
   
   if (old_dev != newinfo->st_dev)
     {
       *changed = true;
       specific_what = specific_dirname(what);
-      fstype = filesystem_type(newinfo);
+      fstype = filesystem_type(newinfo, current_dir);
       silent = fs_likely_to_be_automounted(fstype);
 
       /* This condition is rare, so once we are here it is 
@@ -890,7 +933,7 @@ wd_sanity_check(const char *thing_to_stat,
 	{
 	case FATAL_IF_SANITY_CHECK_FAILS:
 	  {
-	    fstype = filesystem_type(newinfo);
+	    fstype = filesystem_type(newinfo, current_dir);
 	    error (1, 0,
 		   _("%s%s changed during execution of %s (old device number %ld, new device number %ld, filesystem type is %s) [ref %ld]"),
 		   specific_what,
@@ -925,7 +968,7 @@ wd_sanity_check(const char *thing_to_stat,
     {
       *changed = true;
       specific_what = specific_dirname(what);
-      fstype = filesystem_type(newinfo);
+      fstype = filesystem_type(newinfo, current_dir);
       
       error ((isfatal == FATAL_IF_SANITY_CHECK_FAILS) ? 1 : 0,
 	     0,			/* no relevant errno value */
@@ -1760,33 +1803,27 @@ static void
 process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *parent)
 {
   int subdirs_left;		/* Number of unexamined subdirs in PATHNAME. */
+  boolean subdirs_unreliable;	/* if true, cannot use dir link count as subdir limif (if false, it may STILL be unreliable) */
   int idx;			/* Which entry are we on? */
   struct stat stat_buf;
 
-#undef USE_OLD_SAVEDIR 
-  
-#if USE_OLD_SAVEDIR
-  char *name_space;		/* Names of files in PATHNAME. */
-  struct savedir_extrainfo *extra;
-#else
   struct savedir_dirinfo *dirinfo;
-#endif  
-  subdirs_left = statp->st_nlink - 2; /* Account for name and ".". */
 
-  errno = 0;
-#if USE_OLD_SAVEDIR
-  name_space = savedirinfo (name, &extra);
-#else
-  dirinfo = xsavedir(name, 0);
-#endif  
+  if (statp->st_nlink < 2)
+    {
+      subdirs_unreliable = true;
+    }
+  else
+    {
+      subdirs_unreliable = false; /* not necessarily right */
+      subdirs_left = statp->st_nlink - 2; /* Account for name and ".". */
+    }
   
-  if (
-#if USE_OLD_SAVEDIR
-      name_space
-#else
-      dirinfo
-#endif
-      == NULL)
+  errno = 0;
+  dirinfo = xsavedir(name, 0);
+
+  
+  if (dirinfo == NULL)
     {
       assert(errno != 0);
       error (0, errno, "%s", pathname);
@@ -1853,31 +1890,30 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      
 	    case SafeChdirFailNonexistent:
 	    case SafeChdirFailStat:
-	    case SafeChdirFailSymlink:
 	    case SafeChdirFailNotDir:
 	    case SafeChdirFailChdirFailed:
 	      error (0, errno, "%s", pathname);
 	      state.exit_status = 1;
 	      return;
+	      
+	    case SafeChdirFailSymlink:
+	      error (0, 0,
+		     _("warning: not following the symbolic link %s"),
+		     pathname);
+	      state.exit_status = 1;
+	      return;
 	    }
 	}
 
-#if USE_OLD_SAVEDIR
-      for (idx=0, namep = name_space; *namep; namep += file_len - pathname_len + 1, ++idx)
-#else
       for (idx=0; idx < dirinfo->size; ++idx)
-#endif
 	{
 	  /* savedirinfo() may return dirinfo=NULL if extended information 
 	   * is not available. 
 	   */
-#if USE_OLD_SAVEDIR
-	  mode_t mode = extra ? extra[idx].type_info : 0;
-#else
 	  mode_t mode = (dirinfo->entries[idx].flags & SavedirHaveFileType) ? 
 	    dirinfo->entries[idx].type_info : 0;
 	  namep = dirinfo->entries[idx].name;
-#endif
+
 	  /* Append this directory entry's name to the path being searched. */
 	  file_len = pathname_len + strlen (namep);
 	  if (file_len > cur_path_size)
@@ -1894,7 +1930,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	  strcpy (cur_name, namep);
 
 	  state.curdepth++;
-	  if (!options.no_leaf_check)
+	  if (!options.no_leaf_check && !subdirs_unreliable)
 	    {
 	      if (mode && S_ISDIR(mode) && (subdirs_left == 0))
 		{
@@ -1997,12 +2033,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 
       if (cur_path)
 	free (cur_path);
-#ifdef USE_OLD_SAVEDIR
-      free (name_space);
-      free (extra);
-#else
       free_dirinfo(dirinfo);
-#endif
     }
 }
 

@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.9.5 -*- Autoconf -*-
+# generated automatically by aclocal 1.9.6 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
 # 2005  Free Software Foundation, Inc.
@@ -28,7 +28,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION], [am__api_version="1.9"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.9.5])])
+	 [AM_AUTOMAKE_VERSION([1.9.6])])
 
 # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
 
@@ -879,6 +879,7 @@ m4_include([gnulib/m4/alloca.m4])
 m4_include([gnulib/m4/atexit.m4])
 m4_include([gnulib/m4/canonicalize.m4])
 m4_include([gnulib/m4/closeout.m4])
+m4_include([gnulib/m4/codeset.m4])
 m4_include([gnulib/m4/d-ino.m4])
 m4_include([gnulib/m4/dirname.m4])
 m4_include([gnulib/m4/dos.m4])
@@ -897,7 +898,6 @@ m4_include([gnulib/m4/getline.m4])
 m4_include([gnulib/m4/getndelim2.m4])
 m4_include([gnulib/m4/getopt.m4])
 m4_include([gnulib/m4/gettext.m4])
-m4_include([gnulib/m4/gettimeofday.m4])
 m4_include([gnulib/m4/gnulib.m4])
 m4_include([gnulib/m4/human.m4])
 m4_include([gnulib/m4/iconv.m4])
@@ -932,9 +932,9 @@ m4_include([gnulib/m4/rpmatch.m4])
 m4_include([gnulib/m4/savedir.m4])
 m4_include([gnulib/m4/ssize_t.m4])
 m4_include([gnulib/m4/stat-macros.m4])
-m4_include([gnulib/m4/stat.m4])
 m4_include([gnulib/m4/stdbool.m4])
 m4_include([gnulib/m4/stdint_h.m4])
+m4_include([gnulib/m4/stdio-safer.m4])
 m4_include([gnulib/m4/stpcpy.m4])
 m4_include([gnulib/m4/strdup.m4])
 m4_include([gnulib/m4/strftime.m4])
@@ -947,9 +947,9 @@ m4_include([gnulib/m4/strtoull.m4])
 m4_include([gnulib/m4/strtoumax.m4])
 m4_include([gnulib/m4/time_r.m4])
 m4_include([gnulib/m4/tm_gmtoff.m4])
-m4_include([gnulib/m4/tzset.m4])
 m4_include([gnulib/m4/uintmax_t.m4])
 m4_include([gnulib/m4/ulonglong.m4])
+m4_include([gnulib/m4/unistd-safer.m4])
 m4_include([gnulib/m4/xalloc.m4])
 m4_include([gnulib/m4/xgetcwd.m4])
 m4_include([gnulib/m4/xreadlink.m4])
