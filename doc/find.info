@@ -1,5 +1,7 @@
-This is ../../findutils/doc/find.info, produced by makeinfo version 4.7
-from ../../findutils/doc/find.texi.
+This is
+/localhome/jay/source/GNU/findutils/cvs/4.2.x/fixbug-4.2/findutils/doc/find.info,
+produced by makeinfo version 4.7 from
+/localhome/jay/source/GNU/findutils/cvs/4.2.x/fixbug-4.2/findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
 START-INFO-DIR-ENTRY
@@ -40,7 +42,7 @@ File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.25, for `find' version 4.2.25.
+   This is edition 4.2.26, for `find' version 4.2.26.
 
 * Menu:
 
@@ -1921,12 +1923,12 @@ described below.
 
     %D, %F, %H, %Y, %y
           These expand to values which are not under control of files'
-          ownwers, and so are printed as-is.
+          owners, and so are printed as-is.
 
     %a, %b, %c, %d, %g, %G, %i, %k, %m, %M, %n, %s, %t, %u, %U
           These have values which are under the control of files'
-          ownwers but which cannot be used to send arbitrary data to
-          the terminal, and so these are printed as-is.
+          owners but which cannot be used to send arbitrary data to the
+          terminal, and so these are printed as-is.
 
     %f, %h, %l, %p, %P
           The output of these directives is quoted if the output is
@@ -1972,14 +1974,14 @@ options modify those values.
      no input.
 
 `--max-lines[=MAX-LINES]'
-`-L[MAX-LINES]'
+`-L MAX-LINES'
 `-l[MAX-LINES]'
      Use at most MAX-LINES nonblank input lines per command line;
-     MAX-LINES defaults to 1 if omitted.  Trailing blanks cause an
+     MAX-LINES defaults to 1 if omitted; omitting the argument is not
+     allowed in the case of the `-L' option.  Trailing blanks cause an
      input line to be logically continued on the next input line, for
      the purpose of counting the lines.  Implies `-x'.  The preferred
-     name for this option is `-L' as this is specified by POSIX.  This
-     option should be compatible with `-I' but currently it is not.
+     name for this option is `-L' as this is specified by POSIX.
 
 `--max-args=MAX-ARGS'
 `-n MAX-ARGS'
@@ -2015,18 +2017,18 @@ limit the command size (*note Limiting Command Size::), this mode of
 operation is equivalent to `find -exec' (*note Single File::).
 
 `--replace[=REPLACE-STR]'
-`-I[REPLACE-STR]'
-`-i[REPLACE-STR]'
+`-I REPLACE-STR'
+`-i REPLACE-STR'
      Replace occurrences of REPLACE-STR in the initial arguments with
      names read from the input.  Also, unquoted blanks do not terminate
-     arguments; instead, the input is split at newlines only.  If
-     REPLACE-STR is omitted, it defaults to `{}' (like for `find
-     -exec').  Implies `-x' and `-l 1'.  `-i' is depreceated in favour
-     of `-I'. As an example, to sort each file in the `bills'
-     directory, leaving the output in that file name with `.sorted'
-     appended, you could do:
+     arguments; instead, the input is split at newlines only.  For the
+     `-i' option, if REPLACE-STR is omitted for `--replace' or `-i', it
+     defaults to `{}' (like for `find -exec').  Implies `-x' and `-l
+     1'.  `-i' is deprecated in favour of `-I'. As an example, to sort
+     each file in the `bills' directory, leaving the output in that
+     file name with `.sorted' appended, you could do:
 
-          find bills -type f | xargs -IXX sort -o XX.sorted XX
+          find bills -type f | xargs -I XX sort -o XX.sorted XX
 
      The equivalent command using `find -execdir' is:
 
@@ -3018,10 +3020,6 @@ databases returning each match of PATTERN.
      or end of a pathname.
 
 `--regextype'
-     This option changes the regular expression dialect used.  Dialects
-     understood are described in *Note Regular Expressions::.
-
-`--regextype'
      This option changes the regular expression syntax and behaviour
      used by the `--regex' option.  *Note Regular Expressions:: for more
      information on the regular expression dialects understood by GNU
@@ -3170,6 +3168,19 @@ File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invok
      considered special (every character is taken literally).  Disables
      the end of file string, which is treated like any other argument.
 
+`--delimiter DELIM'
+`-d DELIM'
+     Input file names are terminated by the specified character DELIM
+     instead of by whitespace, and any quotes and backslash characters
+     are not considered special (every character is taken literally).
+     Disables the end of file string, which is treated like any other
+     argument.
+
+     The specified delimiter may be a single character, a C-style
+     character escape such as `\n', or an octal or hexadecimal escape
+     code.  Octal and hexadecimal escape codes are understood as for the
+     `printf' command.  Multibyte characters are not supported.
+
 `--eof[=EOF-STR]'
 `-e[EOF-STR]'
      Set the end of file string to EOF-STR.  If the end of file string
@@ -3181,14 +3192,14 @@ File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invok
      Print a summary of the options to `xargs' and exit.
 
 `--replace[=REPLACE-STR]'
-`-I[REPLACE-STR]'
+`-I REPLACE-STR'
 `-i[REPLACE-STR]'
      Replace occurrences of REPLACE-STR in the initial arguments with
      names read from standard input.  Also, unquoted blanks do not
      terminate arguments; instead, the input is split at newlines only.
-     If REPLACE-STR is omitted, it defaults to `{}' (like for `find
-     -exec').  Implies `-x' and `-l 1'.  `-i' is depreceated in favour
-     of `-I'.
+     If REPLACE-STR is omitted (omitting it is allowed only for `-i'),
+     it defaults to `{}' (like for `find -exec').  Implies `-x' and `-l
+     1'.  `-i' is deprecated in favour of `-I'.
 
 `--max-lines[=MAX-LINES]'
 `-l[MAX-LINES]'
@@ -5453,120 +5464,120 @@ Expressions::, for more information on expressions.
 
 
 Tag Table:
-Node: Top1523
-Node: Introduction2568
-Node: Scope3810
-Node: Overview5735
-Node: find Expressions7606
-Node: Finding Files9231
-Node: Name9698
-Node: Base Name Patterns10326
-Node: Full Name Patterns11149
-Node: Fast Full Name Search13812
-Node: Shell Pattern Matching16233
-Node: Links18323
-Node: Symbolic Links18758
-Node: Hard Links23076
-Node: Time25550
-Node: Age Ranges26138
-Node: Comparing Timestamps27536
-Node: Size28828
-Node: Type30617
-Node: Owner32285
-Node: Permissions33112
-Node: Contents35496
-Node: Directories36669
-Node: Filesystems41318
-Node: Combining Primaries With Operators42669
-Node: Actions44189
-Node: Print File Name44751
-Node: Print File Information45369
-Node: Escapes48101
-Node: Format Directives48830
-Node: Name Directives49973
-Node: Ownership Directives50959
-Node: Size Directives51512
-Node: Location Directives52278
-Node: Time Directives53397
-Node: Time Formats54300
-Node: Time Components54736
-Node: Date Components55242
-Node: Combined Time Formats56065
-Node: Formatting Flags56782
-Node: Run Commands57394
-Node: Single File57752
-Node: Multiple Files59182
-Node: Unsafe File Name Handling63036
-Node: Safe File Name Handling64599
-Node: Unusual Characters in File Names66139
-Node: Limiting Command Size69177
-Node: Interspersing File Names71287
-Node: Querying72477
-Node: Delete Files74007
-Node: Adding Tests74411
-Node: Databases77051
-Node: Database Locations77769
-Node: Database Formats78777
-Node: New Database Format79566
-Node: Sample Database81233
-Node: Old Database Format81881
-Node: Newline Handling83941
-Node: File Permissions85387
-Node: Mode Structure85956
-Node: Symbolic Modes88089
-Node: Setting Permissions89091
-Node: Copying Permissions91636
-Node: Changing Special Permissions92446
-Node: Conditional Executability94290
-Node: Multiple Changes94916
-Node: Umask and Protection96572
-Node: Numeric Modes97670
-Node: Reference99485
-Node: Invoking find99807
-Node: Warning Messages101984
-Node: Invoking locate103760
-Node: Invoking updatedb109372
-Node: Invoking xargs113057
-Node: Regular Expressions116408
-Node: findutils-default regular expression syntax117573
-Node: awk regular expression syntax120079
-Node: egrep regular expression syntax121964
-Node: emacs regular expression syntax124175
-Node: gnu-awk regular expression syntax126704
-Node: grep regular expression syntax129044
-Node: posix-awk regular expression syntax131770
-Node: posix-basic regular expression syntax134037
-Node: posix-egrep regular expression syntax136676
-Node: posix-extended regular expression syntax139049
-Node: Common Tasks141520
-Node: Viewing And Editing141945
-Node: Archiving142951
-Node: Cleaning Up144583
-Node: Strange File Names146372
-Node: Fixing Permissions148022
-Node: Classifying Files148586
-Node: Worked Examples149304
-Node: Deleting Files149941
-Node: Updating A Timestamp File162961
-Node: Security Considerations169687
-Node: Levels of Risk171221
-Ref: Levels of Risk-Footnote-1174019
-Node: Security Considerations for find174198
-Ref: Security Considerations for find-Footnote-1176482
-Node: Changing the Current Working Directory176555
-Node: O_NOFOLLOW178282
-Ref: O_NOFOLLOW-Footnote-1179926
-Node: Systems without O_NOFOLLOW180028
-Node: Race Conditions with -exec182132
-Node: Race Conditions with -print and -print0185043
-Node: Security Considerations for xargs185963
-Node: Security Considerations for locate188033
-Node: Security Summary188730
-Node: Error Messages189487
-Node: Error Messages From find190499
-Node: Error Messages From xargs195356
-Node: Error Messages From locate197037
-Node: Error Messages From updatedb198269
-Node: Primary Index198672
+Node: Top1625
+Node: Introduction2670
+Node: Scope3912
+Node: Overview5837
+Node: find Expressions7708
+Node: Finding Files9333
+Node: Name9800
+Node: Base Name Patterns10428
+Node: Full Name Patterns11251
+Node: Fast Full Name Search13914
+Node: Shell Pattern Matching16335
+Node: Links18425
+Node: Symbolic Links18860
+Node: Hard Links23178
+Node: Time25652
+Node: Age Ranges26240
+Node: Comparing Timestamps27638
+Node: Size28930
+Node: Type30719
+Node: Owner32387
+Node: Permissions33214
+Node: Contents35598
+Node: Directories36771
+Node: Filesystems41420
+Node: Combining Primaries With Operators42771
+Node: Actions44291
+Node: Print File Name44853
+Node: Print File Information45471
+Node: Escapes48203
+Node: Format Directives48932
+Node: Name Directives50075
+Node: Ownership Directives51061
+Node: Size Directives51614
+Node: Location Directives52380
+Node: Time Directives53499
+Node: Time Formats54402
+Node: Time Components54838
+Node: Date Components55344
+Node: Combined Time Formats56167
+Node: Formatting Flags56884
+Node: Run Commands57496
+Node: Single File57854
+Node: Multiple Files59284
+Node: Unsafe File Name Handling63138
+Node: Safe File Name Handling64701
+Node: Unusual Characters in File Names66241
+Node: Limiting Command Size69277
+Node: Interspersing File Names71386
+Node: Querying72619
+Node: Delete Files74149
+Node: Adding Tests74553
+Node: Databases77193
+Node: Database Locations77911
+Node: Database Formats78919
+Node: New Database Format79708
+Node: Sample Database81375
+Node: Old Database Format82023
+Node: Newline Handling84083
+Node: File Permissions85529
+Node: Mode Structure86098
+Node: Symbolic Modes88231
+Node: Setting Permissions89233
+Node: Copying Permissions91778
+Node: Changing Special Permissions92588
+Node: Conditional Executability94432
+Node: Multiple Changes95058
+Node: Umask and Protection96714
+Node: Numeric Modes97812
+Node: Reference99627
+Node: Invoking find99949
+Node: Warning Messages102126
+Node: Invoking locate103902
+Node: Invoking updatedb109365
+Node: Invoking xargs113050
+Node: Regular Expressions117040
+Node: findutils-default regular expression syntax118205
+Node: awk regular expression syntax120711
+Node: egrep regular expression syntax122596
+Node: emacs regular expression syntax124807
+Node: gnu-awk regular expression syntax127336
+Node: grep regular expression syntax129676
+Node: posix-awk regular expression syntax132402
+Node: posix-basic regular expression syntax134669
+Node: posix-egrep regular expression syntax137308
+Node: posix-extended regular expression syntax139681
+Node: Common Tasks142152
+Node: Viewing And Editing142577
+Node: Archiving143583
+Node: Cleaning Up145215
+Node: Strange File Names147004
+Node: Fixing Permissions148654
+Node: Classifying Files149218
+Node: Worked Examples149936
+Node: Deleting Files150573
+Node: Updating A Timestamp File163593
+Node: Security Considerations170319
+Node: Levels of Risk171853
+Ref: Levels of Risk-Footnote-1174651
+Node: Security Considerations for find174830
+Ref: Security Considerations for find-Footnote-1177114
+Node: Changing the Current Working Directory177187
+Node: O_NOFOLLOW178914
+Ref: O_NOFOLLOW-Footnote-1180558
+Node: Systems without O_NOFOLLOW180660
+Node: Race Conditions with -exec182764
+Node: Race Conditions with -print and -print0185675
+Node: Security Considerations for xargs186595
+Node: Security Considerations for locate188665
+Node: Security Summary189362
+Node: Error Messages190119
+Node: Error Messages From find191131
+Node: Error Messages From xargs195988
+Node: Error Messages From locate197669
+Node: Error Messages From updatedb198901
+Node: Primary Index199304
 
 End Tag Table
