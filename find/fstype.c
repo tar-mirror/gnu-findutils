@@ -1,5 +1,5 @@
 /* fstype.c -- determine type of filesystems that files are on
-   Copyright (C) 1990, 91, 92, 93, 94 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,15 +13,15 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
 /* Written by David MacKenzie <djm@gnu.ai.mit.edu>. */
 
-#include <config.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "defs.h"
+
+#include "dirname.h"
 #include "modetype.h"
 #include <errno.h>
 #ifdef STDC_HEADERS
@@ -30,11 +30,19 @@
 extern int errno;
 #endif
 
-char *strdup ();
-char *strstr ();
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+# define N_(String) (String)
+#endif
 
-static char *filesystem_type_uncached P_((char *path, char *relpath, struct stat *statp));
-static int xatoi P_((char *cp));
+static char *filesystem_type_uncached PARAMS((char *path, char *relpath, struct stat *statp));
 
 #ifdef FSTYPE_MNTENT		/* 4.3BSD, SunOS, HP-UX, Dynix, Irix.  */
 #include <mntent.h>
@@ -191,10 +199,7 @@ static int fstype_known = 0;
    Return "unknown" if its filesystem type is unknown.  */
 
 char *
-filesystem_type (path, relpath, statp)
-     char *path;
-     char *relpath;
-     struct stat *statp;
+filesystem_type (char *path, char *relpath, struct stat *statp)
 {
   static char *current_fstype = NULL;
   static dev_t current_dev;
@@ -216,10 +221,7 @@ filesystem_type (path, relpath, statp)
    Return "unknown" if its filesystem type is unknown.  */
 
 static char *
-filesystem_type_uncached (path, relpath, statp)
-     char *path;
-     char *relpath;
-     struct stat *statp;
+filesystem_type_uncached (char *path, char *relpath, struct stat *statp)
 {
   char *type = NULL;
 
@@ -257,16 +259,22 @@ filesystem_type_uncached (path, relpath, statp)
       devopt = strstr (mnt->mnt_opts, "dev=");
       if (devopt)
 	{
-	  if (devopt[4] == '0' && (devopt[5] == 'x' || devopt[5] == 'X'))
-	    dev = xatoi (devopt + 6);
-	  else
-	    dev = xatoi (devopt + 4);
+	  uintmax_t u = 0;
+	  devopt += 4;
+	  if (devopt[0] == '0' && (devopt[1] == 'x' || devopt[1] == 'X'))
+	    devopt += 2;
+	  xstrtoumax (devopt, NULL, 16, &u, NULL);
+	  dev = u;
 	}
       else
 #endif /* not hpux */
 	{
-	  if (stat (mnt->mnt_dir, &disk_stats) == -1)
-	    error (1, errno, "error in %s: %s", table, mnt->mnt_dir);
+	  if (stat (mnt->mnt_dir, &disk_stats) == -1) {
+	    if (errno == EACCES)
+	      continue;
+	    else
+	      error (1, errno, _("error in %s: %s"), table, mnt->mnt_dir);
+	  }
 	  dev = disk_stats.st_dev;
 	}
 
@@ -322,7 +330,7 @@ filesystem_type_uncached (path, relpath, statp)
   char *p;
 
   if (S_ISLNK (statp->st_mode))
-    p = dirname (relpath);
+    p = dir_name (relpath);
   else
     p = relpath;
 
@@ -335,7 +343,7 @@ filesystem_type_uncached (path, relpath, statp)
     }
   else
     {
-#ifdef MFSNAMELEN		/* NetBSD.  */
+#ifdef HAVE_F_FSTYPENAME_IN_STATFS
       type = xstrdup (fss.f_fstypename);
 #else
       type = fstype_to_string (fss.f_type);
@@ -354,33 +362,5 @@ filesystem_type_uncached (path, relpath, statp)
      Don't cache those values.  */
   fstype_known = (type != NULL);
 
-  return xstrdup (type ? type : "unknown");
+  return xstrdup (type ? type : _("unknown"));
 }
-
-#ifdef FSTYPE_MNTENT		/* 4.3BSD etc.  */
-/* Return the value of the hexadecimal number represented by CP.
-   No prefix (like '0x') or suffix (like 'h') is expected to be
-   part of CP. */
-
-static int
-xatoi (cp)
-     char *cp;
-{
-  int val;
-  
-  val = 0;
-  while (*cp)
-    {
-      if (*cp >= 'a' && *cp <= 'f')
-	val = val * 16 + *cp - 'a' + 10;
-      else if (*cp >= 'A' && *cp <= 'F')
-	val = val * 16 + *cp - 'A' + 10;
-      else if (*cp >= '0' && *cp <= '9')
-	val = val * 16 + *cp - '0';
-      else
-	break;
-      cp++;
-    }
-  return val;
-}
-#endif

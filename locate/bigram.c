@@ -13,7 +13,9 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
 /* Usage: bigram < text > bigrams
    Use `code' to encode a file using this output.
@@ -29,6 +31,13 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
+#include <gnulib/config.h>
+#undef VERSION
+#undef PACKAGE_VERSION
+#undef PACKAGE_TARNAME
+#undef PACKAGE_STRING
+#undef PACKAGE_NAME
+#undef PACKAGE
 #include <config.h>
 #include <stdio.h>
 
@@ -43,7 +52,8 @@
 #endif
 #include <sys/types.h>
 
-char *xmalloc ();
+#include <getline.h>
+#include <xalloc.h>
 
 /* The name this program was run with.  */
 char *program_name;
@@ -51,8 +61,7 @@ char *program_name;
 /* Return the length of the longest common prefix of strings S1 and S2. */
 
 static int
-prefix_length (s1, s2)
-     char *s1, *s2;
+prefix_length (char *s1, char *s2)
 {
   register char *start;
 
@@ -61,10 +70,8 @@ prefix_length (s1, s2)
   return s1 - start;
 }
 
-void
-main (argc, argv)
-     int argc;
-     char **argv;
+int
+main (int argc, char **argv)
 {
   char *path;			/* The current input entry.  */
   char *oldpath;		/* The previous input entry.  */
@@ -73,7 +80,7 @@ main (argc, argv)
 
   program_name = argv[0];
 
-  pathsize = oldpathsize = 1026; /* Increased as necessary by getstr.  */
+  pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);
 
@@ -81,7 +88,7 @@ main (argc, argv)
      prefix count to 0.  */
   strcpy (oldpath, " ");
 
-  while ((line_len = getstr (&path, &pathsize, stdin, '\n', 0)) > 0)
+  while ((line_len = getline (&path, &pathsize, stdin)) > 0)
     {
       register int count;	/* The prefix length.  */
       register int j;		/* Index into input line.  */

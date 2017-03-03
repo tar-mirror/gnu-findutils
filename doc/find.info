@@ -1,5 +1,5 @@
-This is Info file find.info, produced by Makeinfo-1.55 from the input
-file find.texi.
+This is find.info, produced by makeinfo version 4.3 from
+../../findutils/doc/find.texi.
 
 START-INFO-DIR-ENTRY
 * Finding Files: (find).        Listing and operating on files
@@ -27,87 +27,87 @@ translation approved by the Foundation.
 
 
 Indirect:
-find.info-1: 1097
-find.info-2: 50752
+find.info-1: 1099
+find.info-2: 50786
 
 Tag Table:
 (Indirect)
-Node: Top1097
-Node: Introduction1909
+Node: Top1099
+Node: Introduction1917
 Node: Scope3080
 Node: Overview5000
 Node: find Expressions6758
-Node: Finding Files8379
-Node: Name8845
-Node: Base Name Patterns9469
-Node: Full Name Patterns10008
-Node: Fast Full Name Search10993
-Node: Shell Pattern Matching13148
-Node: Links14989
-Node: Symbolic Links15419
-Node: Hard Links16367
-Node: Time17403
-Node: Age Ranges17918
-Node: Comparing Timestamps18851
-Node: Size20130
+Node: Finding Files8378
+Node: Name8844
+Node: Base Name Patterns9468
+Node: Full Name Patterns10006
+Node: Fast Full Name Search10990
+Node: Shell Pattern Matching13144
+Node: Links14985
+Node: Symbolic Links15415
+Node: Hard Links16362
+Node: Time17398
+Node: Age Ranges17913
+Node: Comparing Timestamps18853
+Node: Size20132
 Node: Type20945
-Node: Owner21757
-Node: Permissions22570
-Node: Contents23255
-Node: Directories24423
-Node: Filesystems26897
-Node: Combining Primaries With Operators28169
-Node: Actions29470
-Node: Print File Name30017
-Node: Print File Information30621
-Node: Escapes32856
-Node: Format Directives33516
-Node: Name Directives34214
-Node: Ownership Directives34745
-Node: Size Directives35170
-Node: Location Directives35466
-Node: Time Directives36018
-Node: Time Formats36886
-Node: Time Components37313
-Node: Date Components37806
-Node: Combined Time Formats38616
-Node: Run Commands39100
-Node: Single File39453
-Node: Multiple Files40303
-Node: Unsafe File Name Handling42106
-Node: Safe File Name Handling43656
-Node: Limiting Command Size44342
-Node: Interspersing File Names46097
-Node: Querying47158
-Node: Adding Tests48074
-Node: Common Tasks50336
-Node: Viewing And Editing50752
-Node: Archiving51263
-Node: Cleaning Up52895
-Node: Strange File Names54456
-Node: Fixing Permissions56086
-Node: Classifying Files56645
-Node: Databases57363
-Node: Database Locations57977
-Node: Database Formats59501
-Node: New Database Format60152
-Node: Sample Database61714
-Node: Old Database Format62353
-Node: File Permissions64083
-Node: Mode Structure64651
-Node: Symbolic Modes66779
-Node: Setting Permissions67777
-Node: Copying Permissions70314
-Node: Changing Special Permissions71115
-Node: Conditional Executability72951
-Node: Multiple Changes73568
-Node: Umask and Protection75216
-Node: Numeric Modes76305
-Node: Reference78135
-Node: Invoking find78433
-Node: Invoking locate79480
-Node: Invoking updatedb80163
-Node: Invoking xargs80932
-Node: Primary Index84002
+Node: Owner21791
+Node: Permissions22604
+Node: Contents23289
+Node: Directories24457
+Node: Filesystems26936
+Node: Combining Primaries With Operators28207
+Node: Actions29508
+Node: Print File Name30055
+Node: Print File Information30659
+Node: Escapes32891
+Node: Format Directives33551
+Node: Name Directives34249
+Node: Ownership Directives34780
+Node: Size Directives35205
+Node: Location Directives35501
+Node: Time Directives36052
+Node: Time Formats36917
+Node: Time Components37344
+Node: Date Components37837
+Node: Combined Time Formats38647
+Node: Run Commands39131
+Node: Single File39484
+Node: Multiple Files40334
+Node: Unsafe File Name Handling42143
+Node: Safe File Name Handling43693
+Node: Limiting Command Size44378
+Node: Interspersing File Names46133
+Node: Querying47193
+Node: Adding Tests48107
+Node: Common Tasks50370
+Node: Viewing And Editing50786
+Node: Archiving51297
+Node: Cleaning Up52929
+Node: Strange File Names54454
+Node: Fixing Permissions56084
+Node: Classifying Files56643
+Node: Databases57361
+Node: Database Locations57975
+Node: Database Formats60280
+Node: New Database Format60933
+Node: Sample Database62495
+Node: Old Database Format63134
+Node: File Permissions65020
+Node: Mode Structure65588
+Node: Symbolic Modes67716
+Node: Setting Permissions68713
+Node: Copying Permissions71249
+Node: Changing Special Permissions72050
+Node: Conditional Executability73885
+Node: Multiple Changes74502
+Node: Umask and Protection76149
+Node: Numeric Modes77238
+Node: Reference79068
+Node: Invoking find79366
+Node: Invoking locate80413
+Node: Invoking updatedb81436
+Node: Invoking xargs82986
+Node: Primary Index86059
 
 End Tag Table

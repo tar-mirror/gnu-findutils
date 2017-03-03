@@ -13,7 +13,9 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
 /* Usage: frcode < sorted-list > compressed-list
 
@@ -61,6 +63,13 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
+#include <gnulib/config.h>
+#undef VERSION
+#undef PACKAGE_VERSION
+#undef PACKAGE_TARNAME
+#undef PACKAGE_STRING
+#undef PACKAGE_NAME
+#undef PACKAGE
 #include <config.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -76,8 +85,9 @@
 #endif
 
 #include "locatedb.h"
+#include <getline.h>
 
-char *xmalloc ();
+char *xmalloc PARAMS((size_t));
 
 /* The name this program was run with.  */
 char *program_name;
@@ -85,9 +95,7 @@ char *program_name;
 /* Write out a 16-bit int, high byte first (network byte order).  */
 
 static void
-put_short (c, fp)
-     int c;
-     FILE *fp;
+put_short (int c, FILE *fp)
 {
   putc (c >> 8, fp);
   putc (c, fp); 
@@ -96,8 +104,7 @@ put_short (c, fp)
 /* Return the length of the longest common prefix of strings S1 and S2. */
 
 static int
-prefix_length (s1, s2)
-     char *s1, *s2;
+prefix_length (char *s1, char *s2)
 {
   register char *start;
 
@@ -106,10 +113,8 @@ prefix_length (s1, s2)
   return s1 - start;
 }
 
-void
-main (argc, argv)
-     int argc;
-     char **argv;
+int
+main (int argc, char **argv)
 {
   char *path;			/* The current input entry.  */
   char *oldpath;		/* The previous input entry.  */
@@ -119,7 +124,7 @@ main (argc, argv)
 
   program_name = argv[0];
 
-  pathsize = oldpathsize = 1026; /* Increased as necessary by getstr.  */
+  pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);
 
@@ -132,7 +137,7 @@ main (argc, argv)
 
   /* FIXME temporary: change the \n to \0 when we figure out how to sort
      null-terminated strings.  */
-  while ((line_len = getstr (&path, &pathsize, stdin, '\n', 0)) > 0)
+  while ((line_len = getline (&path, &pathsize, stdin)) > 0)
     {
       path[line_len - 1] = '\0'; /* FIXME temporary: nuke the newline.  */
 

@@ -1,19 +1,21 @@
-LIBRARIES = find
-find_SOURCES = regex.c dirname.c error.c filemode.c getopt.c getopt1.c \
-idcache.c listfile.c modechange.c nextelem.c savedir.c xmalloc.c getline.c \
-xstrdup.c xgetcwd.c fnmatch.c $(find_OPT_SOURCES)
+## Process this file with automake to produce Makefile.in.
 
-find_OPT_SOURCES = fileblocks.c memcmp.c memset.c mktime.c stpcpy.c strdup.c \
-strftime.c strspn.c strstr.c strtol.c alloca.c
+AUTOMAKE_OPTIONS = 1.5 gnits no-dependencies
 
-DIST_OTHER = fnmatch.h getopt.h modechange.h modetype.h pathmax.h \
-regex.h wait.h
+noinst_LIBRARIES = libfind.a
 
-CONFIG_HEADER = ../config.h
-INCLUDES = -I.. -I$(srcdir)
+libfind_a_SOURCES =
+#libfind_a_LIBADD = @LIBOBJS@
+#libfind_la_LIBADD = @LTLIBOBJS@
+EXTRA_DIST = modetype.h wait.h
+BUILT_SOURCES =
+SUFFIXES =
+MOSTLYCLEANFILES =
+CLEANFILES =
+DISTCLEANFILES =
+MAINTAINERCLEANFILES =
+INCLUDES = -I$(top_srcdir)/gnulib/lib
 
-fnmatch.o: fnmatch.h
-getopt1.o: getopt.h
-listfile.o xgetcwd.o: pathmax.h
-modechange.o: modechange.h
-regex.o: regex.h
+libfind_a_SOURCES += modetype.h
+libfind_a_SOURCES += listfile.c nextelem.c
+

@@ -6,9 +6,7 @@
 @c @setchapternewpage odd
 @c %**end of header
 
-@set EDITION 1.1
-@set VERSION 4.1
-@set UPDATED November 1994
+@include version.texi
 
 @iftex
 @finalout
@@ -115,7 +113,7 @@ Bernstein.  Many other people have contributed bug fixes, small
 improvements, and helpful suggestions.  Thanks!
 
 Mail suggestions and bug reports for these programs to
-@code{bug-gnu-utils@@prep.ai.mit.edu}.  Please include the version
+@code{bug-findutils@@gnu.org}.  Please include the version
 number, which you can get by running @samp{find --version}.
 
 @menu
@@ -593,7 +591,7 @@ modified) @var{n}*24 hours ago.
 True if the file was last accessed (or its status changed, or it was
 modified) @var{n} minutes ago.  These tests provide finer granularity of
 measurement than @samp{-atime} et al.  For example, to list files in
-@file{/u/bill} that were last read from 2 to 6 hours ago:
+@file{/u/bill} that were last read from 2 to 6 minutes ago:
 
 @example
 find /u/bill -amin +2 -amin -6
@@ -699,6 +697,8 @@ regular file
 symbolic link
 @item s
 socket
+@item D
+door (Solaris)
 @end table
 @end deffn
 
@@ -817,7 +817,7 @@ archive since the directory's permissions are restored after its contents.
 @end deffn
 
 @deffn Action -prune
-If @samp{-depth} is not given, true; do not descend the current
+If @samp{-depth} is not given, true; do not descend into the current
 directory.  If @samp{-depth} is given, false; no effect.  @samp{-prune}
 only affects tests and actions that come after it in the expression, not
 those that come before.
@@ -886,22 +886,30 @@ The operators are, in order of decreasing precedence:
 
 @table @code
 @item @asis{( @var{expr} )}
+@findex ()
 Force precedence.  True if @var{expr} is true.
 
 @item @asis{! @var{expr}}
 @itemx @asis{-not @var{expr}}
+@findex !
+@findex -not
 True if @var{expr} is false.
 
 @item @asis{@var{expr1 expr2}}
 @itemx @asis{@var{expr1} -a @var{expr2}}
 @itemx @asis{@var{expr1} -and @var{expr2}}
+@findex -a
+@findex -and
 And; @var{expr2} is not evaluated if @var{expr1} is false.
 
 @item @asis{@var{expr1} -o @var{expr2}}
 @itemx @asis{@var{expr1} -or @var{expr2}}
+@findex -o
+@findex -or
 Or; @var{expr2} is not evaluated if @var{expr1} is true.
 
 @item @asis{@var{expr1} , @var{expr2}}
+@findex ,
 List; both @var{expr1} and @var{expr2} are always evaluated.  True if
 @var{expr2} is true.  The value of @var{expr1} is discarded.  This
 operator lets you do multiple independent operations on one traversal,
@@ -1346,7 +1354,7 @@ file names exceeds the operating system's command-line length limit.
 necessary without exceeding the limit:
 
 @example
-find $HOME -name '*.c' -print | grep -l sprintf
+find $HOME -name '*.c' -print | xargs grep -l sprintf
 @end example
 
 However, if the command needs to have its standard input be a terminal
@@ -1490,7 +1498,7 @@ operation is equivalent to @samp{find -exec} (@pxref{Single File}).
 @table @code
 @item --replace@r{[}=@var{replace-str}@r{]}
 @itemx -i@r{[}@var{replace-str}@r{]}
-Replace occurences of @var{replace-str} in the initial arguments with
+Replace occurrences of @var{replace-str} in the initial arguments with
 names read from standard input.  Also, unquoted blanks do not terminate
 arguments.  If @var{replace-str} is omitted, it defaults to @samp{@{@}}
 (like for @samp{find -exec}).  Implies @samp{-x} and @samp{-l 1}.  As an
@@ -1575,7 +1583,7 @@ Here is a shell script called @code{unstripped} that checks whether its
 argument is an unstripped binary file:
 
 @example
-#!/bin/sh
+#! /bin/sh
 file $1 | grep 'not stripped' > /dev/null
 @end example
 
@@ -1713,8 +1721,7 @@ Removing old files from @file{/tmp} is commonly done from @code{cron}:
 find /tmp /var/tmp -not -type d -mtime +3 -print0 |
   xargs --null --no-run-if-empty rm -f
 
-find /tmp /var/tmp -depth -mindepth 1 -type d -empty -print0 |
-  xargs --null --no-run-if-empty rmdir
+find /tmp /var/tmp -depth -mindepth 1 -type d -empty -exec rmdir @{@} \;
 @end example
 
 The second @code{find} command above uses @samp{-depth} so it cleans out
@@ -1861,19 +1868,36 @@ Default is @file{/}.
 
 @item --netpaths='@var{path}@dots{}'
 Network (NFS, AFS, RFS, etc.) directories to put in the database.
+The environment variable @code{NETPATHS} also sets this value.
 Default is none.
+
 
 @item --prunepaths='@var{path}@dots{}'
 Directories to not put in the database, which would otherwise be.
+The environment variable @code{PRUNEPATHS} also sets this value.
 Default is @file{/tmp /usr/tmp /var/tmp /afs}.
+
+@item --prunefs='@var{path}@dots{}'
+File systems to not put in the database, which would otherwise be.
+Note that files are pruned when a file system is reached;
+Any file system mounted under an undesired file system will be
+ignored.
+The environment variable @code{PRUNEFS} also sets this value.
+Default is @file{nfs NFS proc}.
 
 @item --output=@var{dbfile}
 The database file to build.
 Default is system-dependent, but typically @file{/usr/local/var/locatedb}.
 
+@item --localuser=@var{user}
+The user to search the non-network directories as, using @code{su}.
+Default is to search the non-network directories as the current user.
+You can also use the environment variable @code{LOCALUSER} to set this user.
+
 @item --netuser=@var{user}
 The user to search network directories as, using @code{su}.
 Default is @code{daemon}.
+You can also use the environment variable @code{NETUSER} to set this user.
 @end table
 
 @node Database Formats
@@ -1882,7 +1906,7 @@ Default is @code{daemon}.
 The file name databases contain lists of files that were in particular
 directory trees when the databases were last updated.  The file name
 database format changed starting with GNU @code{locate} version 4.0 to
-allow machines with diffent byte orderings to share the databases.  The
+allow machines with different byte orderings to share the databases.  The
 new GNU @code{locate} can read both the old and new database formats.
 However, old versions of @code{locate} and @code{find} produce incorrect
 results if given a new-format database.
@@ -1989,6 +2013,10 @@ ranges used for the special codes is replaced in the database by a
 question mark, which not coincidentally is the shell wildcard to match a
 single character.
 
+The old format therefore can not faithfully store entries with non-ASCII
+characters. It therefore should not be used in internationalized
+environments.
+
 @node File Permissions, Reference, Databases, Top
 @chapter File Permissions
 
@@ -2056,6 +2084,17 @@ database file names.  You can also use the environment variable
 @code{LOCATE_PATH} to set the list of database files to search.  The
 option overrides the environment variable if both are used.
 
+@item --existing
+@itemx -e
+Only print out such names which currently exist (instead of such names
+which existed when the database was created).
+Note that this may slow down the program a lot, if there are many matches
+in the database.
+
+@item --ignore-case
+@itemx -i
+Ignore case distinctions in both the pattern and the file names.
+
 @item --help
 Print a summary of the options to @code{locate} and exit.
 
@@ -2077,19 +2116,35 @@ Default is @file{/}.
 
 @item --netpaths='@var{path}@dots{}'
 Network (NFS, AFS, RFS, etc.) directories to put in the database.
+The environment variable @code{NETPATHS} also sets this value.
 Default is none.
 
 @item --prunepaths='@var{path}@dots{}'
 Directories to not put in the database, which would otherwise be.
+The environment variable @code{PRUNEPATHS} also sets this value.
 Default is @file{/tmp /usr/tmp /var/tmp /afs}.
+
+@item --prunefs='@var{path}@dots{}'
+File systems to not put in the database, which would otherwise be.
+Note that files are pruned when a file system is reached;
+Any file system mounted under an undesired file system will be
+ignored.
+The environment variable @code{PRUNEFS} also sets this value.
+Default is @file{nfs NFS proc}.
 
 @item --output=@var{dbfile}
 The database file to build.
 Default is system-dependent, but typically @file{/usr/local/var/locatedb}.
 
+@item --localuser=@var{user}
+The user to search the non-network directories as, using @code{su}.
+Default is to search the non-network directories as the current user.
+You can also use the environment variable @code{LOCALUSER} to set this user.
+
 @item --netuser=@var{user}
 The user to search network directories as, using @code{su}(1).
 Default is @code{daemon}.
+You can also use the environment variable @code{NETUSER} to set this user.
 @end table
 
 @node Invoking xargs, ,  Invoking updatedb, Reference
@@ -2138,7 +2193,7 @@ Print a summary of the options to @code{xargs} and exit.
 
 @item --replace@r{[}=@var{replace-str}@r{]}
 @itemx -i@r{[}@var{replace-str}@r{]}
-Replace occurences of @var{replace-str} in the initial arguments with
+Replace occurrences of @var{replace-str} in the initial arguments with
 names read from standard input.  Also, unquoted blanks do not terminate
 arguments.  If @var{replace-str} is omitted, it defaults to @samp{@{@}}
 (like for @samp{find -exec}).  Implies @samp{-x} and @samp{-l 1}.
@@ -2184,7 +2239,8 @@ Print the version number of @code{xargs} and exit.
 
 @item --exit
 @itemx -x
-Exit if the size (see the @var{-s} option) is exceeded.
+Exit if the size (see the @samp{-s} option) is exceeded.
+
 
 @item --max-procs=@var{max-procs}
 @itemx -P @var{max-procs}
@@ -2204,3 +2260,34 @@ Expressions}, for more information on expressions.
 
 @contents
 @bye
+
+@comment texi related words used by Emacs' spell checker ispell.el
+
+@comment LocalWords: texinfo setfilename settitle setchapternewpage
+@comment LocalWords: iftex finalout ifinfo DIR titlepage vskip pt
+@comment LocalWords: filll dir samp dfn noindent xref pxref
+@comment LocalWords: var deffn texi deffnx itemx emph asis
+@comment LocalWords: findex smallexample subsubsection cindex
+
+@comment other words used by Emacs' spell checker ispell.el
+@comment LocalWords: README fred updatedb xargs Plett Rendell akefile
+@comment LocalWords: args grep Filesystems fo foo fOo wildcards iname
+@comment LocalWords: ipath regex iregex expr fubar regexps
+@comment LocalWords: metacharacters macs sr sc inode lname ilname
+@comment LocalWords: sysdep noleaf ls inum xdev filesystems usr atime
+@comment LocalWords: ctime mtime amin cmin mmin al daystart Sladkey rm
+@comment LocalWords: anewer cnewer bckw rf xtype uname gname uid gid
+@comment LocalWords: nouser nogroup chown chgrp perm ch maxdepth
+@comment LocalWords: mindepth cpio src CD AFS statted stat fstype ufs
+@comment LocalWords: nfs tmp mfs printf fprint dils rw djm Nov lwall
+@comment LocalWords: POSIXLY fls fprintf strftime locale's EDT GMT AP
+@comment LocalWords: EST diff perl backquotes sprintf Falstad Oct cron
+@comment LocalWords: eg vmunix mkdir afs allexec allwrite ARG bigram
+@comment LocalWords: bigrams cd chmod comp crc CVS dbfile dum eof
+@comment LocalWords: fileserver filesystem fn frcode Ghazi Hnewc iXX
+@comment LocalWords: joeuser Kaveh localpaths localuser LOGNAME
+@comment LocalWords: Meyering mv netpaths netuser nonblank nonblanks
+@comment LocalWords: ois ok Pinard printindex proc procs prunefs
+@comment LocalWords: prunepaths pwd RFS rmadillo rmdir rsh sbins str
+@comment LocalWords: su Timar ubins ug unstripped vf VM Weitzel
+@comment LocalWords: wildcard zlogout

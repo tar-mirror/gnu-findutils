@@ -14,7 +14,9 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
 /* POSIX.1 doesn't mention the S_IFMT bits; instead, it uses S_IStype
    test macros.  To make storing file types more convenient, define
@@ -34,6 +36,9 @@
 #ifdef S_ISSOCK
 #define S_IFSOCK 64
 #endif
+#ifdef S_ISDOOR
+#define S_IFDOOR 128
+#endif
 #endif /* !S_IFMT */
 
 #ifdef STAT_MACROS_BROKEN
@@ -44,6 +49,7 @@
 #undef S_ISFIFO
 #undef S_ISLNK
 #undef S_ISSOCK
+#undef S_ISDOOR
 #undef S_ISMPB
 #undef S_ISMPC
 #undef S_ISNWK
@@ -71,6 +77,9 @@
 #endif
 #if !defined(S_ISSOCK) && defined(S_IFSOCK)
 #define	S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
+#endif
+#if !defined(S_ISDOOR) && defined(S_IFDOOR)
+#define	S_ISDOOR(m) (((m) & S_IFMT) == S_IFDOOR)
 #endif
 #if !defined(S_ISMPB) && defined(S_IFMPB) /* V7 */
 #define S_ISMPB(m) (((m) & S_IFMT) == S_IFMPB)

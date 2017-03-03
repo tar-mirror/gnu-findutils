@@ -13,7 +13,9 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
 /* Compress a sorted list.
    Works with `find' to encode a filename database to save space
@@ -43,6 +45,13 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
+#include <gnulib/config.h>
+#undef VERSION
+#undef PACKAGE_VERSION
+#undef PACKAGE_TARNAME
+#undef PACKAGE_STRING
+#undef PACKAGE_NAME
+#undef PACKAGE
 #include <config.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -57,9 +66,24 @@
 #include <stdlib.h>
 #endif
 
-#include "locatedb.h"
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#define textdomain(Domain)
+#define bindtextdomain(Package, Directory)
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+# define N_(String) (String)
+#endif
 
-char *xmalloc ();
+#include "locatedb.h"
+#include <getline.h>
+
+char *xmalloc PARAMS((size_t));
 
 /* The name this program was run with.  */
 char *program_name;
@@ -71,8 +95,7 @@ static char bigrams[257] = {0};
 /* Return the offset of PATTERN in STRING, or -1 if not found. */
 
 static int
-strindex (string, pattern)
-     char *string, *pattern;
+strindex (char *string, char *pattern)
 {
   register char *s;
 
@@ -92,8 +115,7 @@ strindex (string, pattern)
 /* Return the length of the longest common prefix of strings S1 and S2. */
 
 static int
-prefix_length (s1, s2)
-     char *s1, *s2;
+prefix_length (char *s1, char *s2)
 {
   register char *start;
 
@@ -102,10 +124,8 @@ prefix_length (s1, s2)
   return s1 - start;
 }
 
-void
-main (argc, argv)
-     int argc;
-     char **argv;
+int
+main (int argc, char **argv)
 {
   char *path;			/* The current input entry.  */
   char *oldpath;		/* The previous input entry.  */
@@ -122,7 +142,7 @@ main (argc, argv)
 
   if (argc != 2)
     {
-      fprintf (stderr, "Usage: %s most_common_bigrams < list > coded_list\n",
+      fprintf (stderr, _("Usage: %s most_common_bigrams < list > coded_list\n"),
 	       argv[0]);
       exit (2);
     }
@@ -135,7 +155,7 @@ main (argc, argv)
       exit (1);
     }
 
-  pathsize = oldpathsize = 1026; /* Increased as necessary by getstr.  */
+  pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);
 
@@ -150,7 +170,7 @@ main (argc, argv)
   fwrite (bigrams, 1, 256, stdout);
   fclose (fp);
 
-  while ((line_len = getstr (&path, &pathsize, stdin, '\n', 0)) > 0)
+  while ((line_len = getline (&path, &pathsize, stdin)) > 0)
     {
       char *pp;
 
@@ -159,8 +179,7 @@ main (argc, argv)
       /* Squelch unprintable chars in path so as not to botch decoding.  */
       for (pp = path; *pp != '\0'; pp++)
 	{
-	  *pp &= 0177;
-	  if (*pp < 040 || *pp == 0177)
+	  if (!(*pp >= 040 && *pp < 0177))
 	    *pp = '?';
 	}
 

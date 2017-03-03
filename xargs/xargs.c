@@ -1,5 +1,5 @@
 /* xargs -- build and execute command lines from standard input
-   Copyright (C) 1990, 91, 92, 93, 94 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,20 +13,33 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
 /* Written by Mike Rendell <michael@cs.mun.ca>
    and David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
+#include <gnulib/config.h>
+#undef VERSION
+#undef PACKAGE_VERSION
+#undef PACKAGE_TARNAME
+#undef PACKAGE_STRING
+#undef PACKAGE_NAME
+#undef PACKAGE
 #include <config.h>
 
-#if __STDC__
-#define P_(s) s
-#else
-#define P_(s) ()
-#endif
+# ifndef PARAMS
+#  if defined PROTOTYPES || (defined __STDC__ && __STDC__)
+#   define PARAMS(Args) Args
+#  else
+#   define PARAMS(Args) ()
+#  endif
+# endif
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <ctype.h>
 
 #if !defined (isascii) || defined (STDC_HEADERS)
@@ -60,15 +73,16 @@
 #define memcpy(dest, source, count) (bcopy((source), (dest), (count)))
 #endif
 
-char *strstr ();
-char *strdup ();
-
 #ifndef _POSIX_SOURCE
 #include <sys/param.h>
 #endif
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
+#endif
+
+#ifndef LONG_MAX
+#define LONG_MAX (~(1 << (sizeof (long) * 8 - 1)))
 #endif
 
 #ifdef HAVE_UNISTD_H
@@ -101,12 +115,24 @@ char *strdup ();
 #ifdef STDC_HEADERS
 #include <stdlib.h>
 #else
-char *malloc ();
-void exit ();
-void free ();
-long strtol ();
-
 extern int errno;
+#endif
+
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#define textdomain(Domain)
+#define bindtextdomain(Package, Directory)
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+# define N_(String) (String)
 #endif
 
 /* Return nonzero if S is the EOF string.  */
@@ -125,9 +151,8 @@ typedef int boolean;
 #define VOID char
 #endif
 
-VOID *xmalloc P_ ((size_t n));
-VOID *xrealloc P_ ((VOID * p, size_t n));
-void error P_ ((int status, int errnum, char *message,...));
+#include <xalloc.h>
+void error PARAMS ((int status, int errnum, char *message,...));
 
 extern char *version_string;
 
@@ -236,32 +261,39 @@ static struct option const longopts[] =
   {NULL, no_argument, NULL, 0}
 };
 
-static int read_line P_ ((void));
-static int read_string P_ ((void));
-static void do_insert P_ ((char *arg, size_t arglen, size_t lblen));
-static void push_arg P_ ((char *arg, size_t len));
-static boolean print_args P_ ((boolean ask));
-static void do_exec P_ ((void));
-static void add_proc P_ ((pid_t pid));
-static void wait_for_proc P_ ((boolean all));
-static long parse_num P_ ((char *str, int option, long min, long max));
-static long env_size P_ ((char **envp));
-static void usage P_ ((FILE * stream, int status));
+static int read_line PARAMS ((void));
+static int read_string PARAMS ((void));
+static void do_insert PARAMS ((char *arg, size_t arglen, size_t lblen));
+static void push_arg PARAMS ((char *arg, size_t len));
+static boolean print_args PARAMS ((boolean ask));
+static void do_exec PARAMS ((void));
+static void add_proc PARAMS ((pid_t pid));
+static void wait_for_proc PARAMS ((boolean all));
+static long parse_num PARAMS ((char *str, int option, long min, long max));
+static long env_size PARAMS ((char **envp));
+static void usage PARAMS ((FILE * stream, int status));
 
-void
-main (argc, argv)
-     int argc;
-     char **argv;
+int
+main (int argc, char **argv)
 {
   int optc;
   int always_run_command = 1;
   long orig_arg_max;
   char *default_cmd = "/bin/echo";
-  int (*read_args) P_ ((void)) = read_line;
+  int (*read_args) PARAMS ((void)) = read_line;
 
   program_name = argv[0];
 
-  orig_arg_max = ARG_MAX - 2048; /* POSIX.2 requires subtracting 2048.  */
+#ifdef HAVE_SETLOCALE
+  setlocale (LC_ALL, "");
+#endif
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
+  orig_arg_max = ARG_MAX;
+  if (orig_arg_max == -1)
+    orig_arg_max = LONG_MAX;
+  orig_arg_max -= 2048; /* POSIX.2 requires subtracting 2048.  */
   arg_max = orig_arg_max;
 
   /* Sanity check for systems with huge ARG_MAX defines (e.g., Suns which
@@ -274,7 +306,7 @@ main (argc, argv)
   /* Take the size of the environment into account.  */
   arg_max -= env_size (environ);
   if (arg_max <= 0)
-    error (1, 0, "environment is too large for exec");
+    error (1, 0, _("environment is too large for exec"));
 
   while ((optc = getopt_long (argc, argv, "+0e::i::l::n:prs:txP:",
 			      longopts, (int *) 0)) != -1)
@@ -348,7 +380,7 @@ main (argc, argv)
 	  break;
 
 	case 'v':
-	  printf ("GNU xargs version %s\n", version_string);
+	  printf (_("GNU xargs version %s\n"), version_string);
 	  exit (0);
 
 	default:
@@ -425,7 +457,7 @@ main (argc, argv)
    otherwise the length of the last string read (including the null).  */
 
 static int
-read_line ()
+read_line (void)
 {
   static boolean eof = false;
   /* Start out in mode SPACE to always strip leading spaces (even with -i).  */
@@ -522,8 +554,8 @@ read_line ()
 
 	case QUOTE:
 	  if (c == '\n')
-	    error (1, 0, "unmatched %s quote",
-		   quotc == '"' ? "double" : "single");
+	    error (1, 0, _("unmatched %s quote"),
+		   quotc == '"' ? _("double") : _("single"));
 	  if (c == quotc)
 	    {
 	      state = NORM;
@@ -536,7 +568,7 @@ read_line ()
 	  break;
 	}
       if (p >= endbuf)
-	error (1, 0, "argument line too long");
+	error (1, 0, _("argument line too long"));
       *p++ = c;
     }
 }
@@ -547,7 +579,7 @@ read_line ()
    otherwise the length of the string read (including the null).  */
 
 static int
-read_string ()
+read_string (void)
 {
   static boolean eof = false;
   int len;
@@ -581,7 +613,7 @@ read_string ()
 	  return len;
 	}
       if (p >= endbuf)
-	error (1, 0, "argument line too long");
+	error (1, 0, _("argument line too long"));
       *p++ = c;
     }
 }
@@ -593,14 +625,11 @@ read_string ()
    LBLEN is the length of `linebuf', not including the null.
 
    COMPAT: insertions on the SYSV version are limited to 255 chars per line,
-   and a max of 5 occurences of replace_pat in the initial-arguments.
+   and a max of 5 occurrences of replace_pat in the initial-arguments.
    Those restrictions do not exist here.  */
 
 static void
-do_insert (arg, arglen, lblen)
-     char *arg;
-     size_t arglen;
-     size_t lblen;
+do_insert (char *arg, size_t arglen, size_t lblen)
 {
   /* Temporary copy of each arg with the replace pattern replaced by the
      real arg.  */
@@ -627,6 +656,7 @@ do_insert (arg, arglen, lblen)
       strncpy (p, arg, len);
       p += len;
       arg += len;
+      arglen -= len;
 
       if (s)
 	{
@@ -635,12 +665,13 @@ do_insert (arg, arglen, lblen)
 	    break;
 	  strcpy (p, linebuf);
 	  arg += rplen;
+	  arglen -= rplen;
 	  p += lblen;
 	}
     }
   while (*arg);
   if (*arg)
-    error (1, 0, "command too long");
+    error (1, 0, _("command too long"));
   *p++ = '\0';
   push_arg (insertbuf, p - insertbuf);
 }
@@ -651,20 +682,18 @@ do_insert (arg, arglen, lblen)
    If this brings the list up to its maximum size, execute the command.  */
 
 static void
-push_arg (arg, len)
-     char *arg;
-     size_t len;
+push_arg (char *arg, size_t len)
 {
   if (arg)
     {
       if (cmd_argv_chars + len > arg_max)
 	{
 	  if (initial_args || cmd_argc == initial_argc)
-	    error (1, 0, "can not fit single argument within argument list size limit");
+	    error (1, 0, _("can not fit single argument within argument list size limit"));
 	  if (replace_pat
 	      || (exit_if_size_exceeded &&
 		  (lines_per_exec || args_per_exec)))
-	    error (1, 0, "argument list too long");
+	    error (1, 0, _("argument list too long"));
 	  do_exec ();
 	}
       if (!initial_args && args_per_exec &&
@@ -703,8 +732,7 @@ push_arg (arg, len)
    otherwise, return false.  */
 
 static boolean
-print_args (ask)
-     boolean ask;
+print_args (boolean ask)
 {
   int i;
 
@@ -739,7 +767,7 @@ print_args (ask)
    waiting for processes that were previously executed.  */
 
 static void
-do_exec ()
+do_exec (void)
 {
   pid_t child;
 
@@ -757,7 +785,7 @@ do_exec ()
       switch (child)
 	{
 	case -1:
-	  error (1, errno, "cannot fork");
+	  error (1, errno, _("cannot fork"));
 
 	case 0:		/* Child.  */
 	  execvp (cmd_argv[0], cmd_argv);
@@ -775,8 +803,7 @@ do_exec ()
    been executed.  */
 
 static void
-add_proc (pid)
-     pid_t pid;
+add_proc (pid_t pid)
 {
   int i;
 
@@ -808,8 +835,7 @@ add_proc (pid)
    Remove the processes that finish from the list of executing processes.  */
 
 static void
-wait_for_proc (all)
-     boolean all;
+wait_for_proc (boolean all)
 {
   while (procs_executing)
     {
@@ -819,9 +845,9 @@ wait_for_proc (all)
 	{
 	  pid_t pid;
 
-	  pid = wait (&status);
-	  if (pid < 0)
-	    error (1, errno, "error waiting for child process");
+	  while ((pid = wait (&status)) == (pid_t) -1)
+	    if (errno != EINTR)
+	      error (1, errno, _("error waiting for child process"));
 
 	  /* Find the entry in `pids' for the child process
 	     that exited.  */
@@ -837,11 +863,11 @@ wait_for_proc (all)
       if (WEXITSTATUS (status) == 126 || WEXITSTATUS (status) == 127)
 	exit (WEXITSTATUS (status));	/* Can't find or run the command.  */
       if (WEXITSTATUS (status) == 255)
-	error (124, 0, "%s: exited with status 255; aborting", cmd_argv[0]);
+	error (124, 0, _("%s: exited with status 255; aborting"), cmd_argv[0]);
       if (WIFSTOPPED (status))
-	error (125, 0, "%s: stopped by signal %d", cmd_argv[0], WSTOPSIG (status));
+	error (125, 0, _("%s: stopped by signal %d"), cmd_argv[0], WSTOPSIG (status));
       if (WIFSIGNALED (status))
-	error (125, 0, "%s: terminated by signal %d", cmd_argv[0], WTERMSIG (status));
+	error (125, 0, _("%s: terminated by signal %d"), cmd_argv[0], WTERMSIG (status));
       if (WEXITSTATUS (status) != 0)
 	child_error = 123;
 
@@ -856,11 +882,7 @@ wait_for_proc (all)
    Print an error message mentioning OPTION and exit.  */
 
 static long
-parse_num (str, option, min, max)
-     char *str;
-     int option;
-     long min;
-     long max;
+parse_num (char *str, int option, long int min, long int max)
 {
   char *eptr;
   long val;
@@ -868,19 +890,19 @@ parse_num (str, option, min, max)
   val = strtol (str, &eptr, 10);
   if (eptr == str || *eptr)
     {
-      fprintf (stderr, "%s: invalid number for -%c option\n",
+      fprintf (stderr, _("%s: invalid number for -%c option\n"),
 	       program_name, option);
       usage (stderr, 1);
     }
   else if (val < min)
     {
-      fprintf (stderr, "%s: value for -%c option must be >= %ld\n",
+      fprintf (stderr, _("%s: value for -%c option must be >= %ld\n"),
 	       program_name, option, min);
       usage (stderr, 1);
     }
   else if (max >= 0 && val > max)
     {
-      fprintf (stderr, "%s: value for -%c option must be < %ld\n",
+      fprintf (stderr, _("%s: value for -%c option must be < %ld\n"),
 	       program_name, option, max);
       usage (stderr, 1);
     }
@@ -890,8 +912,7 @@ parse_num (str, option, min, max)
 /* Return how much of ARG_MAX is used by the environment.  */
 
 static long
-env_size (envp)
-     char **envp;
+env_size (char **envp)
 {
   long len = 0;
 
@@ -902,17 +923,16 @@ env_size (envp)
 }
 
 static void
-usage (stream, status)
-     FILE *stream;
-     int status;
+usage (FILE *stream, int status)
 {
-  fprintf (stream, "\
+  fprintf (stream, _("\
 Usage: %s [-0prtx] [-e[eof-str]] [-i[replace-str]] [-l[max-lines]]\n\
        [-n max-args] [-s max-chars] [-P max-procs] [--null] [--eof[=eof-str]]\n\
        [--replace[=replace-str]] [--max-lines[=max-lines]] [--interactive]\n\
        [--max-chars=max-chars] [--verbose] [--exit] [--max-procs=max-procs]\n\
        [--max-args=max-args] [--no-run-if-empty] [--version] [--help]\n\
-       [command [initial-arguments]]\n",
+       [command [initial-arguments]]\n"),
 	   program_name);
+  fputs (_("\nReport bugs to <bug-findutils@gnu.org>."), stream);
   exit (status);
 }

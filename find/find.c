@@ -1,5 +1,5 @@
 /* find -- search for files in a directory hierarchy
-   Copyright (C) 1990, 91, 92, 93, 94 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,8 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.*/
 
 /* GNU find was written by Eric Decker <cire@cisco.com>,
    with enhancements by David MacKenzie <djm@gnu.ai.mit.edu>,
@@ -22,32 +23,43 @@
    The idea for -print0 and xargs -0 came from
    Dan Bernstein <brnstnd@kramden.acf.nyu.edu>.  */
 
-#include <config.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
+#include "defs.h"
+
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #else
 #include <sys/file.h>
 #endif
-#include "defs.h"
-#include "modetype.h"
+#include <human.h>
+#include <modetype.h>
+#include <savedir.h>
 
-#ifndef S_IFLNK
-#define lstat stat
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
 #endif
 
-int lstat ();
-int stat ();
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#define textdomain(Domain)
+#define bindtextdomain(Package, Directory)
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+# define N_(String) (String)
+#endif
 
 #define apply_predicate(pathname, stat_buf_ptr, node)	\
   (*(node)->pred_func)((pathname), (stat_buf_ptr), (node))
 
-static void process_top_path P_((char *pathname));
-static int process_path P_((char *pathname, char *name, boolean leaf, char *parent));
-static void process_dir P_((char *pathname, char *name, int pathlen, struct stat *statp, char *parent));
-static boolean no_side_effects P_((struct predicate *pred));
+static void process_top_path PARAMS((char *pathname));
+static int process_path PARAMS((char *pathname, char *name, boolean leaf, char *parent));
+static void process_dir PARAMS((char *pathname, char *name, int pathlen, struct stat *statp, char *parent));
+static boolean no_side_effects PARAMS((struct predicate *pred));
+static boolean default_prints PARAMS((struct predicate *pred));
 
 /* Name this program was run with. */
 char *program_name;
@@ -73,6 +85,12 @@ int mindepth;
 /* Current depth; 0 means current path is a command line arg. */
 int curdepth;
 
+/* Output block size.  */
+int output_block_size;
+
+/* Time at start of execution.  */
+time_t start_time;
+
 /* Seconds between 00:00 1/1/70 and either one day before now
    (the default), or the start of today (if -daystart is given). */
 time_t cur_day_start;
@@ -91,21 +109,23 @@ boolean stay_on_filesystem;
    Can be set by -prune, -maxdepth, and -xdev/-mount. */
 boolean stop_at_current_level;
 
-#ifndef HAVE_FCHDIR
-/* The full path of the initial working directory.  */
-char *starting_dir;
-#else
+/* The full path of the initial working directory, or "." if
+   STARTING_DESC is nonnegative.  */
+char const *starting_dir = ".";
+
 /* A file descriptor open to the initial working directory.
    Doing it this way allows us to work when the i.w.d. has
    unreadable parents.  */
 int starting_desc;
-#endif
+
+/* The stat buffer of the initial working directory. */
+struct stat starting_stat_buf;
 
 /* If true, we have called stat on the current path. */
 boolean have_stat;
 
 /* The file being operated on, relative to the current directory.
-   Used for stat, readlink, and opendir.  */
+   Used for stat, readlink, remove, and opendir.  */
 char *rel_pathname;
 
 /* Length of current path. */
@@ -131,23 +151,28 @@ debug_stat (file, bufp)
 }
 #endif /* DEBUG_STAT */
 
-void
-main (argc, argv)
-     int argc;
-     char *argv[];
+int
+main (int argc, char **argv)
 {
   int i;
-  PFB parse_function;		/* Pointer to who is to do the parsing. */
+  PFB parse_function;		/* Pointer to the function which parses. */
   struct predicate *cur_pred;
   char *predicate_name;		/* Name of predicate being parsed. */
 
   program_name = argv[0];
 
+#ifdef HAVE_SETLOCALE
+  setlocale (LC_ALL, "");
+#endif
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
   predicates = NULL;
   last_pred = NULL;
   do_dir_first = true;
   maxdepth = mindepth = -1;
-  cur_day_start = time ((time_t *) 0) - DAYSECS;
+  start_time = time (NULL);
+  cur_day_start = start_time - DAYSECS;
   full_days = false;
   no_leaf_check = false;
   stay_on_filesystem = false;
@@ -158,6 +183,8 @@ main (argc, argv)
 #else /* !DEBUG_STAT */
   xstat = lstat;
 #endif /* !DEBUG_STAT */
+
+  human_block_size (getenv ("FIND_BLOCK_SIZE"), 0, &output_block_size);
 
 #ifdef DEBUG
   printf ("cur_day_start = %s", ctime (&cur_day_start));
@@ -174,18 +201,20 @@ main (argc, argv)
   while (i < argc)
     {
       if (strchr ("-!(),", argv[i][0]) == NULL)
-	usage ("paths must precede expression");
+	usage (_("paths must precede expression"));
       predicate_name = argv[i];
       parse_function = find_parser (predicate_name);
       if (parse_function == NULL)
-	error (1, 0, "invalid predicate `%s'", predicate_name);
+	/* Command line option not recognized */
+	error (1, 0, _("invalid predicate `%s'"), predicate_name);
       i++;
       if (!(*parse_function) (argv, &i))
 	{
 	  if (argv[i] == NULL)
-	    error (1, 0, "missing argument to `%s'", predicate_name);
+	    /* Command line option requires an argument */
+	    error (1, 0, _("missing argument to `%s'"), predicate_name);
 	  else
-	    error (1, 0, "invalid argument `%s' to `%s'",
+	    error (1, 0, _("invalid argument `%s' to `%s'"),
 		   argv[i], predicate_name);
 	}
     }
@@ -198,7 +227,7 @@ main (argc, argv)
       free ((char *) cur_pred);
       parse_print (argv, &argc);
     }
-  else if (!no_side_effects (predicates->pred_next))
+  else if (!default_prints (predicates->pred_next))
     {
       /* One or more predicates that produce output were given;
 	 remove the unneeded initial `('. */
@@ -214,7 +243,7 @@ main (argc, argv)
     }
 
 #ifdef	DEBUG
-  printf ("Predicate List:\n");
+  printf (_("Predicate List:\n"));
   print_list (predicates);
 #endif /* DEBUG */
 
@@ -222,7 +251,7 @@ main (argc, argv)
   cur_pred = predicates;
   eval_tree = get_expr (&cur_pred, NO_PREC);
 #ifdef	DEBUG
-  printf ("Eval Tree:\n");
+  printf (_("Eval Tree:\n"));
   print_tree (eval_tree, 0);
 #endif /* DEBUG */
 
@@ -233,19 +262,24 @@ main (argc, argv)
   mark_stat (eval_tree);
 
 #ifdef DEBUG
-  printf ("Optimized Eval Tree:\n");
+  printf (_("Optimized Eval Tree:\n"));
   print_tree (eval_tree, 0);
 #endif /* DEBUG */
 
-#ifndef HAVE_FCHDIR
-  starting_dir = xgetcwd ();
-  if (starting_dir == NULL)
-    error (1, errno, "cannot get current directory");
-#else
   starting_desc = open (".", O_RDONLY);
+  if (0 <= starting_desc && fchdir (starting_desc) != 0)
+    {
+      close (starting_desc);
+      starting_desc = -1;
+    }
   if (starting_desc < 0)
-    error (1, errno, "cannot open current directory");
-#endif
+    {
+      starting_dir = xgetcwd ();
+      if (! starting_dir)
+	error (1, errno, _("cannot get current directory"));
+    }
+  if ((*xstat) (".", &starting_stat_buf) != 0)
+    error (1, errno, _("cannot get current directory"));
 
   /* If no paths are given, default to ".".  */
   for (i = 1; i < argc && strchr ("-!(),", argv[i][0]) == NULL; i++)
@@ -256,13 +290,35 @@ main (argc, argv)
   exit (exit_status);
 }
 
+/* Safely go back to the starting directory. */
+static void
+chdir_back (void)
+{
+  struct stat stat_buf;
+
+  if (starting_desc < 0)
+    {
+      if (chdir (starting_dir) != 0)
+	error (1, errno, "%s", starting_dir);
+      if ((*xstat) (".", &stat_buf) != 0)
+	error (1, errno, "%s", starting_dir);
+      if (stat_buf.st_dev != starting_stat_buf.st_dev ||
+	  stat_buf.st_ino != starting_stat_buf.st_ino)
+	error (1, 0, _("%s changed during execution of %s"), starting_dir, program_name);
+    }
+  else
+    {
+      if (fchdir (starting_desc) != 0)
+	error (1, errno, "%s", starting_dir);
+    }
+}
+
 /* Descend PATHNAME, which is a command-line argument.  */
 
 static void
-process_top_path (pathname)
-     char *pathname;
+process_top_path (char *pathname)
 {
-  struct stat stat_buf;
+  struct stat stat_buf, cur_stat_buf;
 
   curdepth = 0;
   path_length = strlen (pathname);
@@ -279,14 +335,16 @@ process_top_path (pathname)
 	  exit_status = 1;
 	  return;
 	}
+
+      /* Check that we are where we should be. */
+      if ((*xstat) (".", &cur_stat_buf) != 0)
+	error (1, errno, "%s", pathname);
+      if (cur_stat_buf.st_dev != stat_buf.st_dev ||
+	  cur_stat_buf.st_ino != stat_buf.st_ino)
+	error (1, 0, _("%s changed during execution of %s"), pathname, program_name);
+
       process_path (pathname, ".", false, ".");
-#ifndef HAVE_FCHDIR
-      if (chdir (starting_dir) < 0)
-	error (1, errno, "%s", starting_dir);
-#else
-      if (fchdir (starting_desc))
-	error (1, errno, "cannot return to starting directory");
-#endif
+      chdir_back ();
     }
   else
     process_path (pathname, pathname, false, ".");
@@ -323,15 +381,13 @@ static int dir_curr = -1;
    Return nonzero iff PATHNAME is a directory. */
 
 static int
-process_path (pathname, name, leaf, parent)
-     char *pathname;
-     char *name;
-     boolean leaf;
-     char *parent;
+process_path (char *pathname, char *name, boolean leaf, char *parent)
 {
   struct stat stat_buf;
   static dev_t root_dev;	/* Device ID of current argument pathname. */
   int i;
+  struct stat dir_buf;
+  int parent_desc;
 
   /* Assume it is a non-directory initially. */
   stat_buf.st_mode = 0;
@@ -389,12 +445,20 @@ process_path (pathname, name, leaf, parent)
   if (do_dir_first && curdepth >= mindepth)
     apply_predicate (pathname, &stat_buf, eval_tree);
 
+#ifdef DEBUG
+  fprintf(stderr, "pathname = %s, stop_at_current_level = %d\n",
+	  pathname, stop_at_current_level);
+#endif /* DEBUG */
+  
   if (stop_at_current_level == false)
     /* Scan directory on disk. */
     process_dir (pathname, name, strlen (pathname), &stat_buf, parent);
 
   if (do_dir_first == false && curdepth >= mindepth)
-    apply_predicate (pathname, &stat_buf, eval_tree);
+    {
+      rel_pathname = name;
+      apply_predicate (pathname, &stat_buf, eval_tree);
+    }
 
   dir_curr--;
 
@@ -413,21 +477,16 @@ process_path (pathname, name, leaf, parent)
    starting directory.  */
 
 static void
-process_dir (pathname, name, pathlen, statp, parent)
-     char *pathname;
-     char *name;
-     int pathlen;
-     struct stat *statp;
-     char *parent;
+process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *parent)
 {
   char *name_space;		/* Names of files in PATHNAME. */
   int subdirs_left;		/* Number of unexamined subdirs in PATHNAME. */
+  struct stat stat_buf;
 
   subdirs_left = statp->st_nlink - 2; /* Account for name and ".". */
 
   errno = 0;
-  /* On some systems (VAX 4.3BSD+NFS), NFS mount points have st_size < 0.  */
-  name_space = savedir (name, statp->st_size > 0 ? statp->st_size : 512);
+  name_space = savedir (name);
   if (name_space == NULL)
     {
       if (errno)
@@ -436,7 +495,7 @@ process_dir (pathname, name, pathlen, statp, parent)
 	  exit_status = 1;
 	}
       else
-	error (1, 0, "virtual memory exhausted");
+	error (1, 0, _("virtual memory exhausted"));
     }
   else
     {
@@ -460,6 +519,13 @@ process_dir (pathname, name, pathlen, statp, parent)
 	  exit_status = 1;
 	  return;
 	}
+
+      /* Check that we are where we should be. */
+      if ((*xstat) (".", &stat_buf) != 0)
+	error (1, errno, "%s", pathname);
+      if (stat_buf.st_dev != dir_ids[dir_curr].dev ||
+	  stat_buf.st_ino != dir_ids[dir_curr].ino)
+	error (1, 0, _("%s changed during execution of %s"), starting_dir, program_name);
 
       for (namep = name_space; *namep; namep += file_len - pathname_len + 1)
 	{
@@ -499,22 +565,33 @@ process_dir (pathname, name, pathlen, statp, parent)
 
       if (strcmp (name, "."))
 	{
+	  /* We could go back and do the next command-line arg
+	     instead, maybe using longjmp.  */
+	  char const *dir;
+
 	  if (!dereference)
-	    {
-	      if (chdir ("..") < 0)
-		/* We could go back and do the next command-line arg instead,
-		   maybe using longjmp.  */
-		error (1, errno, "%s", parent);
-	    }
+	    dir = "..";
 	  else
 	    {
-#ifndef HAVE_FCHDIR
-	      if (chdir (starting_dir) || chdir (parent))
-		error (1, errno, "%s", parent);
-#else
-	      if (fchdir (starting_desc) || chdir (parent))
-		error (1, errno, "%s", parent);
-#endif
+	      chdir_back ();
+	      dir = parent;
+	    }
+
+	  if (chdir (dir) != 0)
+	    error (1, errno, "%s", parent);
+
+	  /* Check that we are where we should be. */
+	  if ((*xstat) (".", &stat_buf) != 0)
+	    error (1, errno, "%s", pathname);
+	  if (stat_buf.st_dev !=
+	      (dir_curr > 0 ? dir_ids[dir_curr-1].dev : starting_stat_buf.st_dev) ||
+	      stat_buf.st_ino !=
+	      (dir_curr > 0 ? dir_ids[dir_curr-1].ino : starting_stat_buf.st_ino))
+	    {
+	      if (dereference)
+	        error (1, 0, _("%s changed during execution of %s"), parent, program_name);
+	      else
+	        error (1, 0, _("%s/.. changed during execution of %s"), starting_dir, program_name);
 	    }
 	}
 
@@ -528,12 +605,27 @@ process_dir (pathname, name, pathlen, statp, parent)
    predicate list PRED, false if there are any. */
 
 static boolean
-no_side_effects (pred)
-     struct predicate *pred;
+no_side_effects (struct predicate *pred)
 {
   while (pred != NULL)
     {
       if (pred->side_effects)
+	return (false);
+      pred = pred->pred_next;
+    }
+  return (true);
+}
+
+/* Return true if there are no predicates with no_default_print in
+   predicate list PRED, false if there are any.
+   Returns true if default print should be performed */
+
+static boolean
+default_prints (struct predicate *pred)
+{
+  while (pred != NULL)
+    {
+      if (pred->no_default_print)
 	return (false);
       pred = pred->pred_next;
     }

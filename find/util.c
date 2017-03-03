@@ -1,5 +1,5 @@
 /* util.c -- functions for initializing new tree elements, and other things.
-   Copyright (C) 1990, 91, 92, 93, 94 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,31 +13,24 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
-#include <config.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
 #include "defs.h"
-
-/* Return the last component of pathname FNAME, with leading slashes
-   compressed into one slash. */
 
-char *
-basename (fname)
-     char *fname;
-{
-  char *p;
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+# define N_(String) (String)
+#endif
 
-  /* For "/", "//", etc., return "/". */
-  for (p = fname; *p == '/'; ++p)
-    /* Do nothing. */ ;
-  if (*p == '\0')
-    return p - 1;
-  p = strrchr (fname, '/');
-  return (p == NULL ? fname : p + 1);
-}
 
 /* Return a pointer to a new predicate structure, which has been
    linked in as the last one in the predicates list.
@@ -48,7 +41,7 @@ basename (fname)
    Set all cells in the new structure to the default values. */
 
 struct predicate *
-get_new_pred ()
+get_new_pred (void)
 {
   register struct predicate *new_pred;
 
@@ -71,6 +64,7 @@ get_new_pred ()
   last_pred->p_type = NO_TYPE;
   last_pred->p_prec = NO_PREC;
   last_pred->side_effects = false;
+  last_pred->no_default_print = false;
   last_pred->need_stat = true;
   last_pred->args.str = NULL;
   last_pred->pred_next = NULL;
@@ -84,7 +78,7 @@ get_new_pred ()
    predicate is an operator.  If it isn't, the AND operator is inserted. */
 
 struct predicate *
-get_new_pred_chk_op ()
+get_new_pred_chk_op (void)
 {
   struct predicate *new_pred;
 
@@ -92,7 +86,7 @@ get_new_pred_chk_op ()
     switch (last_pred->p_type)
       {
       case NO_TYPE:
-	error (1, 0, "oops -- invalid default insertion of and!");
+	error (1, 0, _("oops -- invalid default insertion of and!"));
 	break;
 
       case PRIMARY_TYPE:
@@ -130,8 +124,7 @@ get_new_pred_chk_op ()
    operator. */
 
 struct predicate *
-insert_primary (pred_func)
-     boolean (*pred_func) ();
+insert_primary (boolean (*pred_func) (/* ??? */))
 {
   struct predicate *new_pred;
 
@@ -147,12 +140,11 @@ insert_primary (pred_func)
 }
 
 void
-usage (msg)
-     char *msg;
+usage (char *msg)
 {
   if (msg)
     fprintf (stderr, "%s: %s\n", program_name, msg);
-  fprintf (stderr, "\
-Usage: %s [path...] [expression]\n", program_name);
+  fprintf (stderr, _("\
+Usage: %s [path...] [expression]\n"), program_name);
   exit (1);
 }

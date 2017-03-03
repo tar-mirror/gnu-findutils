@@ -1,5 +1,5 @@
 /* locate -- search databases for filenames that match patterns
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 96, 98, 99, 2000, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,9 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.
+*/
 
 /* Usage: locate [options] pattern...
 
@@ -47,6 +49,14 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
+#define _GNU_SOURCE
+#include <gnulib/config.h>
+#undef VERSION
+#undef PACKAGE_VERSION
+#undef PACKAGE_TARNAME
+#undef PACKAGE_STRING
+#undef PACKAGE_NAME
+#undef PACKAGE
 #include <config.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -67,27 +77,57 @@
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
-#else
-char *getenv ();
 #endif
 
-#ifdef STDC_HEADERS
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
-#include <stdlib.h>
 #else
 extern int errno;
 #endif
 
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#define textdomain(Domain)
+#define bindtextdomain(Package, Directory)
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+# define N_(String) (String)
+#endif
+
 #include "locatedb.h"
+#include <getline.h>
+
+/* Note that this evaluates C many times.  */
+#ifdef _LIBC
+# define TOUPPER(Ch) toupper (Ch)
+# define TOLOWER(Ch) tolower (Ch)
+#else
+# define TOUPPER(Ch) (islower (Ch) ? toupper (Ch) : (Ch))
+# define TOLOWER(Ch) (isupper (Ch) ? tolower (Ch) : (Ch))
+#endif
 
 typedef enum {false, true} boolean;
 
 /* Warn if a database is older than this.  8 days allows for a weekly
    update that takes up to a day to perform.  */
-#define WARN_SECONDS (60 * 60 * 24 * 8)
+#define WARN_NUMBER_UNITS (8)
+/* Printable name of units used in WARN_SECONDS */
+static const char warn_name_units[] = N_("days");
+#define SECONDS_PER_UNIT (60 * 60 * 24)
 
-/* Printable version of WARN_SECONDS.  */
-#define WARN_MESSAGE "8 days"
+#define WARN_SECONDS ((SECONDS_PER_UNIT) * (WARN_NUMBER_UNITS))
+
+/* Check for existence of files before printing them out? */
+int check_existence = 0;
 
 char *next_element ();
 char *xmalloc ();
@@ -100,10 +140,12 @@ static int
 get_short (fp)
      FILE *fp;
 {
+
   register short x;
 
-  x = fgetc (fp);
-  return (x << 8) | (fgetc (fp) & 0xff);
+  x = fgetc (fp) << 8;
+  x |= (fgetc (fp) & 0xff);
+  return x;
 }
 
 /* Return a pointer to the last character in a static copy of the last
@@ -158,12 +200,59 @@ last_literal_end (name)
   return subp;
 }
 
+/* getstr()
+ *
+ * Read bytes from FP into the buffer at offset OFFSET in (*BUF),
+ * until we reach DELIMITER or end-of-file.   We reallocate the buffer 
+ * as necessary, altering (*BUF) and (*SIZ) as appropriate.  No assumption 
+ * is made regarding the content of the data (i.e. the implementation is 
+ * 8-bit clean, the only delimiter is DELIMITER).
+ *
+ * Written Fri May 23 18:41:16 2003 by James Youngman, because getstr() 
+ * has been removed from gnulib.  
+ *
+ * We call the function locate_read_str() to avoid a name clash with the curses
+ * function getstr().
+ */
+static int locate_read_str(char **buf, size_t *siz, FILE *fp, int delimiter, int offs)
+{
+  char * p = NULL;
+  size_t sz = 0;
+  int needed, nread;
+
+  nread = getdelim(&p, &sz, delimiter, fp);
+  if (nread >= 0)
+    {
+      assert(p != NULL);
+      
+      needed = offs + nread;
+      if (needed > (*siz))
+	{
+	  char *pnew = realloc(*buf, needed);
+	  if (NULL == pnew)
+	    {
+	      return -1;	/* FAIL */
+	    }
+	  else
+	    {
+	      *siz = needed;
+	      *buf = pnew;
+	    }
+	}
+      memcpy((*buf)+offs, p, nread);
+      free(p);
+    }
+  return nread;
+}
+
+
 /* Print the entries in DBFILE that match shell globbing pattern PATHPART.
    Return the number of entries printed.  */
 
 static int
-locate (pathpart, dbfile)
+locate (pathpart, dbfile, ignore_case)
      char *pathpart, *dbfile;
+     int ignore_case;
 {
   /* The pathname database.  */
   FILE *fp;
@@ -211,11 +300,13 @@ locate (pathpart, dbfile)
   time(&now);
   if (now - st.st_mtime > WARN_SECONDS)
     {
-      error (0, 0, "warning: database `%s' is more than %s old",
-	     dbfile, WARN_MESSAGE);
+      /* For example:
+	 warning: database `fred' is more than 8 days old */
+      error (0, 0, _("warning: database `%s' is more than %d %s old"),
+	     dbfile, WARN_NUMBER_UNITS, _(warn_name_units));
     }
 
-  pathsize = 1026;		/* Increased as necessary by getstr.  */
+  pathsize = 1026;		/* Increased as necessary by locate_read_str.  */
   path = xmalloc (pathsize);
 
   nread = fread (path, 1, sizeof (LOCATEDB_MAGIC), fp);
@@ -233,6 +324,15 @@ locate (pathpart, dbfile)
       old_format = true;
     }
 
+  /* If we ignore case,
+     convert it to lower first so we don't have to do it every time */
+  if (ignore_case){
+    for (patend=pathpart;*patend;++patend){
+     *patend=TOLOWER(*patend);
+    }
+  }
+  
+  
   globflag = strchr (pathpart, '*') || strchr (pathpart, '?')
     || strchr (pathpart, '[');
 
@@ -274,14 +374,14 @@ locate (pathpart, dbfile)
 	    count += c;
 
 	  /* Overlay the old path with the remainder of the new.  */
-	  nread = getstr (&path, &pathsize, fp, '\0', count);
+	  nread = locate_read_str (&path, &pathsize, fp, 0, count); 
 	  if (nread < 0)
 	    break;
 	  c = getc (fp);
 	  s = path + count + nread - 2; /* Move to the last char in path.  */
 	  assert (s[0] != '\0');
 	  assert (s[1] == '\0'); /* Our terminator.  */
-	  assert (s[2] == '\0'); /* Added by getstr.  */
+	  assert (s[2] == '\0'); /* Added by locate_read_str.  */
 	}
 
       /* If the previous path matched, scan the whole path for the last
@@ -292,6 +392,37 @@ locate (pathpart, dbfile)
       /* Search backward starting at the end of the path we just read in,
 	 for the character at the end of the last glob-free subpattern
 	 in PATHPART.  */
+      if (ignore_case)
+	{
+          for (prev_fast_match = false; s >= cutoff; s--)
+	    /* Fast first char check. */
+	    if (TOLOWER(*s) == *patend)
+	      {
+	        char *s2;		/* Scan the path we read in. */
+	        register char *p2;	/* Scan `patend'.  */
+
+	        for (s2 = s - 1, p2 = patend - 1; *p2 != '\0' && TOLOWER(*s2) == *p2;
+		     s2--, p2--)
+	          ;
+		if (*p2 == '\0')
+		  {
+		    /* Success on the fast match.  Compare the whole pattern
+		       if it contains globbing characters.  */
+		    prev_fast_match = true;
+		    if (globflag == false || fnmatch (pathpart, path, FNM_CASEFOLD) == 0)
+		      {
+			if (!check_existence || stat(path, &st) == 0)
+			  {
+			    puts (path);
+			    ++printed;
+			  }
+		      }
+		    break;
+		  }
+	      }
+	}
+      else {
+	
       for (prev_fast_match = false; s >= cutoff; s--)
 	/* Fast first char check. */
 	if (*s == *patend)
@@ -307,16 +438,22 @@ locate (pathpart, dbfile)
 		/* Success on the fast match.  Compare the whole pattern
 		   if it contains globbing characters.  */
 		prev_fast_match = true;
-		if (globflag == false || fnmatch (pathpart, path, 0) == 0)
+		if (globflag == false || fnmatch (pathpart, path,
+						  0) == 0)
 		  {
-		    puts (path);
-		    ++printed;
+		    if (!check_existence || stat(path, &st) == 0)
+		      {
+			puts (path);
+			++printed;
+		      }
 		  }
 		break;
 	      }
 	  }
+      }
+      
     }
-
+  
   if (ferror (fp))
     {
       error (0, errno, "%s", dbfile);
@@ -341,46 +478,69 @@ usage (stream, status)
      FILE *stream;
      int status;
 {
-  fprintf (stream, "\
-Usage: %s [-d path] [--database=path] [--version] [--help] pattern...\n",
+  fprintf (stream, _("\
+Usage: %s [-d path | --database=path] [-e | --existing]\n\
+      [-i | --ignore-case] [--version] [--help] pattern...\n"),
 	   program_name);
+  fputs (_("\nReport bugs to <bug-findutils@gnu.org>."), stream);
   exit (status);
 }
 
 static struct option const longopts[] =
 {
   {"database", required_argument, NULL, 'd'},
+  {"existing", no_argument, NULL, 'e'},
+  {"ignore-case", no_argument, NULL, 'i'},
   {"help", no_argument, NULL, 'h'},
   {"version", no_argument, NULL, 'v'},
   {NULL, no_argument, NULL, 0}
 };
 
-void
+int
 main (argc, argv)
      int argc;
      char **argv;
 {
   char *dbpath;
+  int fnmatch_flags = 0;
   int found = 0, optc;
+  int ignore_case = 0;
 
   program_name = argv[0];
+
+#ifdef HAVE_SETLOCALE
+  setlocale (LC_ALL, "");
+#endif
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
 
   dbpath = getenv ("LOCATE_PATH");
   if (dbpath == NULL)
     dbpath = LOCATE_DB;
 
-  while ((optc = getopt_long (argc, argv, "d:", longopts, (int *) 0)) != -1)
+  check_existence = 0;
+
+  while ((optc = getopt_long (argc, argv, "d:ei", longopts, (int *) 0)) != -1)
     switch (optc)
       {
       case 'd':
 	dbpath = optarg;
 	break;
 
+      case 'e':
+	check_existence = 1;
+	break;
+
+      case 'i':
+	ignore_case = 1;
+	fnmatch_flags |= FNM_CASEFOLD;
+	break;
+	
       case 'h':
 	usage (stdout, 0);
 
       case 'v':
-	printf ("GNU locate version %s\n", version_string);
+	printf (_("GNU locate version %s\n"), version_string);
 	exit (0);
 
       default:
@@ -395,7 +555,7 @@ main (argc, argv)
       char *e;
       next_element (dbpath);	/* Initialize.  */
       while ((e = next_element ((char *) NULL)) != NULL)
-	found |= locate (argv[optind], e);
+	found |= locate (argv[optind], e, ignore_case);
     }
 
   exit (!found);

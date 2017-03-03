@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/sh
 # updatedb -- build a locate pathname database
 # Copyright (C) 1994 Free Software Foundation, Inc.
 
@@ -14,14 +14,19 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 9 Temple Place - Suite 330, Boston, MA 02111-1307,
+# USA.
 
 # csh original by James Woods; sh conversion by David MacKenzie.
 
 usage="\
 Usage: updatedb [--localpaths='dir1 dir2...'] [--netpaths='dir1 dir2...']
-       [--prunepaths='dir1 dir2...'] [--output=dbfile] [--netuser=user]
-       [--old-format] [--version] [--help]"
+       [--prunepaths='dir1 dir2...'] [--prunefs='fs1 fs2...']
+       [--output=dbfile] [--netuser=user] [--localuser=user] 
+       [--old-format] [--version] [--help]
+
+  Report bugs to <bug-findutils@gnu.org>.
+       "
 
 old=no
 for arg
@@ -32,10 +37,12 @@ do
     --localpaths) SEARCHPATHS="$val" ;;
     --netpaths) NETPATHS="$val" ;;
     --prunepaths) PRUNEPATHS="$val" ;;
+    --prunefs) PRUNEFS="$val" ;;
     --output) LOCATE_DB="$val" ;;
     --netuser) NETUSER="$val" ;;
+    --localuser) LOCALUSER="$val" ;;
     --old-format) old=yes ;;
-    --version) echo "GNU updatedb version @version@"; exit 0 ;;
+    --version) echo "GNU updatedb version @VERSION@"; exit 0 ;;
     --help) echo "$usage"; exit 0 ;;
     *) echo "updatedb: invalid option $opt
 $usage" >&2
@@ -65,9 +72,12 @@ test -z "$PRUNEREGEX" &&
 # Directory to hold intermediate files.
 if test -d /var/tmp; then
   : ${TMPDIR=/var/tmp}
-else
+elif test -d /usr/tmp; then
   : ${TMPDIR=/usr/tmp}
+else
+  : ${TMPDIR=/tmp}
 fi
+export TMPDIR
 
 # The user to search network directories as.
 : ${NETUSER=daemon}
@@ -79,28 +89,52 @@ fi
 : ${BINDIR=@bindir@}
 
 # The names of the utilities to run to build the database.
-: ${find=@find@}
-: ${frcode=@frcode@}
-: ${bigram=@bigram@}
-: ${code=@code@}
+: ${find=${BINDIR}/@find@}
+: ${frcode=${LIBEXECDIR}/@frcode@}
+: ${bigram=${LIBEXECDIR}/@bigram@}
+: ${code=${LIBEXECDIR}/@code@}
 
-PATH=$LIBEXECDIR:$BINDIR:/usr/ucb:/bin:/usr/bin:$PATH export PATH
+PATH=/bin:/usr/bin:${BINDIR}; export PATH
+
+: ${PRUNEFS="nfs NFS proc"}
+
+if test -n "$PRUNEFS"; then
+prunefs_exp=`echo $PRUNEFS |sed -e 's/\([^ ][^ ]*\)/-o -fstype \1/g' \
+ -e 's/-o //' -e 's/$/ -o/'`
+else
+  prunefs_exp=''
+fi
 
 # Make and code the file list.
 # Sort case insensitively for users' convenience.
+
+rm -f $LOCATE_DB.n
+trap 'rm -f $LOCATE_DB.n; exit' 1 15
 
 if test $old = no; then
 
 # FIXME figure out how to sort null-terminated strings, and use -print0.
 {
 if test -n "$SEARCHPATHS"; then
-  $find $SEARCHPATHS \
-  \( -fstype nfs -o -fstype NFS -o -type d -regex "$PRUNEREGEX" \) -prune -o -print
+  if [ "$LOCALUSER" != "" ]; then
+    su $LOCALUSER -c \
+    "$find $SEARCHPATHS \
+     \\( $prunefs_exp \
+     -type d -regex '$PRUNEREGEX' \\) -prune -o -print"
+  else
+    $find $SEARCHPATHS \
+     \( $prunefs_exp \
+     -type d -regex "$PRUNEREGEX" \) -prune -o -print
+  fi
 fi
 
 if test -n "$NETPATHS"; then
-  su $NETUSER -c \
-  "$find $NETPATHS \\( -type d -regex \"$PRUNEREGEX\" -prune \\) -o -print"
+if [ "`id -u`" = 0 ]; then
+    su $NETUSER -c \
+     "$find $NETPATHS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o -print"
+  else
+    $find $NETPATHS \( -type d -regex "$PRUNEREGEX" -prune \) -o -print
+  fi
 fi
 } | sort -f | $frcode > $LOCATE_DB.n
 
@@ -117,21 +151,43 @@ fi
 
 else # old
 
-bigrams=$TMPDIR/f.bigrams$$
-filelist=$TMPDIR/f.list$$
-trap 'rm -f $bigrams $filelist; exit' 1 15
+if ! bigrams=`tempfile -p updatedb`; then
+    echo tempfile failed
+    exit 1
+fi
+
+if ! filelist=`tempfile -p updatedb`; then
+    echo tempfile failed
+    exit 1
+fi
+
+rm -f $LOCATE_DB.n
+trap 'rm -f $bigrams $filelist $LOCATE_DB.n; exit' 1 15
 
 # Alphabetize subdirectories before file entries using tr.  James says:
 # "to get everything in monotonic collating sequence, to avoid some
 # breakage i'll have to think about."
 {
 if test -n "$SEARCHPATHS"; then
-  $find $SEARCHPATHS \
-  \( -fstype nfs -o -fstype NFS -o -type d -regex "$PRUNEREGEX" \) -prune -o -print
+  if [ "$LOCALUSER" != "" ]; then
+    su $LOCALUSER -c \
+    "$find $SEARCHPATHS \
+     \( $prunefs_exp \
+     -type d -regex '$PRUNEREGEX' \) -prune -o -print"
+  else
+    $find $SEARCHPATHS \
+     \( $prunefs_exp \
+     -type d -regex "$PRUNEREGEX" \) -prune -o -print
+  fi
 fi
+
 if test -n "$NETPATHS"; then
-  su $NETUSER -c \
-  "$find $NETPATHS \\( -type d -regex \"$PRUNEREGEX\" -prune \\) -o -print"
+  if [ "`id -u`" = 0 ]; then
+    su $NETUSER -c \
+     "$find $NETPATHS \\( -type d -regex '$PRUNEREGEX' -prune \\) -o -print"
+  else
+    $find $NETPATHS \( -type d -regex "$PRUNEREGEX" -prune \) -o -print
+  fi
 fi
 } | tr / '\001' | sort -f | tr '\001' / > $filelist
 
@@ -140,9 +196,21 @@ $bigram < $filelist | sort | uniq -c | sort -nr |
   awk '{ if (NR <= 128) print $2 }' | tr -d '\012' > $bigrams
 
 # Code the file list.
-$code $bigrams < $filelist > $LOCATE_DB
-chmod 644 $LOCATE_DB
+$code $bigrams < $filelist > $LOCATE_DB.n
 
-rm -f $bigrams $filelist $errs
+rm -f $bigrams $filelist
+
+# To reduce the chances of breaking locate while this script is running,
+# put the results in a temp file, then rename it atomically.
+if test -s $LOCATE_DB.n; then
+  rm -f $LOCATE_DB
+  mv $LOCATE_DB.n $LOCATE_DB
+  chmod 644 $LOCATE_DB
+else
+  echo "updatedb: new database would be empty" >&2
+  rm -f $LOCATE_DB.n
+fi
 
 fi
+
+exit 0

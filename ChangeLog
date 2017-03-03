@@ -1,3 +1,765 @@
+2001-06-09  Kevin Dalley  <kevin@seti.org>
+
+	* ABOUT-NLS: updated from gettext-0.10.38.
+
+	* configure.in: add tr to ALL_LINGUAS.
+
+	* doc/Makefile.am (MOSTLYCLEANFILES): add find.cps, which is
+	created by dvips.  This should be taken care of by automake, but
+	the code is commented out.
+
+2001-06-05  Kevin Dalley  <kevin@seti.org>
+
+	* locate/updatedb.sh: replace "whoami" with "id -u" when testing
+	for root.
+
+2001-06-04  Kevin Dalley  <kevin@seti.org>
+
+	* locate/testsuite/Makefile.am (DIST_SUBDIRS): remove second
+	instance of DIST_SUBDIRS.
+
+	* locate/Makefile.am (install-data-hook): changed install target
+	to install-data-hook, which still installs other files.
+
+	* doc/Makefile.am (MOSTLYCLEANFILES): added find.cps, which should
+	probably be handled by automake.
+
+	* doc/mdate-sh: removed file in doc directory.  It now exists only
+	in top_srcdir, but this changed required a patch to automake.
+
+2001-05-20  Kevin Dalley  <kevin@seti.org>
+
+	* Version 4.1.7
+	
+	* lib/Makefile.am (EXTRA_DIST): add strcasecmp.c
+
+	* find/testsuite/Makefile.am (EXTRA_DIST): new tests:
+	find.gnu/name-opt.exp find.gnu/perm.exp find.gnu/perm.xo
+	find.gnu/prune-default-print.exp find.gnu/prune-default-print.xo
+
+	* configure.in: update to 4.1.7
+
+	* config.sub, config.guess: upgraded to recent versions of
+	config.sub and config.guess.
+
+	* locate/updatedb.sh: Add space to "#! /bin/sh"
+
+	* configure.in: Add id to ALL_LINGUAS
+
+	* lib/Makefile.am (EXTRA_DIST):  getline.[ch] added
+	(libfind_a_SOURCES): getline.[ch] removed since getline.c is not
+	always needed.
+
+2001-05-20  Lionel CONS <lionel.cons@cern.ch>
+
+	* find/find.c: Fixed security holes.  1.  There is a race
+	condition between the lstat() to detect a symbolic link and the
+	actual chdir().  2.  An attacker can move directories while find
+	is _inside_ so that chdir(..) goes out of the intended file tree.
+
+	* lib/modetype.h: support for Solaris door files is added.
+
+	* lib/filemode.c: S_ISDOOR is undef'ed if STAT_MACROS_BROKEN
+
+	* find/pred.c (pred_type): -D option (for Solaris door files) is
+	added.
+
+	* find/parser.c (insert_type):  -D option (for Solaris door files)
+	is added. 
+
+	* find/find.1: -D option (for Solaris door files) is documented
+
+	* doc/find.texi (Type): -D option (for Solaris door files) is
+	documented
+
+2001-05-02  Kevin Dalley  <kevin@seti.org>
+
+	* configure.in: Change AC_CHECK_MEMBERS to conform to new
+	autoconf.  Add Danish.
+
+2001-01-20  Kevin Dalley  <kevin@seti.org>
+
+	* doc/find.texi (Adding Tests): Place space in "#! /bin/sh".
+
+	* find/testsuite/find.gnu/prune-default-print.xo,
+	find/testsuite/find.gnu/prune-default-print.exp: test for "find
+	. -prune" which passes after changes.  Also see name-opt.exp.
+
+	* find/util.c (get_new_pred):
+	* find/tree.c (set_new_parent):
+	* find/parser.c (various parse functions):
+	* find/find.c (main): 
+	(default_prints): new function 
+	* find/defs.h (struct predicate): added no_default_print
+	side_effects are no separated from no_default_print.  predicates
+	which cause side effects should not be reordered (optimized).
+	predicates which cause printing should have printing turned off.
+	Printing statements also cause side effects.
+
+2000-10-29  Bruno Haible <haible@ilog.fr>
+
+	* locate/code.c (main), doc/find.texi: improve handling of
+	non-ASCII characters used old format.
+
+2000-10-21  Paul Eggert  <eggert@twinsun.com>
+
+	If open + fchdir fails, fall back on xgetcwd + chdir.
+	The old code tested for this at compile-time,
+	but SunOS 4.1.4 fchdir can fail at run-time.
+
+	* find/defs.h (fchdir): Define to -1 if not available.
+	* find/defs.h (starting_dir, starting_desc):
+	Always declare.  starting_dir now points to const.
+	* find/find.c (starting_dir, starting_desc): Likewise.
+	* find/find.c (starting_dir):
+	Now "." if starting_desc is nonnegative, for benefit of diagnostics.
+	(main, process_top_path, process_dir):
+	If open + fchdir fails, fall back on xgetcwd + chdir.
+	* find/pred.c (launch): Likewise.
+
+2000-10-20  Kevin Dalley  <kevin@seti.org>
+
+	* xargs/xargs.c, locate/updatedb.sh, locate/locate.c (usage),
+	find/parser.c (parse_help): add bug reporting address to help
+
+2000-10-13  Kevin Dalley  <kevin@seti.org>
+
+	* depcomp, lib/depcomp: depcomp moved from lib to .
+
+2000-10-11  Kevin Dalley  <kevind@rahul.net>
+
+	* Version 4.1.6
+	
+	* locate/testsuite/config/unix.exp: set PRUNEFS to "" for the
+	testsuite. 
+
+2000-10-10  Bruno Haible <haible@ilog.fr>
+
+	* lib/Makefile.am (libfind_a_SOURCES): added yesno.c
+
+	* lib/yesno.c, lib/rpmatch.c: new files.
+
+	* find/pred.c: use function yesno().
+
+2000-10-10  Kevin Dalley  <kevind@rahul.net>
+	
+	* locate/testsuite/Makefile.am: Added missing \ at end of
+	EXTRA_DIST lines.
+
+	* locate/testsuite/locate.gnu/ignore_case3.xo,
+	locate/testsuite/locate.gnu/ignore_case3.exp,
+	locate/testsuite/locate.gnu/ignore_case2.exp,
+	locate/testsuite/locate.gnu/ignore_case1.xo,
+	locate/testsuite/locate.gnu/ignore_case1.exp: place locatedb
+	inside tmp directory, add subdir directory under tmp.
+
+	* locate/testsuite/config/unix.exp: clean up tmp after test is
+	finished. 
+
+2000-10-10  Kevin Dalley  <kevind@rahul.net>
+
+	* locate/testsuite/config/unix.exp (Repository): 
+
+2000-10-09  Kevin Dalley  <kevind@rahul.net>
+
+	* lib/fnmatch.c, lib/fnmatch.h: reverted to older version of
+	fnmatch which works with Solaris.
+
+	* locate/testsuite/config/unix.exp: dejagnu unix.exp
+
+	* xargs/testsuite/config/unix.exp: remove temporary file
+
+	* xargs/xargs.c: spelling correction
+
+	* m4/prereq.m4: updated and changed some macros
+
+	* m4/jm-macros.m4: replaced jm_FUNC_FNMATCH with
+	kd_FUNC_FNMATCH_CASE_REPL 
+
+	* m4/timespec.m4, m4/strerror_r.m4, m4/mbstate_t.m4,
+	m4/largefile.m4, m4/gettext.m4, m4/fnmatchcase.m4, m4/d-type.m4,
+	m4/d-ino.m4, m4/c-bs-a.m4: new m4 macros.
+
+	* m4/Makefile.am: add fnmatchcase.m4 and mbstate_t.m4
+
+	* locate/testsuite/locate.gnu/ignore_case3.xo,
+	locate/testsuite/locate.gnu/ignore_case3.exp,
+	locate/testsuite/locate.gnu/ignore_case2.xo,
+	locate/testsuite/locate.gnu/ignore_case2.exp,
+	locate/testsuite/locate.gnu/ignore_case1.xo,
+	locate/testsuite/locate.gnu/ignore_case1.exp,
+	locate/testsuite/config/unix.exp: tests related to "--ignore-case"
+	option.
+
+	* locate/testsuite/locate.gnu: testsuite directory
+
+	* locate/testsuite/Makefile.am (Repository): 
+
+	* locate/testsuite: add directory for locate testsuite
+
+	* po/findutils.pot: updated file
+
+	* po/sv.po, po/ru.po, po/pt_BR.po, po/pl.po, po/nl.po, po/ko.po,
+	po/it.po, po/gl.po, po/fr.po, po/et.po, po/es.po, po/de.po:
+	updated various po files.
+
+	* locate/updatedb.sh: export TMPDIR, which is used by child
+	processes.
+
+	* locate/locate.1, locate/locate.c:  add "--ignore-case" option.
+
+	* locate/Makefile.am: add testsuite subdirectory
+
+	* find/testsuite/find.gnu/perm.xo,
+	find/testsuite/find.gnu/perm.exp,
+	find/testsuite/find.gnu/name-opt.xo,
+	find/testsuite/find.gnu/name-opt.exp: added test suites
+
+	* configure.in: add locate/testsuite/Makefile
+
+	* doc/find.info*: removed from repository
+
+	* doc/find.texi: add documentation for "-i" option.
+
+	* aclocal.m4: removed from repository, as it is generated.
+
+	* find/pred.c: fixes problem with "find -perm -0100".
+
+	* lib/lstat.c, lib/stat.c: removed from repository.  These files
+	are generated from lib/xstat.in.
+
+2000-08-24  Kevin Dalley  <kevind@rahul.net>
+
+	* doc/find.texi (Invoking xargs): changed @var{-s} to @samp{-s}.
+
+2000-05-13  Kevin Dalley  <kevind@rahul.net>
+
+	* find/tree.c (opt_expr): move iname and ipath to the front of the
+	list of arguments.
+
+	* doc/find.texi (Directories): changed wording for "-prune".
+
+	* find/parser.c (parse_prune): set side_effects to true, to
+	prevent prune from being moved in opt_expr.
+
+2000-04-12  Kevin Dalley  <kevind@rahul.net>
+
+	* doc/find.texi, doc/permi.texi: fix spellings, add LocalWords.
+
+	* lib/Makefile.am: put getline.c back into libfind_a_SOURCES,
+	since getstr is needed.
+
+	* Version 4.1.5
+	
+	* po/POTFILES.in: updated list of files, updated po files.
+
+
+2000-04-02  Paul Eggert  <eggert@twinsun.com>
+
+	Add support for large files, and port to Solaris 8 and earlier
+	versions.
+
+	* lib/human.c (getenv): Depend on NEED_GETENV_DECL, not
+	HAVE_DECL_GETENV.
+
+	* lib/strftime.c (my_strftime): Make sure we call the system
+	strftime, not ourselves, when invoking the underlying strftime.
+	
+	* m4/check-decl.m4 (jm_CHECK_DECLS): Remove memchr, nanosleep.
+
+	* m4/jm-macros.m4 (jm_MACROS): Don't check for utime.h.  Do not
+	require jm_BISON, jm_CHECK_TYPE_STRUCT_UTIMBUF, jm_FUNC_LCHOWN,
+	jm_FUNC_CHOWN, jm_FUNC_NANOSLEEP, jm_FUNC_GROUP_MEMBER,
+	jm_FUNC_PUTENV, jm_FUNC_GETGROUPS, AM_FUNC_GETLOADAVG,
+	jm_SYS_PROC_UPTIME, jm_FUNC_FTRUNCATE, jm_FUNC_UTIME.  Do not
+	replace strcasecmp, dup2, gethostname, getusershell, stime,
+	strcspn, strpbrk, euidaccess, mkdir, rmdir, rpmatch, strndup,
+	strverscmp, memchr, memmove.  Do not check for declaration of
+	lchown.  Remove invocations of AM_FUNC_OBSTACK, AM_FUNC_STRTOD,
+	POW_LIBM, jm_LANGINFO_CODESET, jm_ICONV.  Remove df tests.
+	(jm_CHECK_ALL_TYPES): Include <sys/stat.h> when checking for
+	struct stat.st_blksize.
+
+	* m4/strftime.m4 (jm_FUNC_GNU_STRFTIME): Set environment variable
+	in shell rather than using putenv, which isn't portable.
+	
+	* COPYING, lib/alloca.c, lib/dirname.c, lib/error.c,
+	lib/savedir.c, lib/strstr.c, m4/check-decl.m4, m4/d-ino.m4,
+	m4/d-type.m4, m4/getline.m4, m4/jm-glibc-io.m4, m4/jm-macros.m4,
+	m4/jm-mktime.m4, m4/ls-mntd-fs.m4, m4/memcmp.m4, m4/prereq.m4,
+	m4/readdir.m4, m4/regex.m4, m4/strftime.m4, m4/uintmax_t.m4: Sync
+	to latest version from sh-utils-2.0g.
+
+	* config.guess, config.sub, lib/argmatch.c, lib/argmatch.h,
+	lib/human.c, lib/human.h, lib/memcpy.c, lib/quotearg.c,
+	lib/quotearg.h, lib/strtoull.c, lib/strtoumax.c,
+	lib/xstrtoumax.c, m4/c-bs-a.m4, m4/gettext.m4,
+	m4/largefile.m4, m4/lcmessage.m4, m4/link-follow.m4,
+	m4/progtest.m4, m4/strerror_r.m4, m4/timespec.m4,
+	m4/xstrtoumax.m4: New files, taken from sh-utils-2.0g.
+
+	* lib/ansi2knr.1, lib/ansi2knr.c, lib/basename.c, lib/getopt.h,
+	lib/fnmatch.c, lib/fnmatch.h, lib/modechange.c: Sync to latest
+	unreleased version of GNU tar (between 1.13.17 and 1.13.18).
+
+	* lib/basename.h, lib/waitpid.c: New files, taken from same
+	version of GNU tar.
+	
+	* lib/regex.c, lib/regex.h: Sync to GNU grep 2.4.2.
+
+	* lib/posix/Makefile.am, lib/posix/regex.h: New files, taken from
+	GNU grep 2.4.2.
+
+	* lib/strftime.c: Sync to textutils 2.0e.
+	
+	* acconfig.h, depcomp, lib/strcasecmp.c, m4/check-type.m4,
+	m4/const.m4, m4/decl.m4, m4/lfs.m4, m4/mktime.m4, m4/perl.m4,
+	m4/putenv.m4, m4/uptime.m4, m4/utimbuf.m4, m4/utime.m4,
+	m4/utimes.m4: Remove these files; no longer needed.
+
+	* configure.in (AC_CANONICAL_HOST, AC_SYS_LARGEFILE,
+	jm_AC_TYPE_UINTMAX_T): Add.
+	(CACHE_IDS, FSTYPE_STATVFS, FSTYPE_USG_STATFS, FSTYPE_AIX_STATFS,
+	FSTYPE_MNTENT, FSTYPE_STATFS, FSTYPE_GETMNT): Add comment, so that
+	we don't need acconfig.h.
+	(AC_CHECK_TYPE): Add ssize_t.
+	(AC_REPLACE_FUNCS): Add waitpid.
+	(AC_CHECK_FUNCS): Remove basename.
+	(AC_FUNC_MKTIME): Remove.
+	(LIBOBJS): Add no-ops to work around automake 1.4 bug.
+	(AC_OUTPUT): Add lib/posix/Makefile.
+
+	* find/defs.h: Include <config.h>, <sys/types.h>, <sys/stat.h>,
+	<stdio.h>, <limits.h>, <inttypes.h>.  All includers changed to not
+	include these files, and to include "defs.h" first (since config.h
+	must be included first).
+	(CHAR_BIT, S_ISUID, S_ISGID, S_ISVTX, S_IRUSR, S_IWUSR, S_IXUSR,
+	S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH, MOD_WXUSR,
+	MODE_R, MODE_RW, MODE_RWX, MODE_ALL): New macros.
+	(enum permissions_type): New enum.
+	(struct long_val.negative): New member.
+	(struct long_val.l_val): Now uintmax_t, not unsigned long.
+	(struct size_val.size): Likewise.
+	(struct perm_val): New type.
+	(struct predicate.perm): Now struct perm_val, not unsigned long.
+	(struct predicate.type): Now mode_t, not unsigned long.
+	(list_file): New parameters current_time, output_block_size.
+	All callers changed.
+	(savedir, basename): Remove decls.
+	(output_block_size, start_time): New extern vars.
+
+	* find/find.c: Include <human.h>, <savedir.h>.
+	(output_block_size, start_time): New vars.
+	(main): Initialize them.  No need to check for negative st_size,
+	since savedir now does it for us.
+
+	* find/fstype.c: Include "dirname.h".
+	(xatoi): Remove.
+	(filesystem_type_uncached): Use xstrtoumax instead of xatoi.
+	
+	* find/parser.c: Include "xstrtol.h".
+	(get_num_days, get_num, parse_amin, parse_cmin, parse_mmin,
+	parse_size, parse_used, insert_time, insert_num): Compute using
+	uintmax_t, not unsigned long.
+	(parse_amin, parse_cmin, parse_mmin, parse_used, insert_time):
+	Keep track of whether time was negative before converting it to an
+	unsigned type.
+	(parse_daystart): Don't assume that localtime succeeds; e.g. it
+	can fail with 64-bit time_t and 32-bit tm_year.
+	(parse_perm, insert_type): Compute using mode_t, not unsigned
+	long.
+	(insert_type): Use symbolic constants like MODE_ALL instead of
+	traditional ones like 07777.  Set new kind member to indicate
+	permissions type, instead of using unportable magic numbers.
+	(make_segment): We will use human_readable to convert most numeric
+	values, so simplify the cases.
+	(get_num_days): Write in terms of get_num, to avoid duplicated
+	code.
+	(insert_time, insert_num): When debugging, convert large values to
+	uintmax_t and output with %ju.
+	(get_num): Use xstrtoumax to do the real work.
+
+	* find/pred.c: Include "basename.h", "human.h".
+	(DEV_BSIZE, ST_BLKSIZE, ST_NBLOCKSIZE): New macros, taken from
+	fileutils.
+	(ST_NBLOCKS): Replace with fileutils defn.
+	(MAX): New macro.
+	(ctime_format): New function.
+	(pred_fprintf, format_date): Use human_readable to output large
+	numbers portably.
+	(pred_fprintf): Use ctime_format to output ctime-style dates.  Use
+	base_name to compute the base name of a path.  With %m, output the
+	mode portably using traditional numbers, even if the host uses
+	some other numbering scheme.
+	(pred_iname, pred_name): basename -> base_name.
+	(pred_perm): Use new kind member to deduce permissions type,
+	instead of relying on magic numbers.
+	(pred_size): Compute using uintmax_t, not unsigned long.  Avoid
+	overflow if file size is near the maximum.
+	(pred_type): Compute using mode_t, not unsigned long.
+	(launch): Use waitpid, not wait.  Check for EINTR.
+	(format_date): Don't assume that localtime succeeds.
+
+	* find/util.c (basename): Remove; we now use base_name.
+
+	* lib/Makefile.am (SUBDIRS): New macro.
+	(libfind_a_SOURCES): Add argmatch.h, argmatch.c, basename.h,
+	basename.c, human.c, human.h, quotearg.c, quotearg.h, xstrtoumax.c.
+	Remove error.h, error.c, getline.c.
+	(EXTRA_DIST): Add mktime.c, regex.c.
+
+	* lib/listfile.c: Include "human.h".
+	(alloca): Declare, or include appropriate files to declare.
+	(DEV_BSIZE, ST_NBLKSIZE, ST_NBLOCKS, ST_NBLOCKSIZE): New macros.
+	(convert_blocks): Remove.
+	(list_file): New current_time and output_block_size args.
+	Revamp quite a bit, to handle large numbers correctly
+	and to match GNU ls behavior more closely.
+
+	* m4/Makefile.am (EXTRA_DIST): Add c-bs-a.m4, gettext.m4,
+	largefile.m4, lcmessage.m4, link-follow.m4, progtest.m4,
+	strerror_r.m4, xstrtoumax.m4.  Remove check-type.m4, const.m4,
+	decl.m4, lfs.m4, mktime.m4, perl.m4, putenv.m4, timespec.m4,
+	uptime.m4, utimbuf.m4, utime.m4, utimes.m4.
+
+	* xargs/xargs.c (wait_for_proc): Retry wait if it fails with
+	errno == EINTR.
+
+2000-04-05  Kevin Dalley  <kevind@rahul.net>
+
+	* xargs/Makefile.am:  add ansi2knr
+
+	* xargs/xargs.c: add macros PARAMS rather than P_.  Add
+	prototypes.
+
+	* po/POTFILES: new file listing all POFILES.
+
+	* m4/gl.po, m4/et.po: new files
+
+	* m4/Makefile.am.in:  updated file
+
+	* m4: update directory
+
+	* locate/Makefile.am: create updatedb from updatedb.sh
+
+	* locate/updatedb.sh, locate/updatedb.in: removed file.  Replaced
+	by updatedb.sh
+
+	* locate/frcode.c, locate/code.c, locate/bigram.c: add macros
+	PARAMS rather than P_.  Add prototypes.
+
+	* lib/xstat.in: new file
+
+	* lib/Makefile.am: update to latest versions of library files.
+
+	* find/testsuite/Makefile.am: add CLEANFILES
+
+	* find/util.c: remove definition of basename
+	
+	* find/util.c, find/tree.c, find/pred.c, find/parser.c,
+	find/fstype.c, find/find.c, find/defs.h: add macros PARAMS rather
+	than P_, for consistency, change to prototypes
+
+	* find/Makefile.am: Add prototypes and ansi2knr
+
+	* configure.in: add Galition and Estonian languages.
+	Miscellaneous other fixes.
+	
+
+2000-03-11  Kevin Dalley  <kevind@rahul.net>
+
+	* lib/basename.c: Add file from libit.
+	* lib/Makefile.am (libfind_a_SOURCES): add basename.c since it is
+	no longer replaceable.
+
+	* find/util.c: Remove definition of basename, which is now in
+	lib/basename.c (as base_name).
+	* find/pred.c: Use base_name, not basename.
+	* find/defs.h: Likewise.
+
+	* configure.in : Don't replace basename.  Now we use only
+	base_name.
+
+2000-02-26  Kevin Dalley  <kevind@rahul.net>
+
+	* Version 4.1.4
+	
+	* lib/strtoul.c: added to distribution
+	
+	* configure.in: added strtoul to AC_REPLACE_FUNCS
+
+	* configure.in: added jm_CHECK_ALL_TYPE
+
+2000-02-23  Kevin Dalley  <kevind@rahul.net>
+
+	* po/ChangeLog: removed, merged with top-level ChangeLog.
+	
+	* po/de.po: new version of German file.
+	
+	* po/gl.po, po/et.po: new languages, Estonian and Galician.
+
+	* locate/updatedb.sh (PRUNEFS): enclose paths in quotes
+
+2000-02-17  Kevin Dalley  <kevind@rahul.net>
+
+	* po/it.po: new version of Italian file.
+	
+	* locate/updatedb.sh (prunefs_exp): have sed statement use '*'
+	rather than the often unsupported '+'.
+
+2000-02-13  Kevin Dalley  <kevind@rahul.net>
+
+	* configure.in: removed AC_ARG_PROGRAM, which is already in
+	AM_INIT_AUTOMAKE. 
+
+	* locate/Makefile.am (updatedb), locate/updatedb.sh: add
+	transforms of find, frcode, bigram, and code back into
+	updatedb.sh, which were accidentally removed.
+
+2000-02-12  Kevin Dalley  <kevind@rahul.net>
+
+	* lib/wait.h: updated address.
+
+2000-01-26  Kevin Dalley  <kevind@rahul.net>
+
+	* Version 4.1.3
+
+	* acconfig.h: added internationalization.
+
+	* intl/*: copied from tar-1.13.17.
+
+	* locate/Makefile.am, locate/locate.c, locate/code.c:
+	internationalized file.
+
+	* locate/frcode.c, locate/bigram.c: include headers from ../lib
+	directory.
+
+	* xargs/Makefile.am, xargs/xargs.c: internationalized directory.
+
+2000-01-26  Kevin Dalley  <kevind@rahul.net>
+
+	* POTFILES.in: added list of files with translatable strings.
+
+	* de.po, es.po, fr.po, it.po, ko.po, nl.po, pl.po, pt_BR.po,
+	ru.po, sv.po: New, slightly out of date, files imported from the
+	Translation Project: http://www.iro.umontreal.ca/contrib/po/HTML/,
+	German, Spanish, French, Italian, Korean, Dutch, Polish, Brazilian
+	Portuguese.
+
+
+2000-01-24  Kevin Dalley  <kevind@rahul.net>
+
+	* lib/xmalloc.c, lib/regex.c, lib/getopt.c: internationalization
+	works with current version of gettext.
+
+	* lib/getline.h : added declaration of getstr.
+	* lib/Makefile.am (libfind_a_SOURCES): added getline.[ch] to
+	standard compilation. Added internationalization.
+	* find/Makefile.am (INCLUDES): corrected -I options for building
+	in other directories.
+	(LDADD): changes for internationalization.
+
+	* configure.in (ALL_LINGUAS): added internationalization. 
+	getline.c is always compiled and linked, because of getstr.
+	AM_GNU_GETTEXT
+
+	* Makefile.am: 
+	(DISTCLEANFILES): added intl/libintl.h
+	(AUTOMAKE_OPTIONS): added gnits to AUTOMAKE_OPTIONS
+	(SUBDIRS): added intl and po
+
+	* acconfig.h: added internationalization values
+
+	* THANKS: added thanks file for gnits compatibility.
+
+2000-01-22  Kevin Dalley  <kevind@rahul.net>
+
+	* added intl directory.
+
+	* Added internationalization, only with slightly out of date po
+	files for many locales.
+
+2000-01-18  Kevin Dalley  <kevind@rahul.net>
+
+	* Version 4.1.2
+	
+	* locate/Makefile.am: remove creation of updatedb, since it is now
+	made by configure
+
+	* configure.in: updatedb is now created by configure.
+
+	* xargs/Makefile.am: added testsuite to xargs directory
+
+	* locate/updatedb.in: updatedb is now created by configure
+
+	* locate/frcode.c, locate/code.c, locate/bigram.c: change return
+	from main to int.  Replace getstr with getline, where possible.
+
+	* locate/Makefile.am: place frcode, code, bigram in
+	libexec_PROGRAMS
+
+	* lib/xstrdup.c, lib/xmalloc.c, lib/xgetcwd.c, lib/xalloc.h,
+	lib/strtol.c, lib/strstr.c, lib/strftime.c, lib/strdup.c,
+	lib/stpcpy.c, lib/stat.c, lib/savedir.h, lib/savedir.c,
+	lib/regex.h, lib/regex.c, lib/realloc.c, lib/pathmax.h,
+	lib/modechange.h, lib/modechange.c, lib/mktime.c, lib/memset.c,
+	lib/memcmp.c, lib/malloc.c, lib/lstat.c, lib/idcache.c,
+	lib/getopt1.c, lib/getopt.c, lib/getopt.h, lib/getline.c,
+	lib/getline.h, lib/fnmatch.c, lib/fnmatch.h, lib/filemode.c,
+	lib/filemode.h, lib/fileblocks.c, lib/error.c, lib/error.h,
+	lib/dirname.c, lib/alloca.c: updated to newer version of file from
+	fileutils.
+
+	* find/version.c: version number is now automatically generated by
+	configure.
+
+	* find/fstype.c (filesystem_type_uncached): fixes bug described as
+	follows:  When 'find' looks for a fstype, it parses the /etc/mtab
+	until it finds the good line. But, if there is, before the good
+	line, a line whose mountpoint is unreachable, it fails.
+
+	* doc/texinfo.tex: updated to newer version
+
+	* doc/find.texi: added version.texi, fixed a few documentation bugs.
+
+	* configure.in: new m4 features.
+
+	* Makefile.am: moved testsuite to below corresponding directories
+	find and xargs.
+
+	* acconfig.h: updated to match new m4 files.
+
+	* m4: added m4 directory, largely borrowed from Jim Meyering's
+	fileutils.
+
+2000-01-17  Kevin Dalley  <kevind@rahul.net>
+
+	* doc/find.texi (Multiple Files): placed missing xargs in examples
+
+	* find/testsuite/find.gnu/depth.exp: added find tests to test
+	"-depth" bug.
+
+	* doc/find.texi: include version.texi for automatic determination
+	of version number, update bug report email address to
+	bug-findutils@gnu.org.
+	(Combining Primaries With Operators): add indices for "	,", "()",
+	"-a", "-o", etc.
+
+2000-01-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* find/tree.c (opt_expr): Never rearrange the arguments of the
+	comma operator, since it is not commutative.  Remove useless
+	assignment.2
+	
+2000-01-17  Jonathan R. Ferro <jferro@corwin.ece.cmu.edu>
+	
+	* find/find.c (process_path): fix problem with "-depth" which is
+	tested in depth.exp test.
+
+1999-08-15  Kevin Dalley  <Kevin Dalley <kevin@seti.org>>
+
+	* find/fstype.c (filesystem_type_uncached): a stat failure with
+	EACCESS will ignore this file system keep on looking.  Patch
+	suggested by Vincent Danjean <vdanjean@ens-lyon.fr>.
+
+1999-08-15  Mark Kettenis  <kettenis@gnu.org>
+
+	* xargs/xargs.c (LONG_MAX): Define if necessary.
+	(main): If ARG_MAX is -1 (that is sysconf
+	(_SC_ARG_MAX) returns -1) the system does not impose a limit.  In
+	that case, use LONG_MAX as the limit.
+	
+1999-08-15  Kevin Dalley  <Kevin Dalley <kevind@rahul.net>
+
+	* find/version.c: version string is now set by config.h
+
+1999-08-08  Kevin Dalley  <kevin@seti.org>
+
+	* Version 4.1.1
+
+	* README-alpha: added alpha README file
+
+	* find/defs.h: move lstat declarations into defs.h
+
+	* xargs/Makefile.am, testsuite/Makefile.am, locate/Makefile.am,
+ 	lib/Makefile.am, find/Makefile.am, doc/Makefile.am, configure.in,
+ 	Makefile.am: update for automake-1.4
+
+1999-08-02  Kevin Dalley  <kevind@rahul.net>
+
+	* AUTHORS: added file listing AUTHORS
+
+	* lib/Makefile.am: modified code for EXTRA sources
+	
+1999-01-30  Kevin Dalley  <kevind@rahul.net>
+
+	* added const to declaration of basename, which should satisfy
+ 	Linux as well as Hurd (fixes bug #31325).
+	
+1998-12-04  Kevin Dalley  <kevind@rahul.net>
+	
+	* lib/nextelem.c: removed declaration of strdup and free, which
+ 	meets GNU coding standards and allows compilation on more
+ 	platforms.
+	
+  	* find.texi: corrected explanation of -amin option which described
+ 	hours instead of minutes
+	
+1998-09-26  Kevin Dalley  <kevind@rahul.net>
+	
+	* lib/getline.c: fix getstr so that it correctly handles long file
+ 	paths
+	
+1998-09-20  Kevin Dalley  <kevind@rahul.net>
+	
+	* removed more function declarations to meet GNU coding standards
+	
+1998-08-30  Kevin Dalley  <kevind@rahul.net>
+	
+	* lib/nextelem.c: removed declaration of strdup and free, which
+ 	meets GNU coding standards and allow compilation on sparc
+	
+  	* corrected explanation of -amin option which described hours
+ 	instead of minutes
+	
+1998-02-27  Kevin Dalley  <kevind@rahul.net>
+	
+  	* locate/locate.c: add --existing option to locate, which only
+ 	prints the names of files which still exist
+	
+1998-02-08  Kevin Dalley  <kevind@rahul.net>
+	
+  	* locate/locate.c: corrected get_short so that it correctly
+ 	returns negative numbers.
+	
+	* remove declarations of various string functions.  Removing the
+ 	declarations almost matches the GNU Coding Standards.
+	
+1997-03-03  Kevin Dalley  <kevind@rahul.net>
+	
+	* xargs/xargs.c: xargs fixed to prevent occasional core dumping.
+	
+1997-01-11  Kevin Dalley  <kevind@rahul.net>
+	
+	* locate/updatedb.sh: add --localuser option to updatedb, which
+ 	allows find to be run as nobody, while allowing database file to
+ 	be created as root, change suggested by
+ 	<Bernd_Eckenfels@Wittumstrasse13.76646Bruchsal.de>
+	
+1996-12-28  Kevin Dalley  <kevind@rahul.net>
+        * added PRUNEFS as variable in updatedb and --prunefs as option to
+ 	updatedb
+
+1996-05-27  Kevin Dalley  <kevind@rahul.net>
+	
+	* updatedb.sh: when NETPATHS is used, only su to NETUSER if whoami
+	is root
+1996-04-27  Kevin Dalley  <kevind@rahul.net>
+
+	* lib/getline.c (getstr): verify that nchars_avail is *really*
+ 	greater than 0; set *n to a large enough number, stops some core
+ 	dumping
+
 Thu Nov  3 09:23:33 1994  David J. MacKenzie  <djm@duality.gnu.ai.mit.edu>
 
 	* Version 4.1.
@@ -81,7 +843,7 @@ Sat Oct  1 17:43:13 1994  David MacKenzie  <djm@geech.gnu.ai.mit.edu>
 	* find/pred.c (launch): Use pid_t.
 
 	* xargs/xargs.c (EOF_STR): Define and use.
-	[__STDC__]: Delcare xrealloc and xmalloc using void *.
+	[__STDC__]: Declare xrealloc and xmalloc using void *.
 	* find/defs.h: Likewise.
 
 	* find/defs.h: Only declare stpcpy if !HAVE_STPCPY.
@@ -612,6 +1374,8 @@ Mon Oct 21 22:30:35 1991  David J. MacKenzie  (djm at wookumz.gnu.ai.mit.edu)
 	* defs.h, parser.c, pred.c: Rename some types that conflict
 	with reserved POSIX.1 namespace (ended in _t).
 
+	
+	
 Thu Oct 17 22:39:06 1991  David J. MacKenzie  (djm at wookumz.gnu.ai.mit.edu)
 
 	* xargs.c: Don't determine memory.h based on POSIX, which

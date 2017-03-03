@@ -1,5 +1,5 @@
-This is Info file find.info, produced by Makeinfo-1.55 from the input
-file find.texi.
+This is find.info, produced by makeinfo version 4.3 from
+../../findutils/doc/find.texi.
 
 START-INFO-DIR-ENTRY
 * Finding Files: (find).        Listing and operating on files
@@ -118,8 +118,7 @@ David J. MacKenzie<1>#'.
      find /tmp /var/tmp -not -type d -mtime +3 -print0 |
        xargs --null --no-run-if-empty rm -f
      
-     find /tmp /var/tmp -depth -mindepth 1 -type d -empty -print0 |
-       xargs --null --no-run-if-empty rmdir
+     find /tmp /var/tmp -depth -mindepth 1 -type d -empty -exec rmdir {} \;
 
    The second `find' command above uses `-depth' so it cleans out empty
 directories depth-first, hoping that the parents become empty and can
@@ -183,7 +182,7 @@ and fix their permissions:
      find . -type d -not -perm -ug=w | xargs chmod ug+w
 
 You could also reverse the operations, if you want to make sure that
-directories do *not* have world write permission.
+directories do _not_ have world write permission.
 
 
 File: find.info,  Node: Classifying Files,  Prev: Fixing Permissions,  Up: Common Tasks
@@ -252,19 +251,35 @@ which directories each database contains entries for:
 
 `--netpaths='PATH...''
      Network (NFS, AFS, RFS, etc.) directories to put in the database.
-     Default is none.
+     The environment variable `NETPATHS' also sets this value.  Default
+     is none.
 
 `--prunepaths='PATH...''
      Directories to not put in the database, which would otherwise be.
+     The environment variable `PRUNEPATHS' also sets this value.
      Default is `/tmp /usr/tmp /var/tmp /afs'.
+
+`--prunefs='PATH...''
+     File systems to not put in the database, which would otherwise be.
+     Note that files are pruned when a file system is reached; Any file
+     system mounted under an undesired file system will be ignored.
+     The environment variable `PRUNEFS' also sets this value.  Default
+     is `nfs NFS proc'.
 
 `--output=DBFILE'
      The database file to build.  Default is system-dependent, but
      typically `/usr/local/var/locatedb'.
 
+`--localuser=USER'
+     The user to search the non-network directories as, using `su'.
+     Default is to search the non-network directories as the current
+     user.  You can also use the environment variable `LOCALUSER' to
+     set this user.
+
 `--netuser=USER'
      The user to search network directories as, using `su'.  Default is
-     `daemon'.
+     `daemon'.  You can also use the environment variable `NETUSER' to
+     set this user.
 
 
 File: find.info,  Node: Database Formats,  Prev: Database Locations,  Up: Databases
@@ -275,7 +290,7 @@ Database Formats
    The file name databases contain lists of files that were in
 particular directory trees when the databases were last updated.  The
 file name database format changed starting with GNU `locate' version
-4.0 to allow machines with diffent byte orderings to share the
+4.0 to allow machines with different byte orderings to share the
 databases.  The new GNU `locate' can read both the old and new database
 formats.  However, old versions of `locate' and `find' produce incorrect
 results if given a new-format database.
@@ -384,6 +399,10 @@ ranges used for the special codes is replaced in the database by a
 question mark, which not coincidentally is the shell wildcard to match a
 single character.
 
+   The old format therefore can not faithfully store entries with
+non-ASCII characters. It therefore should not be used in
+internationalized environments.
+
 
 File: find.info,  Node: File Permissions,  Next: Reference,  Prev: Databases,  Up: Top
 
@@ -464,7 +483,7 @@ Symbolic Modes
 operations on single-character symbols.  They allow you to modify either
 all or selected parts of files' permissions, optionally based on their
 previous values, and perhaps on the current `umask' as well (*note
-Umask and Protection::.).
+Umask and Protection::).
 
    The format of symbolic modes is:
 
@@ -500,7 +519,7 @@ symbolic modes can not contain spaces.
 
    The USERS part tells which users' access to the file is changed.  It
 consists of one or more of the following letters (or it can be empty;
-*note Umask and Protection::., for a description of what happens then).
+*note Umask and Protection::, for a description of what happens then).
 When more than one of these letters is given, the order that they are
 in does not matter.
 
@@ -629,13 +648,13 @@ mode:
 
    Remember that the special permissions only affect files that are
 executable, plus, on some systems, directories (on which they have
-different meanings; *note Mode Structure::.).  Using `a' in the USERS
+different meanings; *note Mode Structure::).  Using `a' in the USERS
 part of a symbolic mode does not cause the special permissions to be
 affected; thus,
 
      a+s
 
-has *no effect*.  You must use `u', `g', and `o' explicitly to affect
+has _no effect_.  You must use `u', `g', and `o' explicitly to affect
 the special permissions.  Also, the combinations `u+t', `g+t', and
 `o+s' have no effect.
 
@@ -674,7 +693,7 @@ Making Multiple Changes
 -----------------------
 
    The format of symbolic modes is actually more complex than described
-above (*note Setting Permissions::.).  It provides two ways to make
+above (*note Setting Permissions::).  It provides two ways to make
 multiple changes to files' permissions.
 
    The first way is to specify multiple OPERATION and PERMISSIONS parts
@@ -725,8 +744,8 @@ The Umask and Protection
 ------------------------
 
    If the USERS part of a symbolic mode is omitted, it defaults to `a'
-(affect all users), except that any permissions that are *set* in the
-system variable `umask' are *not affected*.  The value of `umask' can
+(affect all users), except that any permissions that are _set_ in the
+system variable `umask' are _not affected_.  The value of `umask' can
 be set using the `umask' command.  Its default value varies from system
 to system.
 
@@ -741,12 +760,12 @@ permission for users who are not in the file's group, then the mode:
      +w
 
 adds permission to write to the file to its owner and to other users who
-are in the file's group, but *not* to other users.  In contrast, the
+are in the file's group, but _not_ to other users.  In contrast, the
 mode:
 
      a+w
 
-ignores `umask', and *does* give write permission for the file to all
+ignores `umask', and _does_ give write permission for the file to all
 users.
 
 
@@ -862,6 +881,17 @@ Invoking `locate'
      `LOCATE_PATH' to set the list of database files to search.  The
      option overrides the environment variable if both are used.
 
+`--existing'
+`-e'
+     Only print out such names which currently exist (instead of such
+     names which existed when the database was created).  Note that
+     this may slow down the program a lot, if there are many matches in
+     the database.
+
+`--ignore-case'
+`-i'
+     Ignore case distinctions in both the pattern and the file names.
+
 `--help'
      Print a summary of the options to `locate' and exit.
 
@@ -881,19 +911,35 @@ Invoking `updatedb'
 
 `--netpaths='PATH...''
      Network (NFS, AFS, RFS, etc.) directories to put in the database.
-     Default is none.
+     The environment variable `NETPATHS' also sets this value.  Default
+     is none.
 
 `--prunepaths='PATH...''
      Directories to not put in the database, which would otherwise be.
+     The environment variable `PRUNEPATHS' also sets this value.
      Default is `/tmp /usr/tmp /var/tmp /afs'.
+
+`--prunefs='PATH...''
+     File systems to not put in the database, which would otherwise be.
+     Note that files are pruned when a file system is reached; Any file
+     system mounted under an undesired file system will be ignored.
+     The environment variable `PRUNEFS' also sets this value.  Default
+     is `nfs NFS proc'.
 
 `--output=DBFILE'
      The database file to build.  Default is system-dependent, but
      typically `/usr/local/var/locatedb'.
 
+`--localuser=USER'
+     The user to search the non-network directories as, using `su'.
+     Default is to search the non-network directories as the current
+     user.  You can also use the environment variable `LOCALUSER' to
+     set this user.
+
 `--netuser=USER'
      The user to search network directories as, using `su'(1).  Default
-     is `daemon'.
+     is `daemon'.  You can also use the environment variable `NETUSER'
+     to set this user.
 
 
 File: find.info,  Node: Invoking xargs,  Prev: Invoking updatedb,  Up: Reference
@@ -945,7 +991,7 @@ Invoking `xargs'
 
 `--replace[=REPLACE-STR]'
 `-i[REPLACE-STR]'
-     Replace occurences of REPLACE-STR in the initial arguments with
+     Replace occurrences of REPLACE-STR in the initial arguments with
      names read from standard input.  Also, unquoted blanks do not
      terminate arguments.  If REPLACE-STR is omitted, it defaults to
      `{}' (like for `find -exec').  Implies `-x' and `-l 1'.
@@ -992,7 +1038,7 @@ Invoking `xargs'
 
 `--exit'
 `-x'
-     Exit if the size (see the -S option) is exceeded.
+     Exit if the size (see the `-s' option) is exceeded.
 
 `--max-procs=MAX-PROCS'
 `-P MAX-PROCS'
@@ -1012,58 +1058,66 @@ Expressions::, for more information on expressions.
 
 * Menu:
 
-* -amin:                                Age Ranges.
-* -anewer:                              Comparing Timestamps.
-* -atime:                               Age Ranges.
-* -cmin:                                Age Ranges.
-* -cnewer:                              Comparing Timestamps.
-* -ctime:                               Age Ranges.
-* -daystart:                            Age Ranges.
-* -depth:                               Directories.
-* -empty:                               Size.
-* -exec:                                Single File.
-* -false:                               Combining Primaries With Operators.
-* -fls:                                 Print File Information.
-* -follow:                              Symbolic Links.
-* -fprint:                              Print File Name.
-* -fprint0:                             Safe File Name Handling.
-* -fprintf:                             Print File Information.
-* -fstype:                              Filesystems.
-* -gid:                                 Owner.
-* -group:                               Owner.
-* -ilname:                              Symbolic Links.
-* -iname:                               Base Name Patterns.
-* -inum:                                Hard Links.
-* -ipath:                               Full Name Patterns.
-* -iregex:                              Full Name Patterns.
-* -links:                               Hard Links.
-* -lname:                               Symbolic Links.
-* -ls:                                  Print File Information.
-* -maxdepth:                            Directories.
-* -mindepth:                            Directories.
-* -mmin:                                Age Ranges.
-* -mount:                               Filesystems.
-* -mtime:                               Age Ranges.
-* -name:                                Base Name Patterns.
-* -newer:                               Comparing Timestamps.
-* -nogroup:                             Owner.
-* -noleaf:                              Directories.
-* -nouser:                              Owner.
-* -ok:                                  Querying.
-* -path:                                Full Name Patterns.
-* -perm:                                Permissions.
-* -print:                               Print File Name.
-* -print0:                              Safe File Name Handling.
-* -printf:                              Print File Information.
-* -prune:                               Directories.
-* -regex:                               Full Name Patterns.
-* -size:                                Size.
-* -true:                                Combining Primaries With Operators.
-* -type:                                Type.
-* -uid:                                 Owner.
-* -used:                                Comparing Timestamps.
-* -user:                                Owner.
-* -xdev:                                Filesystems.
-* -xtype:                               Type.
+* !:                                     Combining Primaries With Operators.
+* ():                                    Combining Primaries With Operators.
+* ,:                                     Combining Primaries With Operators.
+* -a:                                    Combining Primaries With Operators.
+* -amin:                                 Age Ranges.
+* -and:                                  Combining Primaries With Operators.
+* -anewer:                               Comparing Timestamps.
+* -atime:                                Age Ranges.
+* -cmin:                                 Age Ranges.
+* -cnewer:                               Comparing Timestamps.
+* -ctime:                                Age Ranges.
+* -daystart:                             Age Ranges.
+* -depth:                                Directories.
+* -empty:                                Size.
+* -exec:                                 Single File.
+* -false:                                Combining Primaries With Operators.
+* -fls:                                  Print File Information.
+* -follow:                               Symbolic Links.
+* -fprint:                               Print File Name.
+* -fprint0:                              Safe File Name Handling.
+* -fprintf:                              Print File Information.
+* -fstype:                               Filesystems.
+* -gid:                                  Owner.
+* -group:                                Owner.
+* -ilname:                               Symbolic Links.
+* -iname:                                Base Name Patterns.
+* -inum:                                 Hard Links.
+* -ipath:                                Full Name Patterns.
+* -iregex:                               Full Name Patterns.
+* -links:                                Hard Links.
+* -lname:                                Symbolic Links.
+* -ls:                                   Print File Information.
+* -maxdepth:                             Directories.
+* -mindepth:                             Directories.
+* -mmin:                                 Age Ranges.
+* -mount:                                Filesystems.
+* -mtime:                                Age Ranges.
+* -name:                                 Base Name Patterns.
+* -newer:                                Comparing Timestamps.
+* -nogroup:                              Owner.
+* -noleaf:                               Directories.
+* -not:                                  Combining Primaries With Operators.
+* -nouser:                               Owner.
+* -o:                                    Combining Primaries With Operators.
+* -ok:                                   Querying.
+* -or:                                   Combining Primaries With Operators.
+* -path:                                 Full Name Patterns.
+* -perm:                                 Permissions.
+* -print:                                Print File Name.
+* -print0:                               Safe File Name Handling.
+* -printf:                               Print File Information.
+* -prune:                                Directories.
+* -regex:                                Full Name Patterns.
+* -size:                                 Size.
+* -true:                                 Combining Primaries With Operators.
+* -type:                                 Type.
+* -uid:                                  Owner.
+* -used:                                 Comparing Timestamps.
+* -user:                                 Owner.
+* -xdev:                                 Filesystems.
+* -xtype:                                Type.
 
 
