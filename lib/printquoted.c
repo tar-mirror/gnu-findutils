@@ -17,9 +17,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
+
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -41,13 +40,15 @@
  * convert any potentially-dangerous characters.  The logic in this function 
  * was taken from ls.c in coreutils (at Sun Jun  5 20:42:51 2005 UTC).
  */
-void
+int
 print_quoted (FILE *fp,
 	      const struct quoting_options *qopts,
 	      bool dest_is_tty,
 	      const char *format,
 	      const char *s)
 {
+  int rv;
+  
   if (dest_is_tty)
     {
       char smallbuf[BUFSIZ];
@@ -60,6 +61,7 @@ print_quoted (FILE *fp,
 	  /* The original coreutils code uses alloca(), but I don't
 	   * want to take on the anguish of introducing alloca() to
 	   * 'find'.
+	   * XXX: newsflash: we already have alloca().
 	   */
 	  buf = xmalloc (len + 1);
 	  quotearg_buffer (buf, len + 1, s, -1, qopts);
@@ -68,7 +70,7 @@ print_quoted (FILE *fp,
       /* Replace any remaining funny characters with '?'. */
       len = qmark_chars(buf, len);
       
-      fprintf(fp, format, buf);	/* Print the quoted version */
+      rv = fprintf(fp, format, buf);	/* Print the quoted version */
       if (buf != smallbuf)
 	{
 	  free(buf);
@@ -78,8 +80,8 @@ print_quoted (FILE *fp,
   else
     {
       /* no need to quote things. */
-      fprintf(fp, format, s);
+      rv = fprintf(fp, format, s);
     }
-  
+  return rv;
 }
 

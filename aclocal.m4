@@ -577,6 +577,40 @@ AC_MSG_RESULT([$_am_result])
 rm -f confinc confmf
 ])
 
+# Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005
+# Free Software Foundation, Inc.
+#
+# This file is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# serial 5
+
+# AM_PROG_CC_C_O
+# --------------
+# Like AC_PROG_CC_C_O, but changed for automake.
+AC_DEFUN([AM_PROG_CC_C_O],
+[AC_REQUIRE([AC_PROG_CC_C_O])dnl
+AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+AC_REQUIRE_AUX_FILE([compile])dnl
+# FIXME: we rely on the cache variable name because
+# there is no other way.
+set dummy $CC
+ac_cc=`echo $[2] | sed ['s/[^a-zA-Z0-9_]/_/g;s/^[0-9]/_/']`
+if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" != yes"; then
+   # Losing compiler, so override with the script.
+   # FIXME: It is wrong to rewrite CC.
+   # But if we don't then we get into trouble of one sort or another.
+   # A longer-term fix would be to have automake use am__CC in this case,
+   # and then we could set am__CC="\$(top_srcdir)/compile \$(CC)"
+   CC="$am_aux_dir/compile $CC"
+fi
+dnl Make sure AC_PROG_CC is never called again, or it will override our
+dnl setting of CC.
+m4_define([AC_PROG_CC],
+          [m4_fatal([AC_PROG_CC cannot be called after AM_PROG_CC_C_O])])
+])
+
 # Fake the existence of programs that GNU maintainers use.  -*- Autoconf -*-
 
 # Copyright (C) 1997, 1999, 2000, 2001, 2003, 2004, 2005
@@ -886,20 +920,22 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
-m4_include([m4/findlib.m4])
-m4_include([m4/mkinstalldirs.m4])
-m4_include([m4/nullsort.m4])
 m4_include([gnulib/m4/alloca.m4])
 m4_include([gnulib/m4/argmatch.m4])
+m4_include([gnulib/m4/assert.m4])
+m4_include([gnulib/m4/bison.m4])
 m4_include([gnulib/m4/canonicalize-lgpl.m4])
 m4_include([gnulib/m4/canonicalize.m4])
 m4_include([gnulib/m4/chdir-long.m4])
 m4_include([gnulib/m4/chown.m4])
+m4_include([gnulib/m4/clock_time.m4])
 m4_include([gnulib/m4/close-stream.m4])
 m4_include([gnulib/m4/closein.m4])
 m4_include([gnulib/m4/closeout.m4])
 m4_include([gnulib/m4/codeset.m4])
+m4_include([gnulib/m4/cycle-check.m4])
 m4_include([gnulib/m4/d-ino.m4])
+m4_include([gnulib/m4/d-type.m4])
 m4_include([gnulib/m4/dirfd.m4])
 m4_include([gnulib/m4/dirname.m4])
 m4_include([gnulib/m4/dos.m4])
@@ -924,18 +960,23 @@ m4_include([gnulib/m4/freading.m4])
 m4_include([gnulib/m4/fseeko.m4])
 m4_include([gnulib/m4/fstypename.m4])
 m4_include([gnulib/m4/ftello.m4])
+m4_include([gnulib/m4/fts.m4])
 m4_include([gnulib/m4/getcwd-abort-bug.m4])
 m4_include([gnulib/m4/getcwd-path-max.m4])
 m4_include([gnulib/m4/getcwd.m4])
+m4_include([gnulib/m4/getdate.m4])
 m4_include([gnulib/m4/getdelim.m4])
 m4_include([gnulib/m4/getline.m4])
 m4_include([gnulib/m4/getopt.m4])
 m4_include([gnulib/m4/gettext.m4])
+m4_include([gnulib/m4/gettime.m4])
+m4_include([gnulib/m4/gettimeofday.m4])
 m4_include([gnulib/m4/glibc21.m4])
 m4_include([gnulib/m4/gnulib-common.m4])
 m4_include([gnulib/m4/gnulib-comp.m4])
 m4_include([gnulib/m4/hash.m4])
 m4_include([gnulib/m4/human.m4])
+m4_include([gnulib/m4/i-ring.m4])
 m4_include([gnulib/m4/iconv.m4])
 m4_include([gnulib/m4/idcache.m4])
 m4_include([gnulib/m4/include_next.m4])
@@ -948,14 +989,23 @@ m4_include([gnulib/m4/lib-ld.m4])
 m4_include([gnulib/m4/lib-link.m4])
 m4_include([gnulib/m4/lib-prefix.m4])
 m4_include([gnulib/m4/localcharset.m4])
+m4_include([gnulib/m4/locale-fr.m4])
+m4_include([gnulib/m4/locale-tr.m4])
+m4_include([gnulib/m4/locale-zh.m4])
 m4_include([gnulib/m4/longlong.m4])
 m4_include([gnulib/m4/ls-mntd-fs.m4])
 m4_include([gnulib/m4/lseek.m4])
 m4_include([gnulib/m4/lstat.m4])
 m4_include([gnulib/m4/malloc.m4])
 m4_include([gnulib/m4/malloca.m4])
+m4_include([gnulib/m4/mbchar.m4])
+m4_include([gnulib/m4/mbiter.m4])
 m4_include([gnulib/m4/mbrtowc.m4])
+m4_include([gnulib/m4/mbscasestr.m4])
+m4_include([gnulib/m4/mbslen.m4])
+m4_include([gnulib/m4/mbsstr.m4])
 m4_include([gnulib/m4/mbstate_t.m4])
+m4_include([gnulib/m4/memchr.m4])
 m4_include([gnulib/m4/memcmp.m4])
 m4_include([gnulib/m4/mempcpy.m4])
 m4_include([gnulib/m4/memrchr.m4])
@@ -978,14 +1028,18 @@ m4_include([gnulib/m4/rpmatch.m4])
 m4_include([gnulib/m4/same.m4])
 m4_include([gnulib/m4/save-cwd.m4])
 m4_include([gnulib/m4/savedir.m4])
+m4_include([gnulib/m4/setenv.m4])
 m4_include([gnulib/m4/ssize_t.m4])
 m4_include([gnulib/m4/st_dm_mode.m4])
+m4_include([gnulib/m4/stat-time.m4])
+m4_include([gnulib/m4/stdarg.m4])
 m4_include([gnulib/m4/stdbool.m4])
 m4_include([gnulib/m4/stdint.m4])
 m4_include([gnulib/m4/stdio-safer.m4])
 m4_include([gnulib/m4/stdio_h.m4])
 m4_include([gnulib/m4/stdlib_h.m4])
 m4_include([gnulib/m4/stpcpy.m4])
+m4_include([gnulib/m4/strcasestr.m4])
 m4_include([gnulib/m4/strdup.m4])
 m4_include([gnulib/m4/strerror.m4])
 m4_include([gnulib/m4/strftime.m4])
@@ -999,17 +1053,26 @@ m4_include([gnulib/m4/strtoul.m4])
 m4_include([gnulib/m4/strtoull.m4])
 m4_include([gnulib/m4/strtoumax.m4])
 m4_include([gnulib/m4/sys_stat_h.m4])
+m4_include([gnulib/m4/sys_time_h.m4])
 m4_include([gnulib/m4/time_h.m4])
 m4_include([gnulib/m4/time_r.m4])
+m4_include([gnulib/m4/timespec.m4])
 m4_include([gnulib/m4/tm_gmtoff.m4])
 m4_include([gnulib/m4/unistd-safer.m4])
 m4_include([gnulib/m4/unistd_h.m4])
 m4_include([gnulib/m4/wchar.m4])
 m4_include([gnulib/m4/wchar_t.m4])
 m4_include([gnulib/m4/wctype.m4])
+m4_include([gnulib/m4/wcwidth.m4])
 m4_include([gnulib/m4/wint_t.m4])
 m4_include([gnulib/m4/xalloc.m4])
 m4_include([gnulib/m4/xgetcwd.m4])
 m4_include([gnulib/m4/xstrndup.m4])
+m4_include([gnulib/m4/xstrtod.m4])
 m4_include([gnulib/m4/xstrtol.m4])
 m4_include([gnulib/m4/yesno.m4])
+m4_include([m4/findlib.m4])
+m4_include([m4/mkinstalldirs.m4])
+m4_include([m4/noreturn.m4])
+m4_include([m4/nullsort.m4])
+m4_include([m4/withfts.m4])

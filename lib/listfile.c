@@ -1,6 +1,6 @@
 /* listfile.c -- display a long listing of a file
-   Copyright (C) 1991, 1993, 2000, 2003, 2004, 2007 Free Software
-   Foundation, Inc.
+   Copyright (C) 1991, 1993, 2000, 2004, 2005, 2007,
+                 2008 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,46 +16,32 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #include <alloca.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h> /* for readlink() */
+#include <openat.h>
+
 #include "human.h"
 #include "xalloc.h"
 #include "pathmax.h"
 #include "error.h"
 #include "filemode.h"
+#include "dircallback.h"
 #include "idcache.h"
 
 #include "listfile.h"
-
-#if HAVE_STRING_H || STDC_HEADERS
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-
-
-/* The presence of unistd.h is assumed by gnulib these days, so we
- * might as well assume it too.
- */
-#include <unistd.h> /* for readlink() */
-
-
-#if STDC_HEADERS
-# include <stdlib.h>
-#else
-char *getenv ();
-extern int errno;
-#endif
 
 /* Since major is a function on SVR4, we can't use `ifndef major'.  */
 #ifdef MAJOR_IN_MKDEV
@@ -66,6 +52,31 @@ extern int errno;
 #include <sys/sysmacros.h>
 #define HAVE_MAJOR
 #endif
+
+
+
+
+
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#define textdomain(Domain)
+#define bindtextdomain(Package, Directory)
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
+#endif
+
+
 
 #ifdef STAT_MACROS_BROKEN
 #undef S_ISCHR
@@ -79,7 +90,7 @@ extern int errno;
 #ifndef S_ISBLK
 #define S_ISBLK(m) (((m) & S_IFMT) == S_IFBLK)
 #endif
-#if defined(S_IFLNK) && !defined(S_ISLNK)
+#if defined S_IFLNK && !defined S_ISLNK
 #define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
 #endif
 
@@ -99,7 +110,7 @@ extern int errno;
    ST_NBLOCKSIZE: Size of blocks used when calculating ST_NBLOCKS.  */
 #ifndef HAVE_STRUCT_STAT_ST_BLOCKS
 # define ST_BLKSIZE(statbuf) DEV_BSIZE
-# if defined(_POSIX_SOURCE) || !defined(BSIZE) /* fileblocks.c uses BSIZE.  */
+# if defined _POSIX_SOURCE || !defined BSIZE /* fileblocks.c uses BSIZE.  */
 #  define ST_NBLOCKS(statbuf) \
   (S_ISREG ((statbuf).st_mode) \
    || S_ISDIR ((statbuf).st_mode) \
@@ -114,16 +125,16 @@ extern int errno;
 /* Some systems, like Sequents, return st_blksize of 0 on pipes. */
 # define ST_BLKSIZE(statbuf) ((statbuf).st_blksize > 0 \
 			       ? (statbuf).st_blksize : DEV_BSIZE)
-# if defined(hpux) || defined(__hpux__) || defined(__hpux)
+# if defined hpux || defined __hpux__ || defined __hpux
 /* HP-UX counts st_blocks in 1024-byte units.
    This loses when mixing HP-UX and BSD filesystems with NFS.  */
 #  define ST_NBLOCKSIZE 1024
 # else /* !hpux */
-#  if defined(_AIX) && defined(_I386)
+#  if defined _AIX && defined _I386
 /* AIX PS/2 counts st_blocks in 4K units.  */
 #   define ST_NBLOCKSIZE (4 * 1024)
 #  else /* not AIX PS/2 */
-#   if defined(_CRAY)
+#   if defined _CRAY
 #    define ST_NBLOCKS(statbuf) \
   (S_ISREG ((statbuf).st_mode) \
    || S_ISDIR ((statbuf).st_mode) \
@@ -144,11 +155,6 @@ extern int errno;
 # define ST_NBLOCKSIZE 512
 #endif
 
-#ifndef _POSIX_VERSION
-struct passwd *getpwuid ();
-struct group *getgrgid ();
-#endif
-
 #ifdef major			/* Might be defined in sys/types.h.  */
 #define HAVE_MAJOR
 #endif
@@ -159,8 +165,15 @@ struct group *getgrgid ();
 #undef HAVE_MAJOR
 
 
-char * get_link_name (char *name, char *relname);
-static void print_name_with_quoting (register char *p, FILE *stream);
+static void print_name (register const char *p, FILE *stream, int literal_control_chars);
+
+
+size_t
+file_blocksize(const struct stat *p)
+{
+  return ST_NBLOCKSIZE;
+}
+
 
 
 /* NAME is the name to print.
@@ -172,11 +185,13 @@ static void print_name_with_quoting (register char *p, FILE *stream);
    STREAM is the stdio stream to print on.  */
 
 void
-list_file (char *name,
+list_file (const char *name,
+	   int dir_fd,
 	   char *relname,
-	   struct stat *statp,
+	   const struct stat *statp,
 	   time_t current_time,
 	   int output_block_size,
+	   int literal_control_chars,
 	   FILE *stream)
 {
   char modebuf[12];
@@ -229,7 +244,7 @@ list_file (char *name,
 #endif
   else
     fprintf (stream, "%8s ",
-	     human_readable ((uintmax_t) statp->st_size, hbuf,
+	     human_readable ((uintmax_t) statp->st_size, hbuf, 
 			     human_ceiling,
 			     1,
 			     output_block_size < 0 ? output_block_size : 1));
@@ -255,7 +270,7 @@ list_file (char *name,
 	 : "%b %e  %Y");
 
       while (!strftime (buf, bufsize, fmt, when_local))
-	buf = (char *) alloca (bufsize *= 2);
+	buf = alloca (bufsize *= 2);
 
       fprintf (stream, "%s ", buf);
     }
@@ -280,17 +295,17 @@ list_file (char *name,
 				 1, 1));
     }
 
-  print_name_with_quoting (name, stream);
+  print_name (name, stream, literal_control_chars);
 
 #ifdef S_ISLNK
   if (S_ISLNK (statp->st_mode))
     {
-      char *linkname = get_link_name (name, relname);
+      char *linkname = get_link_name_at (name, dir_fd, relname);
 
       if (linkname)
 	{
 	  fputs (" -> ", stream);
-	  print_name_with_quoting (linkname, stream);
+	  print_name (linkname, stream, literal_control_chars);
 	  free (linkname);
 	}
     }
@@ -298,8 +313,16 @@ list_file (char *name,
   putc ('\n', stream);
 }
 
+
 static void
-print_name_with_quoting (register char *p, FILE *stream)
+print_name_without_quoting (const char *p, FILE *stream)
+{
+  fprintf(stream, "%s", p);
+}
+
+
+static void
+print_name_with_quoting (register const char *p, FILE *stream)
 {
   register unsigned char c;
 
@@ -348,9 +371,17 @@ print_name_with_quoting (register char *p, FILE *stream)
     }
 }
 
+static void print_name (register const char *p, FILE *stream, int literal_control_chars)
+{
+  if (literal_control_chars)
+    print_name_without_quoting(p, stream);
+  else
+    print_name_with_quoting(p, stream);
+}
+
 #ifdef S_ISLNK
-char *
-get_link_name (char *name, char *relname)
+static char *
+get_link_name (const char *name, char *relname)
 {
   register char *linkname;
   register int linklen;
@@ -359,7 +390,7 @@ get_link_name (char *name, char *relname)
      mount points with some automounters.
      So allocate a pessimistic PATH_MAX + 1 bytes.  */
 #define LINK_BUF PATH_MAX
-  linkname = (char *) xmalloc (LINK_BUF + 1);
+  linkname = xmalloc (LINK_BUF + 1);
   linklen = readlink (relname, linkname, LINK_BUF);
   if (linklen < 0)
     {
@@ -370,4 +401,34 @@ get_link_name (char *name, char *relname)
   linkname[linklen] = '\0';
   return linkname;
 }
+
+struct link_name_args
+{
+  const char *name;
+  char *relname;
+  char *result;
+};
+
+static int
+get_link_name_cb(void *context)
+{
+  struct link_name_args *args = context;
+  args->result = get_link_name(args->name, args->relname);
+  return 0;
+}
+
+char *
+get_link_name_at (const char *name, int dir_fd, char *relname)
+{
+  struct link_name_args args;
+  args.result = NULL;
+  args.name = name;
+  args.relname = relname;
+  if (0 == run_in_dir(dir_fd, get_link_name_cb, &args))
+    return args.result;
+  else
+    return NULL;
+}
+
+
 #endif

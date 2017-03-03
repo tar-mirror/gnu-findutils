@@ -1,27 +1,35 @@
 AUTOMAKE_OPTIONS=gnits
 # readme-alpha
 
-EXTRA_DIST = COPYING ChangeLog TODO install-sh config.h.in stamp-h.in \
-		THANKS config.rpath import-gnulib.sh import-gnulib.config
-SUBDIRS = gnulib lib find xargs locate doc po m4
+EXTRA_DIST = COPYING ChangeLog TODO config.h.in stamp-h.in \
+		THANKS import-gnulib.sh import-gnulib.config
+# "tests" is the gnulib unit test dir.
+SUBDIRS = gnulib tests build-aux lib find xargs locate doc po m4 
 
 ACLOCAL_AMFLAGS = -I gnulib/m4 -I m4
+
+TESTFILE_SUFFIXES = .exp .xo .xe .xi
 
 # CONFIG_CLEAN_FILES = gnulib/lib/regex.c
 
 
 # DISTCLEANFILES = intl/libintl.h
 
-##
+dist-hook: jy-regex-fix findutils-check-pofiles findutils-check-testfiles
+
+
 ## regex.c seems to get left out if I use automake-1.9 but not 
 ## if I use automake-1.7.   Hence dist-hook has to be able to 
 ## copy regex.c into the relevant (read-only) directory if it 
 ## is not already there, but needs to avoid doing so if the 
 ## file is already in place.   Ugh.  
+## 
+## This problem appears not to apply to Automake-1.10, but since
+## gnulib only requires Automake-1.9.6, we should support that.  
+## Therefore we probably can't remove this kludge yet.
+## 
 ##                             -- James Youngman <jay@gnu.org>
 ## 
-dist-hook: jy-regex-fix findutils-check-pofiles findutils-check-testfiles
-
 jy-regex-fix:
 	if test -f $(distdir)/gnulib/lib/regex.c ; then \
 		echo regex.c is already in place.  Great. ; \
@@ -46,12 +54,17 @@ findutils-check-pofiles:
 ## of them, there will be some tests which people using the CVS code will be
 ## running, but people using the source distribution will not.
 findutils-check-testfiles:
-	@echo ; echo Checking to see if we distributed the full set of .exp files
-	distcount=`ls $(distdir)/*/testsuite/*/*.exp | wc -l` && srccount=`ls $(srcdir)/*/testsuite/*/*.exp | wc -l` && echo source $$srccount distributed $$distcount && test $$distcount -eq $$srccount
-	@echo ; echo Checking to see if we distributed the full set of .xo files
-	distcount=`ls $(distdir)/*/testsuite/*/*.xo | wc -l` && srccount=`ls $(srcdir)/*/testsuite/*/*.xo | wc -l` && echo source $$srccount distributed $$distcount && test $$distcount -eq $$srccount
-	@echo ; echo Checking to see if we distributed the full set of .xe files
-	distcount=`ls $(distdir)/*/testsuite/*/*.xe | wc -l` && srccount=`ls $(srcdir)/*/testsuite/*/*.xe | wc -l` && echo source $$srccount distributed $$distcount && test $$distcount -eq $$srccount
-	@echo ; echo Checking to see if we distributed the full set of .xi files
-	distcount=`ls $(distdir)/*/testsuite/inputs/*.xi | wc -l` && srccount=`ls $(srcdir)/*/testsuite/inputs/*.xi | wc -l` && echo source $$srccount distributed $$distcount && test $$distcount -eq $$srccount
+	@echo
+	$(AUXDIR)/check-testfiles.sh "$(distdir)" "$(srcdir)" $(TESTFILE_SUFFIXES)
 
+
+findutils-check-smells:
+	find  $(srcdir) \( -path $(srcdir)/autom4te.cache -o  \
+                           -path $(srcdir)/gnulib-git     -o  \
+                           -name .git             -o  \
+                           \( -type d -name CVS \)  \
+                       \) -prune -o                  \
+	\( -type f -o -type l \)  \
+	\! \( -name '*~' -o -name '*.xo' -o -name '*.xi' \) \
+	-print0 | \
+	xargs -0 python $(AUXDIR)/src-sniff.py

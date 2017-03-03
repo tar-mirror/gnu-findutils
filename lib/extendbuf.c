@@ -1,6 +1,6 @@
 /* extendbuf.c -- manage a dynamically-allocated buffer
 
-   Copyright 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2004 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,9 +17,8 @@
 */
 /* Written by James Yougnman <jay@gnu.org>. */
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
+
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -66,7 +65,7 @@ extendbuf(void* existing, size_t wanted, size_t *allocated)
 
   saved_errno = errno;
   
-  assert(wanted > 0u);
+  assert (wanted > 0u);
   newsize = decide_size(*allocated, wanted);
   
   if ( (*allocated) == 0 )
@@ -74,7 +73,7 @@ extendbuf(void* existing, size_t wanted, size_t *allocated)
       /* Sanity check: If there is no existing allocation size, there
        * must be no existing allocated buffer.
        */
-      assert(NULL == existing);
+      assert (NULL == existing);
 
       (*allocated) = newsize;
       result = xmalloc(newsize);

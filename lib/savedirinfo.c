@@ -19,9 +19,7 @@
 /* Written by James Youngman, <jay@gnu.org>. */
 /* Derived from savedir.c, written by David MacKenzie <djm@gnu.org>. */
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
@@ -82,7 +80,7 @@
 #endif
 
 
-#if defined(HAVE_STRUCT_DIRENT_D_TYPE) && defined(USE_STRUCT_DIRENT_D_TYPE)
+#if defined HAVE_STRUCT_DIRENT_D_TYPE && defined USE_STRUCT_DIRENT_D_TYPE
 /* Convert the value of struct dirent.d_type into a value for 
  * struct stat.st_mode (at least the file type bits), or zero
  * if the type is DT_UNKNOWN or is a value we don't know about.
@@ -200,7 +198,7 @@ xsavedir(const char *dir, int flags)
 	  internal = extendbuf(internal, (1+result->size)*sizeof(*internal), &entrybuf_allocated);
 	  internal[result->size].flags = 0;
 	  
-#if defined(HAVE_STRUCT_DIRENT_D_TYPE) && defined(USE_STRUCT_DIRENT_D_TYPE)
+#if defined HAVE_STRUCT_DIRENT_D_TYPE && defined USE_STRUCT_DIRENT_D_TYPE
 	  internal[result->size].type_info = type_to_mode(dp->d_type);
 	  if (dp->d_type != DT_UNKNOWN)
 	    internal[result->size].flags |= SavedirHaveFileType;
@@ -263,7 +261,7 @@ new_savedirinfo (const char *dir, struct savedir_extrainfo **extra)
   struct savedir_dirinfo *p = xsavedir(dir, SavedirSort);
   char *buf, *s;
   size_t bufbytes = 0;
-  int i;
+  unsigned int i;
   
   if (p)
     {
@@ -313,7 +311,7 @@ old_savedirinfo (const char *dir, struct savedir_extrainfo **extra)
   struct dirent *dp;
   char *name_space;
   size_t namebuf_allocated = 0u, namebuf_used = 0u;
-#if defined(HAVE_STRUCT_DIRENT_D_TYPE) && defined(USE_STRUCT_DIRENT_D_TYPE)
+#if defined HAVE_STRUCT_DIRENT_D_TYPE && defined USE_STRUCT_DIRENT_D_TYPE
   size_t extra_allocated = 0u, extra_used = 0u;
   struct savedir_extrainfo *info = NULL;
 #endif
@@ -342,7 +340,7 @@ old_savedirinfo (const char *dir, struct savedir_extrainfo **extra)
 	  namebuf_used += entry_size;
 
 
-#if defined(HAVE_STRUCT_DIRENT_D_TYPE) && defined(USE_STRUCT_DIRENT_D_TYPE)
+#if defined HAVE_STRUCT_DIRENT_D_TYPE && defined USE_STRUCT_DIRENT_D_TYPE
 	  /* Remember the type. */
 	  if (extra)
 	    {
@@ -369,7 +367,7 @@ old_savedirinfo (const char *dir, struct savedir_extrainfo **extra)
       return NULL;
     }
   
-#if defined(HAVE_STRUCT_DIRENT_D_TYPE) && defined(USE_STRUCT_DIRENT_D_TYPE)
+#if defined HAVE_STRUCT_DIRENT_D_TYPE && defined USE_STRUCT_DIRENT_D_TYPE
   if (extra && info)
     *extra = info;
 #endif

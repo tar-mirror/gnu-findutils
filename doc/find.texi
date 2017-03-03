@@ -7,6 +7,7 @@
 @c %**end of header
 
 @include version.texi
+@include ../locate/dblocation.texi
 
 @iftex
 @finalout
@@ -55,7 +56,7 @@ Texts.  A copy of the license is included in the section entitled
 @contents
 
 @ifnottex
-@node Top, Introduction, , (dir)
+@node Top
 @top GNU Findutils
 @comment  node-name,  next,  previous,  up
 @insertcopying
@@ -74,6 +75,7 @@ This is edition @value{EDITION}, for @code{find} version @value{VERSION}.
 * Actions::                     Doing things to files you have found.
 * Databases::                   Maintaining file name databases.
 * File Permissions::            How to control access to files.
+* Date input formats::          Specifying literal times.
 * Reference::                   Summary of how to invoke the programs.
 * Common Tasks::                Solutions to common real-world problems.
 * Worked Examples::             Examples demonstrating more complex points.
@@ -83,7 +85,7 @@ This is edition @value{EDITION}, for @code{find} version @value{VERSION}.
 * Primary Index::               The components of @code{find} expressions.
 @end menu
 
-@node Introduction, Finding Files, Top, Top
+@node Introduction
 @chapter Introduction
 
 This manual shows how to find files that meet criteria you specify,
@@ -132,6 +134,17 @@ find a smaller example which exhibits the same problem)
 @item The output you expected to get
 @end itemize
 
+It may also be the case that the bug you are describing has already
+been fixed, if it is a bug.  Please check the most recent findutils
+releases at @url{ftp://ftp.gnu.org/gnu/findutils} and, if possible,
+the development branch at @url{ftp://alpha.gnu.org/gnu/findutils}.
+If you take the time to check that your bug still exists in current
+releases, this will greatly help people who want to help you solve
+your problem.  Please also be aware that if you obtained findutils as
+part of the GNU/Linux 'distribution', the distributions often lag
+seriously behind findutils releases, even the stable release.  Please
+check the GNU FTP site.
+
 @menu
 * Scope::
 * Overview::
@@ -177,7 +190,7 @@ are of a certain type (regular file, directory, symbolic link, etc.);
 @item
 are owned by a certain user or group;
 @item
-have certain access permissions;
+have certain access permissions or special mode bits;
 @item
 contain text that matches a certain pattern;
 @item
@@ -301,6 +314,10 @@ performed on all files for which the entire expression is true
 Options take effect immediately, rather than being evaluated for each
 file when their place in the expression is reached.  Therefore, for
 clarity, it is best to place them at the beginning of the expression.
+There are two exceptions to this; @samp{-daystart} and @samp{-follow}
+have different effects depending on where in the command line they
+appear.  This can be confusing, so it's best to keep them at the
+beginning, too.
 
 Many of the primaries take arguments, which immediately follow them in
 the next command line argument to @code{find}.  Some arguments are
@@ -316,7 +333,7 @@ for less than @var{n},
 for exactly @var{n}.
 @end table
 
-@node Finding Files, Actions, Introduction, Top
+@node Finding Files
 @chapter Finding Files
 
 By default, @code{find} prints to the standard output the names of the
@@ -331,7 +348,7 @@ more information about the matching files.
 * Size::
 * Type::
 * Owner::
-* Permissions::
+* Mode Bits::
 * Contents::
 * Directories::
 * Filesystems::
@@ -393,25 +410,56 @@ matches a file named @file{foo@{1,2@}}, not the files @file{foo1} and
 @node Full Name Patterns
 @subsection Full Name Patterns
 
-@deffn Test -wholename pattern
-@deffnx Test -iwholename pattern
+@deffn Test -path pattern
+@deffnx Test -wholename pattern
 True if the entire file name, starting with the command line argument
 under which the file was found, matches shell pattern @var{pattern}.
-For @samp{-iwholename}, the match is case-insensitive.  To ignore a
-whole directory tree, use @samp{-prune} rather than checking every
-file in the tree (@pxref{Directories}).  The ``entire file name'' as
-used by @code{find} starts with the starting-point specified on the
-command line, and is not converted to an absolute pathname, so for
-example @code{cd /; find tmp -wholename /tmp} will never match
-anything.
+To ignore a whole directory tree, use @samp{-prune} rather than
+checking every file in the tree (@pxref{Directories}).  The ``entire
+file name'' as used by @code{find} starts with the starting-point
+specified on the command line, and is not converted to an absolute
+pathname, so for example @code{cd /; find tmp -wholename /tmp} will
+never match anything.   The name @samp{-wholename} is GNU-specific,
+but @samp{-path} is more portable; it is supported by HP-UX
+@code{find} and will soon be part of POSIX.
 @end deffn
 
-@deffn Test -path pattern
-@deffnx Test -ipath pattern
-These tests are deprecated, but work as for @samp{-wholename} and
-@samp{-iwholename}, respectively.  The @samp{-ipath} test is a GNU
-extension, but @samp{-path} is also provided by HP-UX @code{find}.
+@deffn Test -ipath pattern
+@deffnx Test -iwholename pattern
+These tests are like @samp{-wholename} and @samp{-path}, but the match
+is case-insensitive.
 @end deffn
+
+
+In the context of the tests @samp{-path}, @samp{-wholename},
+@samp{-ipath} and @samp{-wholename}, a ``full path'' is the name of
+all the directories traversed from @code{find}'s start point to the
+file being tested, followed by the base name of the file itself.
+These paths are often not absolute paths; for example
+
+@example
+$ cd /tmp
+$ mkdir -p foo/bar/baz
+$ find foo -path foo/bar -print
+foo/bar
+$ find foo -path /tmp/foo/bar -print
+$ find /tmp/foo -path /tmp/foo/bar -print
+/tmp/foo/bar
+@end example
+
+Notice that the second @code{find} command prints nothing, even though
+@file{/tmp/foo/bar} exists and was examined by @code{find}.
+
+Unlike file name expansion on the command line, a @samp{*} in the pattern
+will match both @samp{/} and leading dots in file names:
+
+@example
+$ find .  -path '*f'
+./quux/bar/baz/f
+$ find .  -path '*/*config'
+./quux/bar/baz/.config
+@end example
+
 
 @deffn Test -regex expr
 @deffnx Test -iregex expr
@@ -503,7 +551,8 @@ the databases are updated, and the directories for which they contain
 entries.
 
 Here is how to select which file name databases @code{locate}
-searches.  The default is system-dependent.
+searches.  The default is system-dependent.  At the time this document
+was generated, the default was @file{@value{LOCATE_DB}}.
 
 @table @code
 @item --database=@var{path}
@@ -514,6 +563,18 @@ database file names.  You can also use the environment variable
 @code{LOCATE_PATH} to set the list of database files to search.  The
 option overrides the environment variable if both are used.
 @end table
+
+GNU @code{locate} can read file name databases generated by the
+@code{slocate} package.  However, these generally contain a list of
+all the files on the system, and so when using this database,
+@code{locate} will produce output only for files which are accessible
+to you.  @xref{Invoking locate}, for a description of the
+@samp{--existing} option which is used to do this.
+
+The @code{updatedb} program can also generate database in a format
+compatible with @code{slocate}.  @xref{Invoking updatedb}, for a
+description of its @samp{--dbformat} and @samp{--output} options.
+
 
 @node Shell Pattern Matching
 @subsection Shell Pattern Matching
@@ -604,12 +665,13 @@ option is a half-way-between option which ensures that any symbolic
 links listed on the command line are dereferenced, but other symbolic
 links are not.
 
-Symbolic links are different to ``hard links'' in the sense that you
-need permissions upon the linked-to file in order to be able to
+Symbolic links are different from ``hard links'' in the sense that you
+need permission to search the directories
+in the linked-to file name to
 dereference the link.  This can mean that even if you specify the
 @samp{-L} option, @code{find} may not be able to determine the
 properties of the file that the link points to (because you don't have
-sufficient permissions).  In this situation, @code{find} uses the
+sufficient permission).  In this situation, @code{find} uses the
 properties of the link itself.  This also occurs if a symbolic link
 exists but points to a file that is missing.
 
@@ -762,7 +824,13 @@ change the status (modify the file or its attributes)
 modify (change the file's contents)
 @end enumerate
 
-There is no timestamp that indicates when a file was @emph{created}.
+Some systems also provide a timestamp that indicates when a file was
+@emph{created}.   For example, the UFS2 fileystem under NetBSD-3.1
+records the @emph{birth time} of each file.  This information is also
+available under other versions of BSD and some versions of Cygwin.
+However, even on systems which support file birth time, files may
+exist for which this information was not recorded (for example, UFS1
+file systems simply do not contain this information).
 
 You can search for files whose time stamps are within a certain age
 range, or compare them to other time stamps.
@@ -785,7 +853,9 @@ True if the file was last accessed (or its status changed, or it was
 modified) @var{n}*24 hours ago.  The number of 24-hour periods since
 the file's timestamp is always rounded down; therefore 0 means ``less
 than 24 hours ago'', 1 means ``between 24 and 48 hours ago'', and so
-forth.
+forth.  Fractional values are supported but this only really makes
+sense for the case where ranges (@samp{+@var{n}} and @samp{-@var{n}})
+are used.
 @end deffn
 
 @deffn Test -amin n
@@ -794,8 +864,8 @@ forth.
 True if the file was last accessed (or its status changed, or it was
 modified) @var{n} minutes ago.  These tests provide finer granularity
 of measurement than @samp{-atime} et al., but rounding is done in a
-similar way.  For example, to list files in @file{/u/bill} that were
-last read from 2 to 6 minutes ago:
+similar way (again, fractions are supported).  For example, to list
+files in @file{/u/bill} that were last read from 2 to 6 minutes ago:
 
 @example
 find /u/bill -amin +2 -amin -6
@@ -808,7 +878,7 @@ ago.  So, to list the regular files in your home directory that were
 modified yesterday, do
 
 @example
-find ~ -daystart -type f -mtime 1
+find ~/ -daystart -type f -mtime 1
 @end example
 
 The @samp{-daystart} option is unlike most other options in that it
@@ -822,12 +892,56 @@ command line.
 @node Comparing Timestamps
 @subsection Comparing Timestamps
 
-As an alternative to comparing timestamps to the current time, you can
-compare them to another file's timestamp.  That file's timestamp could
-be updated by another program when some event occurs.  Or you could
-set it to a particular fixed date using the @code{touch} command.  For
-example, to list files in @file{/usr} modified after February 1 of the
-current year:
+@deffn Test -newerXY reference
+Succeeds if timestamp @samp{X} of the file being considered is newer
+than timestamp @samp{Y} of the file @file{reference}.   The latters
+@samp{X} and @samp{Y} can be any of the following letters:
+
+@table @samp
+@item a
+Last-access time of @file{reference}
+@item B
+Birth time of @file{reference} (when this is not known, the test cannot succeed)
+@item c
+Last-change time of @file{reference}
+@item m
+Last-modification time of @file{reference}
+@item t
+The @file{reference} argument is interpreted as a literal time, rather
+than the name of a file.  @xref{Date input formats}, for a description
+of how the timestamp is understood.  Tests of the form @samp{-newerXt}
+are valid but tests of the form @samp{-newertY} are not.
+@end table
+
+For example the test @code{-newerac /tmp/foo} succeeds for all files
+which have been accessed more recently than @file{/tmp/foo} was
+changed.   Here @samp{X} is @samp{a} and @samp{Y} is @samp{c}.   
+
+Not all files have a known birth time.  If @samp{Y} is @samp{b} and
+the birth time of @file{reference} is not available, @code{find} exits
+with an explanatory error message.  If @samp{X} is @samp{b} and we do
+not know the birth time the file currently being considered, the test
+simply fails (that is, it behaves like @code{-false} does).
+
+Some operating systems (for example, most implementations of Unix) do
+not support file birth times.  Some others, for example NetBSD-3.1,
+do.  Even on operating systems which support file birth times, the
+information may not be available for specific files.  For example,
+under NetBSD, file birth times are supported on UFS2 file systems, but
+not UFS1 file systems.
+
+@end deffn
+
+
+
+There are two ways to list files in @file{/usr} modified after
+February 1 of the current year.  One uses @samp{-newermt}:
+
+@example
+find /usr -newermt "Feb 1"
+@end example
+
+The other way of doing this works on the versions of find before 4.3.3:
 
 @c Idea from Rick Sladkey.
 @example
@@ -882,7 +996,7 @@ Gigabytes (units of 1073741824 bytes)
 
 The `b' suffix always considers blocks to be 512 bytes.  This is not
 affected by the setting (or non-setting) of the POSIXLY_CORRECT
-environment variable.  This behaviour is different to the behaviour of
+environment variable.  This behaviour is different from the behaviour of
 the @samp{-ls} action).  If you want to use 1024-byte units, use the
 `k' suffix instead.
 
@@ -993,30 +1107,80 @@ existing user or group, using the @code{chown} or @code{chgrp}
 program.
 @end deffn
 
-@node Permissions
-@section Permissions
+@node Mode Bits
+@section File Mode Bits
 
-@xref{File Permissions}, for information on how file permissions are
+@xref{File Permissions}, for information on how file mode bits are
 structured and how to specify them.
 
-@deffn Test -perm mode
+Four tests determine what users can do with files.  These are
+@samp{-readable}, @samp{-writable}, @samp{-executable} and
+@samp{-perm}.  The first three tests ask the operating system if the
+current user can perform the relevant operation on a file, while
+@samp{-perm} just examines the file's mode.  The file mode may give
+a misleading impression of what the user can actually do, because the
+file may have an access control list, or exist on a read-only
+filesystem, for example.  Of these four tests though, only
+@samp{-perm} is specified by the POSIX standard.
 
-True if the file's permissions are exactly @var{mode}, which can be
-numeric or symbolic.
+The @samp{-readable}, @samp{-writable} and @samp{-executable} tests
+are implemented via the @code{access} system call.  This is
+implemented within the operating system itself.  If the file being
+considered is on an NFS filesystem, the remote system may allow or
+forbid read or write operations for reasons of which the NFS client
+cannot take account.  This includes user-ID mapping, either in the
+general sense or the more restricted sense in which remote superusers
+are treated by the NFS server as if they are the local user
+@samp{nobody} on the NFS server.
 
-If @var{mode} starts with @samp{-}, true if
-@emph{all} of the permissions set in @var{mode} are set for the file;
-permissions not set in @var{mode} are ignored.
+None of the tests in this section should be used to verify that a user
+is authorised to perform any operation (on the file being tested or
+any other file) because of the possibility of a race condition.  That
+is, the situation may change between the test and an action being
+taken on the basis of the result of that test.
 
-If @var{mode} starts with @samp{/}, true if
-@emph{any} of the permissions set in @var{mode} are set for the file;
-permissions not set in @var{mode} are ignored.
+
+@deffn Test -readable 
+True if the file can be read by the invoking user.
+@end deffn
+
+@deffn Test -writable
+True if the file can be written by the invoking user.  This is an
+in-principle check, and other things may prevent a successful write
+operation; for example, the filesystem might be full.
+@end deffn
+
+@deffn Test -executable
+True if the file can be executed/searched by the invoking user.
+@end deffn
+
+@deffn Test -perm pmode
+
+True if the file's mode bits match @var{pmode}, which can be
+either a symbolic or numeric @var{mode} (@pxref{File Permissions})
+optionally prefixed by @samp{-} or @samp{/}.
+
+A @var{pmode} that starts with neither @samp{-} nor @samp{/} matches
+if @var{mode} exactly matches the file mode bits.  
+
+A @var{pmode} that starts with @samp{+} but which is not valid (for
+example @samp{+a+x}) is an error if the POSIXLY_CORRECT environment
+variable it set.  Otherwise this is treated as if the initial
+@samp{+} were a @samp{/}, for backward compatibility.
+
+A @var{pmode} that starts with @samp{-} matches if
+@emph{all} the file mode bits set in @var{mode} are set for the file;
+bits not set in @var{mode} are ignored.
+
+A @var{pmode} that starts with @samp{/} matches if
+@emph{any} of the file mode bits set in @var{mode} are set for the file;
+bits not set in @var{mode} are ignored.
 This is a GNU extension.
 
 If you don't use the @samp{/} or @samp{-} form with a symbolic mode
 string, you may have to specify a rather complex mode string.  For
-example @samp{-perm g=w} will only match files which have mode 0020
-(that is, ones for which group write permission is the only permission
+example @samp{-perm g=w} will only match files that have mode 0020
+(that is, ones for which group write permission is the only file mode bit
 set).  It is more likely that you will want to use the @samp{/} or
 @samp{-} forms, for example @samp{-perm -g=w}, which matches any file
 with group write permission.
@@ -1024,24 +1188,24 @@ with group write permission.
 
 @table @samp
 @item -perm 664
-Match files which have read and write permission for their owner,
-and group, but which the rest of the world can read but not write to.
-Files which meet these criteria but have other permissions bits set
-(for example if someone can execute the file) will not be matched.
+Match files that have read and write permission for their owner,
+and group, but that the rest of the world can read but not write to.
+Do not match files that meet these criteria but have other file mode
+bits set (for example if someone can execute/search the file).
 
 @item -perm -664
-Match files which have read and write permission for their owner,
-and group, but which the rest of the world can read but not write to,
-without regard to the presence of any extra permission bits (for
-example the executable bit).  This will match a file which has mode
+Match files that have read and write permission for their owner,
+and group, but that the rest of the world can read but not write to,
+without regard to the presence of any extra file mode bits (for
+example the executable bit).  This matches a file with mode
 0777, for example.
 
 @item -perm /222
-Match files which are writable by somebody (their owner, or
+Match files that are writable by somebody (their owner, or
 their group, or anybody else).
 
 @item -perm /022
-Match files which are writable by either their owner or their
+Match files that are writable by either their owner or their
 group.  The files don't have to be writable by both the owner and
 group to be matched; either will do.
 
@@ -1049,16 +1213,16 @@ group to be matched; either will do.
 As above.
 
 @item -perm /g=w,o=w
-As above
+As above.
 
 @item -perm -022
-Search for files which are writable by both their owner and their
+Match files that are writable by both their owner and their
 group.
 
 @item -perm -444 -perm /222 ! -perm /111
-Search for files which are readable for everybody, have at least one
-write bit set (i.e. somebody can write to them), but which cannot be
-executed by anybody.  Note that in some shells the @samp{!} must be
+Match files that are readable for everybody, have at least one
+write bit set (i.e., somebody can write to them), but that cannot be
+executed/searched by anybody.  Note that in some shells the @samp{!} must be
 escaped;.
 
 @item -perm -a+r -perm /a+w ! -perm /a+x
@@ -1071,11 +1235,9 @@ As above.
 
 @quotation Warning
 If you specify @samp{-perm /000} or @samp{-perm /mode} where the
-symbolic mode @samp{mode} has no bits set, the test currently matches
-no files.  This differs from the behaviour of @samp{-perm -000}, which
-matches all files.  The behaviour of @samp{-perm /000} will be changed
-to be consistent with the behaviour of @samp{-perm -000}.  The change
-will probably be made in early 2006.
+symbolic mode @samp{mode} has no bits set, the test matches all files.
+Versions of GNU @code{find} prior to 4.3.3 matched no files in this
+situation.
 @end quotation
 
 @end deffn
@@ -1181,7 +1343,11 @@ find . -wholename './src/emacs' -prune , -print
 
 If the @samp{-depth} option is in effect, the subdirectories will have
 already been visited in any case.  Hence @samp{-prune} has no effect
-and returns false.
+in this case.   
+
+Because @samp{-delete} implies @samp{-depth}, using @samp{-prune} in
+combination with @samp{-delete} may well result in the deletion of
+more files than you intended.
 @end deffn
 
 
@@ -1330,7 +1496,7 @@ Always true.
 Always false.
 @end deffn
 
-@node Actions, Databases, Finding Files, Top
+@node Actions
 @chapter Actions
 
 There are several ways you can print information about the files that
@@ -1372,6 +1538,47 @@ you are searching might contain a newline, you should use
 @samp{-fprint0} instead.
 @end deffn
 
+
+@c @deffn Option -show-control-chars how
+@c This option affects how some of @code{find}'s actions treat
+@c unprintable characters in file names.  If @samp{how} is
+@c @samp{literal}, any subsequent actions (i.e., actions further on in the
+@c command line) print file names as-is.  
+@c 
+@c If this option is not specified, it currently defaults to @samp{safe}.
+@c If @samp{how} is @samp{safe}, C-like backslash escapes are used to
+@c indicate the non-printable characters for @samp{-ls} and @samp{-fls}.
+@c On the other hand, @samp{-print}, @samp{-fprint}, @samp{-fprintf} and
+@c @code{-printf} all quote unprintable characters if the data is going
+@c to a tty, and otherwise the data is emitted literally.
+@c 
+@c @table @code
+@c @item -ls
+@c Escaped if @samp{how} is @samp{safe}
+@c @item -fls
+@c Escaped if @samp{how} is @samp{safe}
+@c @item -print
+@c Always quoted if stdout is a tty,
+@c @samp{-show-control-chars} is ignored
+@c @item -print0
+@c Always literal, never escaped
+@c @item -fprint
+@c Always quoted if the destination is a tty;
+@c @samp{-show-control-chars} is ignored
+@c @item -fprint0
+@c Always literal, never escaped
+@c @item -fprintf
+@c If the destination is a tty, the @samp{%f}, 
+@c @samp{%F}, @samp{%h}, @samp{%l}, @samp{%p},
+@c and @samp{%P} directives produce quoted
+@c strings if stdout is a tty and are treated
+@c literally otherwise.
+@c @item -printf
+@c As for @code{-fprintf}.
+@c @end table
+@c @end deffn
+
+
 @node Print File Information
 @section Print File Information
 
@@ -1397,13 +1604,13 @@ which case 512-byte blocks are used.  @xref{Size}, for how to find
 files based on their size.
 
 @item
-The file's type and permissions.  The type is shown as a dash for a
+The file's type and file mode bits.  The type is shown as a dash for a
 regular file; for other file types, a letter like for @samp{-type} is
-used (@pxref{Type}).  The permissions are read, write, and execute for
+used (@pxref{Type}).  The file mode bits are read, write, and execute/search for
 the file's owner, its group, and other users, respectively; a dash
 means the permission is not granted.  @xref{File Permissions}, for
-more details about file permissions.  @xref{Permissions}, for how to
-find files based on their permissions.
+more details about file permissions.  @xref{Mode Bits}, for how to
+find files based on their file mode bits.
 
 @item
 The number of hard links to the file.
@@ -1579,17 +1786,17 @@ File's user name, or numeric user ID if the user has no name.
 File's numeric user ID.
 @item %m
 @c full support, including # and 0.
-File's permissions (in octal).  If you always want to have a leading
+File's mode bits (in octal).  If you always want to have a leading
 zero on the number, use the '#' format flag, for example '%#m'.  
 
-The permission numbers used are the traditional Unix permission
+The file mode bit numbers used are the traditional Unix
 numbers, which will be as expected on most systems, but if your
-system's permission bit layout differs from the traditional Unix
+system's file mode bit layout differs from the traditional Unix
 semantics, you will see a difference between the mode as printed by
 @samp{%m} and the mode as it appears in @code{struct stat}.
 
 @item %M
-File's permissions (in symbolic form, as for @code{ls}).  This
+File's type and mode bits (in symbolic form, as for @code{ls}).  This
 directive is supported in findutils 4.2.5 and later.
 @end table
 
@@ -1609,6 +1816,16 @@ is usually greater than %s/512, but it can also be smaller if the
 file is a sparse file (that is, it has ``holes'').
 @item %s
 File's size in bytes.
+@item %S
+File's sparseness.  This is calculated as @code{(BLOCKSIZE*st_blocks /
+st_size)}.  The exact value you will get for an ordinary file of a
+certain length is system-dependent.  However, normally sparse files
+will have values less than 1.0, and files which use indirect blocks
+and have few holes may have a value which is greater than 1.0.  The
+value used for BLOCKSIZE is system-dependent, but is usually 512
+bytes.  If the file size is zero, the value printed is undefined.  On
+systems which lack support for st_blocks, a file's sparseness is
+assumed to be 1.0.
 @end table
 
 @node Location Directives
@@ -1708,10 +1925,19 @@ time zone (e.g., EDT), or nothing if no time zone is determinable
 @item M
 minute (00..59)
 @item S
-second (00..61)
+second (00..61).  There is a fractional part.
 @item @@
-seconds since Jan. 1, 1970, 00:00 GMT.
+seconds since Jan. 1, 1970, 00:00 GMT, with fractional part.
 @end table
+
+The fractional part of the seconds field is of indeterminate length
+and precision.  That is, the length of the fractional part of the
+seconds field will in general vary between findutils releases and
+between systems.  This means that it is unwise to assume that field
+has any specific length.  The length of this field is not usually a
+guide to the precision of timestamps in the underlying file system.
+
+
 
 @node Date Components
 @subsubsection Date Components
@@ -1760,15 +1986,19 @@ time, 24-hour (hh:mm:ss)
 @item X
 locale's time representation (H:M:S)
 @item c
-locale's date and time (Sat Nov 04 12:02:33 EST 1989)
+locale's date and time in ctime format (Sat Nov 04 12:02:33 EST
+1989).  This format does not include any fractional part in the
+seconds field.
 @item D
 date (mm/dd/yy)
 @item x
 locale's date representation (mm/dd/yy)
 @item +
-Date and time, separated by '+', for example `2004-04-28+22:22:05'.
+Date and time, separated by '+', for example
+`2004-04-28+22:22:05.0000000000'.
 The time is given in the current timezone (which may be affected by
-setting the TZ environment variable).  This is a GNU extension.
+setting the TZ environment variable).  This is a GNU extension.  The
+seconds field includes a fractional part.
 @end table
 
 @node Formatting Flags
@@ -1827,12 +2057,27 @@ find . -name '*.h' -execdir diff -u '@{@}' /tmp/master ';'
 @end example
 @end deffn
 
-If you use`@samp{-execdir}, you must ensure that the current directory
-is not on @var{$PATH}, because otherwise an attacker could make
-@samp{find} run commands of their choice simply by leaving a
-suitably-named file in the right directory.  GNU find will refuse to
-run if you use @samp{-execdir} and the current directory is in
-@var{$PATH}.
+If you use @samp{-execdir}, you must ensure that the @samp{$PATH}
+variable contains only absolute directory names.  Having an empty
+element in @samp{$PATH} or explicitly including @samp{.} (or any other
+non-absolute name) is insecure.  GNU find will refuse to run if you
+use @samp{-execdir} and it thinks your @samp{$PATH} setting is
+insecure.  For example:
+
+@table @samp
+@item /bin:/usr/bin:
+Insecure; empty path element (at the end)
+@item :/bin:/usr/bin:/usr/local/bin
+Insecure; empty path element (at the start)
+@item /bin:/usr/bin::/usr/local/bin
+Insecure; empty path element (two colons in a row)
+@item /bin:/usr/bin:.:/usr/local/bin
+Insecure; @samp{.} is a path element (@file{.} is not an absolute file name)
+@item /bin:/usr/bin:sbin:/usr/local/bin
+Insecure; @samp{sbin} is not an absolute file name
+@item /bin:/usr/bin:/sbin:/usr/local/bin
+Secure (if you control the contents of those directories and any access to them)
+@end table
 
 Another similar option, @samp{-exec} is supported, but is less secure.
 @xref{Security Considerations}, for a discussion of the security
@@ -1923,7 +2168,9 @@ arguments are delimited by blanks (which can be protected with double
 or single quotes or a backslash) or newlines.  It executes the
 @var{command} (default is @file{/bin/echo}) one or more times with any
 @var{initial-arguments} followed by arguments read from standard
-input.  Blank lines on the standard input are ignored.
+input.  Blank lines on the standard input are ignored.  If the
+@samp{-L} option is in use, trailing blanks indicate that @code{xargs}
+should consider the following line to be part of this one.
 
 Instead of blank-delimited names, it is safer to use @samp{find
 -print0} or @samp{find -fprint0} and process the output by giving the
@@ -1975,6 +2222,11 @@ in its default mode of operation.  But since most files' names do not
 contain blanks, this problem occurs only infrequently.  If you are
 only searching through files that you know have safe names, then you
 need not be concerned about it.
+
+Error messages issued by @code{find} and @code{locate} quote unusual
+characters in file names in order to prevent unwanted changes in the
+terminal's state.
+
 
 @c This example is adapted from:
 @c From: pfalstad@stone.Princeton.EDU (Paul John Falstad)
@@ -2177,7 +2429,16 @@ argument strings.  If you specify a value for this option which is too
 large or small, a warning message is printed and the appropriate upper
 or lower limit is used instead.  You can use @samp{--show-limits}
 option to understand the command-line limits applying to @code{xargs}
-and how this is affected by any other options.
+and how this is affected by any other options.  The POSIX limits shown
+when you do this have already been adjusted to take into account the
+size of your environment variables.  
+
+The largest allowed value is system-dependent, and is calculated as
+the argument length limit for exec, less the size of your environment,
+less 2048 bytes of headroom.  If this value is more than 128KiB,
+128Kib is used as the default value; otherwise, the default value is
+the maximum.
+
 
 @item --max-procs=@var{max-procs}
 @itemx -P @var{max-procs}
@@ -2238,7 +2499,7 @@ somecommand | xargs -s 50000 echo | xargs -I '@{@}' -s 100000 rm '@{@}'
 Here, the first invocation of @code{xargs} has no input line length
 limit because it doesn't use the @samp{-I} option. The second
 invocation of @code{xargs} does have such a limit, but we have ensured
-that the it never encounters a line which is longer than it can
+that it never encounters a line which is longer than it can
 handle.  
 
 This is not an ideal solution.  Instead, the @samp{-I} option should
@@ -2297,7 +2558,13 @@ Delete files or directories; true if removal succeeded.  If the
 removal failed, an error message is issued.
 
 The use of the @samp{-delete} action on the command line automatically
-turns on the @samp{-depth} option (@pxref{find Expressions}).
+turns on the @samp{-depth} option (@pxref{find Expressions}).  This
+can be surprising if you were previously just testing with
+@samp{-print}, so it is usually best to remember to use @samp{-depth}
+explicitly.
+
+If @samp{-delete} fails, @code{find}'s exit status will be nonzero
+(when it eventually exits).
 @end deffn
 
 @node Adding Tests
@@ -2368,7 +2635,7 @@ find /usr/local -type f -perm /a=x \
 @end example
 
 
-@node Databases, File Permissions, Actions, Top
+@node Databases
 @chapter File Name Databases
 
 The file name databases used by @code{locate} contain lists of files
@@ -2406,10 +2673,18 @@ filesystem.  @code{updatedb} is then run for each filesystem on the
 fileserver where that filesystem is on a local disk, to prevent
 thrashing the network.
 
-@xref{Invoking updatedb},
-for the description of the options to @code{updatedb}, which specify
-which directories would each database contain entries for.
+@xref{Invoking updatedb}, for the description of the options to
+@code{updatedb}.  These options can be used to specify which
+directories are indexed by each database file.
 
+The default location for the locate database depends on how findutils
+is built, but the findutils installation accompanying this manual uses
+the default location @file{@value{LOCATE_DB}}.
+
+If no database exists at @file{@value{LOCATE_DB}} but the user did not
+specify where to look (by using @samp{-d} or setting
+@code{LOCATE_PATH}), then @code{locate} will also check for a
+``secure'' database in @file{/var/lib/slocate/slocate.db}.
 
 @node Database Formats
 @section Database Formats
@@ -2418,25 +2693,29 @@ The file name databases contain lists of files that were in particular
 directory trees when the databases were last updated.  The file name
 database format changed starting with GNU @code{locate} version 4.0 to
 allow machines with different byte orderings to share the databases.
-The new GNU @code{locate} can read both the old and new database
-formats.  However, old versions of @code{locate} and @code{find}
-produce incorrect results if given a new-format database.
+
+GNU @code{locate} can read both the old and new database formats.
+However, old versions of @code{locate} (on other Unix systems, or GNU
+@code{locate} before version 4.0) produce incorrect results if run
+against a database in something other than the old format.
 
 Support for the old database format will eventually be discontinued,
-first in @code{updatedb} and later in @code{xargs}.
+first in @code{updatedb} and later in @code{locate}.
 
 If you run @samp{locate --statistics}, the resulting summary indicates
-the type of each @code{locate} database.
+the type of each @code{locate} database.   You select which database
+format @code{updatedb} will use with the @samp{--dbformat} option.
 
 
 @menu
-* New Database Format::
-* Sample Database::
+* LOCATE02 Database Format::
+* Sample LOCATE02 Database::
+* slocate Database Format::
 * Old Database Format::
 @end menu
 
-@node New Database Format
-@subsection New Database Format
+@node LOCATE02 Database Format
+@subsection LOCATE02 Database Format
 
 @code{updatedb} runs a program called @code{frcode} to
 @dfn{front-compress} the list of file names, which reduces the
@@ -2470,8 +2749,8 @@ following databases will be wrong.
 In the output of @samp{locate --statistics}, the new database format
 is referred to as @samp{LOCATE02}.
 
-@node Sample Database
-@subsection Sample Database
+@node Sample LOCATE02 Database
+@subsection Sample LOCATE02 Database
 
 Sample input to @code{frcode}:
 @c with nulls changed to newlines:
@@ -2505,17 +2784,30 @@ and count bytes made printable:
 
 (6 = 14 - 8, and -9 = 5 - 14)
 
+@node slocate Database Format
+@subsection slocate Database Format
+
+The @code{slocate} program uses a database format similar to, but not
+quite the same as, GNU @code{locate}.  The first byte of the database
+specifies its @dfn{security level}.  If the security level is 0,
+@code{slocate} will read, match and print filenames on the basis of
+the information in the database only.  However, if the security level
+byte is 1, @code{slocate} omits entries from its output if the
+invoking user is unable to access them.  The second byte of the
+database is zero.  The second byte is immediately followed by the
+first database entry.  The first entry in the database is not preceded
+by any differential count or dummy entry.  Instead the differential
+count for the first item is assumed to be zero.
+.P
+Starting with the second entry (if any) in the database, data is
+interpreted as for the GNU LOCATE02 format.
+
 @node Old Database Format
 @subsection Old Database Format
 
 The old database format is used by Unix @code{locate} and @code{find}
 programs and earlier releases of the GNU ones.  @code{updatedb}
 produces this format if given the @samp{--old-format} option.
-
-Old versions of GNU @code{locate} fail to correctly handle very long
-file names, possibly leading to security problems relating to a heap
-buffer overrun.  @xref{Security Considerations for locate}, for a
-detailed explanation.
 
 @code{updatedb} runs programs called @code{bigram} and @code{code} to
 produce old-format databases.  The old format differs from the new one
@@ -2543,11 +2835,31 @@ shell wildcard to match a single character.
 
 The old format therefore cannot faithfully store entries with
 non-ASCII characters. It therefore should not be used in
-internationalised environments.
+internationalised environments.  That is, most installations should
+not use it.
+
+Because the long counts are stored by the @code{code} program as
+native-order machine words, the database format is not eaily used in
+environments which differ in terms of byte order.  If locate databases
+are to be shared between machines, the LOCATE02 database format should
+be used.  This has other benefits as discussed above.  However, the
+length of the filename currently being processed can normally be used
+to place reasonable limits on the long counts and so this information
+is used by locate to help it guess the byte ordering of the old format
+database.  Unless it finds evidence to the contrary, @code{locate}
+will assume that the byte order of the database is the same as the
+native byte order of the machine running @code{locate}.  The output of
+@samp{locate --statistics} also includes information about the byte
+order of old-format databases.
 
 The output of @samp{locate --statistics} will give an incorrect count
 of the number of file names containing newlines or high-bit characters
 for old-format databases.
+
+Old versions of GNU @code{locate} fail to correctly handle very long
+file names, possibly leading to security problems relating to a heap
+buffer overrun.  @xref{Security Considerations for locate}, for a
+detailed explanation.
 
 @node Newline Handling
 @section Newline Handling
@@ -2578,12 +2890,14 @@ So, if you are using the new database format (this is the default) and
 your system uses GNU @code{sort}, newlines will be correctly handled
 at all times.  Otherwise, newlines may not be correctly handled.
 
-@node File Permissions, Reference, Databases, Top
+@node File Permissions
 @chapter File Permissions
 
 @include perm.texi
 
-@node Reference, Common Tasks, File Permissions, Top
+@include getdate.texi
+
+@node Reference
 @chapter Reference
 
 Below are summaries of the command line syntax for the programs
@@ -2598,37 +2912,63 @@ discussed in this manual.
 * Environment Variables::
 @end menu
 
-@node Invoking find, Invoking locate, , Reference
+@node Invoking find
 @section Invoking @code{find}
 
 @example
-find @r{[-H] [-L] [-P]} @r{[}@var{file}@dots{}@r{]} @r{[}@var{expression}@r{]}
+find @r{[-H] [-L] [-P] [-D @var{debugoptions}] [-O@var{level}]} @r{[}@var{file}@dots{}@r{]} @r{[}@var{expression}@r{]}
 @end example
 
 @code{find} searches the directory tree rooted at each file name
 @var{file} by evaluating the @var{expression} on each file it finds in
 the tree.
 
+The command line may begin with the @samp{-H}, @samp{-L}, @samp{-P},
+@samp{-D} and @samp{-O} options.  These are followed by a list of
+files or directories that should be searched.  If no files to search
+are specified, the current directory (@file{.}) is used.
+
+This list of files to search is followed by a list of expressions
+describing the files we wish to search for.  The first part of the
+expression is recognised by the fact that it begins with @samp{-}
+followed by some other letters (for example @samp{-print}), or is
+either @samp{(} or @samp{!}.  Any arguments after it are the rest of
+the expression.  
+
+If no expression is given, the expression @samp{-print} is used.
+
+The @code{find} command exits with status zero if all files matched
+are processed successfully, greater than zero if errors occur.
+
+The @code{find} program also recognises two options for administrative
+use:
+
+@table @samp
+@item --help
+Print a summary of the command line usage and exit.
+@item --version
+Print the version number of @code{find} and exit.
+@end table
+
+The @samp{-version} option is a synonym for @samp{--version}
+
+
+@menu
+* Filesystem Traversal Options::
+* Warning Messages::
+* Optimisation Options::
+* Debug Options::
+* Find Expressions::
+@end menu
+
+@node Filesystem Traversal Options
+@subsection Filesystem Traversal Options
+
 The options @samp{-H}, @samp{-L} or @samp{-P} may be specified at the
 start of the command line (if none of these is specified, @samp{-P} is
 assumed).  If you specify more than one of these options, the last one
 specified takes effect (but note that the @samp{-follow} option is
-equivalent to @samp{-L}).  The arguments after these are a list of
-files or directories that should be searched.
-
-This list of files to search is followed by a list of expressions
-describing the files we wish to search for.  The first part of the
-expression is recognised by the fact that it begins with @samp{-},
-@samp{(}, @samp{)}, @samp{,}, or @samp{!}.  Any arguments after it are
-the rest of the expression.  If no files are given, the current
-directory is used.  If no expression is given, the expression
-@samp{-print} is used.
-
-@code{find} exits with status zero if all files matched are processed
-successfully, greater than 0 if errors occur.
-
-Three options can precede the list of files.  They determine the
-way that symbolic links are handled.
+equivalent to @samp{-L}).  
 
 @table @code
 @item -P
@@ -2648,36 +2988,17 @@ broken), it falls back on using the properties of the symbolic link
 itself.  @ref{Symbolic Links} for a more complete description of how
 symbolic links are handled.
 
-@xref{Primary Index}, for a summary of all of the tests, actions, and
-options that the expression can contain.  If the expression is
-missing, @samp{-print} is assumed.
-
-
-@code{find} also recognises two options for administrative use:
-
-@table @code
-@item --help
-Print a summary of the command line usage and exit.
-@item --version
-@itemx -version
-Print the version number of @code{find} and exit.
-@end table
-
-
-@menu
-* Warning Messages::
-@end menu
-
-
-@node Warning Messages,,, Invoking find
+@node Warning Messages
 @subsection Warning Messages
 
 If there is an error on the @code{find} command line, an error message
 is normally issued.  However, there are some usages that are
 inadvisable but which @code{find} should still accept.  Under these
-circumstances, @code{find} may issue a warning message.  By default,
-warnings are enabled only if @code{find} is being run interactively
-(specifically, if the standard input is a terminal).  Warning messages
+circumstances, @code{find} may issue a warning message.  
+
+By default, warnings are enabled only if @code{find} is being run
+interactively (specifically, if the standard input is a terminal) and
+the POSIXLY_CORRECT environment variable is not set.  Warning messages
 can be controlled explicitly by the use of options on the command
 line:
 
@@ -2710,7 +3031,6 @@ basename of the visited files, the only file that can match a slash is
 the root directory itself.
 @end itemize
 
-
 The default behaviour above is designed to work in that way so that
 existing shell scripts don't generate spurious errors, but people will
 be made aware of the problem.
@@ -2725,7 +3045,82 @@ Use of an unrecognised backslash escape sequence with @samp{-fprintf}
 Use of an unrecognised formatting directive with @samp{-fprintf}
 @end itemize
 
-@node Invoking locate, Invoking updatedb, Invoking find, Reference
+@node Optimisation Options
+@subsection Optimisation Options
+
+The @samp{-O@var{level}} option sets @code{find}'s optimisation level
+to @var{level}.  The default optimisation level is 1.
+
+At certain optimisation levels, @code{find} reorders tests to speed up
+execution while preserving the overall effect; that is, predicates
+with side effects are not reordered relative to each other.  The
+optimisations performed at each optimisation level are as follows.
+
+@table @samp
+@item 0
+Currently equivalent to optimisation level 1.
+
+@item 1
+This is the default optimisation level and corresponds to the
+traditional behaviour.  Expressions are reordered so that tests based
+only on the names of files (for example@samp{ -name} and
+@samp{-regex}) are performed first.
+
+@item 2 
+Any @samp{-type} or @samp{-xtype} tests are performed after any tests
+based only on the names of files, but before any tests that require
+information from the inode.  On many modern versions of Unix, file
+types are returned by @code{readdir()} and so these predicates are
+faster to evaluate than predicates which need to stat the file first.
+
+@item 3 
+At this optimisation level, the full cost-based query optimiser is
+enabled.  The order of tests is modified so that cheap (i.e., fast)
+tests are performed first and more expensive ones are performed later,
+if necessary.  Within each cost band, predicates are evaluated earlier
+or later according to whether they are likely to succeed or not.  For
+@samp{-o}, predicates which are likely to succeed are evaluated
+earlier, and for @samp{-a}, predicates which are likely to fail are
+evaluated earlier.
+@end table
+
+
+@node Debug Options
+@subsection Debug Options
+
+The @samp{-D} option makes @code{find} produce diagnostic output.
+Much of the information is useful only for diagnosing problems, and so
+most people will not find this option helpful.
+
+The list of debug options should be comma separated.  Compatibility of
+the debug options is not guaranteed between releases of findutils.
+For a complete list of valid debug options, see the output of
+@code{find -D help}.  Valid debug options include:
+@table @samp
+@item help
+Explain the debugging options.
+@item tree   
+Show the expression tree in its original and optimised form.
+@item stat   
+Print messages as files are examined with the stat and lstat system
+calls.  The find program tries to minimise such calls.
+@item opt    
+Prints diagnostic information relating to the optimisation of the
+expression tree; see the @samp{-O} option.
+@item rates
+Prints a summary indicating how often each predicate succeeded or
+failed.
+@end table
+
+@node Find Expressions
+@subsection Find Expressions
+
+The final part of the @code{find} command line is a list of
+expressions.  @xref{Primary Index}, for a summary of all of the tests,
+actions, and options that the expression can contain.  If the
+expression is missing, @samp{-print} is assumed.
+
+@node Invoking locate
 @section Invoking @code{locate}
 
 @example
@@ -2762,7 +3157,8 @@ present.
 
 @item --database=@var{path}
 @itemx -d @var{path}
-Instead of searching the default @code{locate} database, @code{locate} search the file
+Instead of searching the default @code{locate} database
+@file{@value{LOCATE_DB}}, @code{locate} searches the file
 name databases in @var{path}, which is a colon-separated list of
 database file names.  You can also use the environment variable
 @code{LOCATE_PATH} to set the list of database files to search.  The
@@ -2781,7 +3177,9 @@ down the program a lot, if there are many matches in the database.
 The way in which broken symbolic links are treated is affected by the
 @samp{-L}, @samp{-P} and @samp{-H} options.  Please note that it is
 possible for the file to be deleted after @code{locate} has checked
-that it exists, but before you use it.
+that it exists, but before you use it.  This option is automatically
+turned on when reading an @code{slocate} database in secure mode
+(@pxref{slocate Database Format}).
 
 @item --non-existing
 @itemx -E
@@ -2817,7 +3215,11 @@ Ignore case distinctions in both the pattern and the file names.
 Limit the number of results printed to N.  When used with the
 @samp{--count} option, the value printed will never be larger than
 this limit.
-
+@item --max-database-age=D
+Normally, @code{locate} will issue a warning message when it searches
+a database which is more than 8 days old.  This option changes that
+value to something other than 8.  The effect of specifying a negative
+value is undefined.
 @item --mmap
 @itemx -m
 Accepted but does nothing.  The option is supported only to provide
@@ -2826,14 +3228,14 @@ compatibility with BSD's @code{locate}.
 @item --null
 @itemx -0
 Results are separated with the ASCII NUL character rather than the
-newline character.  To get the full benefit of the use of this option,
+newline character.  To get the full benefit of this option,
 use the new @code{locate} database format (that is the default
 anyway).
 
 @item --print
 @itemx -p
-Print search results when they normally would not, because of the
-presence of @samp{--statistics} (@samp{-S}) or @samp{--count}
+Print search results when they normally would not be due to
+use of @samp{--statistics} (@samp{-S}) or @samp{--count}
 (@samp{-c}).
 
 @item --wholename
@@ -2871,8 +3273,8 @@ compatibility with BSD's @code{locate}.
 @item --statistics
 @itemx -S
 Print some summary information for each @code{locate} database.  No
-search is performed unless non-option arguments are given.  Although
-the BSD version of locate also has this option, the format of the
+search is performed unless non-option arguments are given.
+Although the BSD version of locate also has this option, the format of the
 output is different.
 
 @item --help
@@ -2882,7 +3284,7 @@ Print a summary of the command line usage for @code{locate} and exit.
 Print the version number of @code{locate} and exit.
 @end table
 
-@node Invoking updatedb, Invoking xargs, Invoking locate, Reference
+@node Invoking updatedb
 @section Invoking @code{updatedb}
 
 @example
@@ -2941,8 +3343,8 @@ The environment variable @code{PRUNEFS} also sets this value.  Default
 is @file{nfs NFS proc}.
 
 @item --output=@var{dbfile}
-The database file to build.  Default is system-dependent, but
-typically @file{/usr/local/var/locatedb}.
+The database file to build.  The default is system-dependent, but
+when this document was formatted it was @file{@value{LOCATE_DB}}.
 
 @item --localuser=@var{user}
 The user to search the non-network directories as, using @code{su}.
@@ -2960,16 +3362,26 @@ with versions of @code{locate} other than GNU @code{locate}.  Using
 this option means that @code{locate} will not be able to properly
 handle non-ASCII characters in file names (that is, file names
 containing characters which have the eighth bit set, such as many of
-the characters from the ISO-8859-1 character set).  Versions of
-@code{locate} prior to 4.2.31 fail to correctly handle long filenames
-in old-format databases.  Versions 4.3.0 to 4.3.6 were also affected.
+the characters from the ISO-8859-1 character set).  @xref{Database
+Formats}, for a detailed description of the supported database
+formats.
+
+@item --dbformat=@var{FORMAT}
+Generate the locate database in format @code{FORMAT}.  Supported
+database formats include @code{LOCATE02} (which is the default),
+@code{old} and @code{slocate}.  The @code{old} format exists for
+compatibility with implementations of @code{locate} on other Unix
+systems.  The @code{slocate} format exists for compatibility with
+@code{slocate}.  @xref{Database Formats}, for a detailed description
+of each format.
+
 @item --help
 Print a summary of the command line usage and exit.
 @item --version
 Print the version number of @code{updatedb} and exit.
 @end table
 
-@node Invoking xargs, Regular Expressions,  Invoking updatedb, Reference
+@node Invoking xargs
 @section Invoking @code{xargs}
 
 @example
@@ -2997,10 +3409,19 @@ if some other error occurred.
 
 Exit codes greater than 128 are used by the shell to indicate that 
 a program died due to a fatal signal.
-  
+
+
+@menu
+* xargs options::               
+* Invoking the shell from xargs::  
+@end menu
+
+@node xargs options
+@subsection xargs options
+
 @table @code
 @item --arg-file@r{=@var{inputfile}}
-@itemx -a o@r{@var{inputfile}}
+@itemx -a @r{@var{inputfile}}
 Read names from the file @var{inputfile} instead of standard input.
 If you use this option, the standard input stream remains unchanged
 when commands are run. Otherwise, stdin is redirected from
@@ -3117,8 +3538,97 @@ Run simultaneously up to @var{max-procs} processes at once; the default is 1.  I
 possible simultaneously.
 @end table
 
+@node Invoking the shell from xargs
+@subsection Invoking the shell from xargs
 
-@node Regular Expressions, Environment Variables, Invoking xargs, Reference
+Normally, @code{xargs} will exec the command you specified directly,
+without invoking a shell.  This is normally the behaviour one would
+want.  It's somewhat more efficient and avoids problems with shell
+metacharacters, for example.  However, sometimes it is necessary to
+manipulate the environment of a command before it is run, in a way
+that @code{xargs} does not directly support.  
+
+Invoking a shell from @code{xargs} is a good way of performing such
+manipulations.  However, some care must be taken to prevent problems,
+for example unwanted interpretation of shell metacharacters.  
+
+This command moves a set of files into an archive directory:
+
+@example
+find /foo -maxdepth 1 -atime +366 -exec mv @{@} /archive \;
+@end example
+
+However, this will only move one file at a time.  We cannot in this
+case use @code{-exec ... +} because the matched file names are added
+at the end of the command line, while the destination directory would
+need to be specified last.  We also can't use @code{xargs} in the
+obvious way for the same reason.  One way of working around this
+problem is to make use of the special properties of GNU @code{mv}; it
+has a @code{-t} option that allows the target directory to be
+specified before the list of files to be moved.  However, while this
+technique works for GNU @code{mv}, it doesn't solve the more general
+problem.
+
+Here is a more general technique for solving this problem:
+
+@example
+find /foo -maxdepth 1 -atime +366 -print0 |
+xargs -r0 sh -c 'mv "$@@" /archive' move
+@end example
+
+Here, a shell is being invoked.  There are two shell instances to
+think about.  The first is the shell which launches the xargs command
+(this might be the shell into which you are typing, for example).  The
+second is the shell launched by @code{xargs} (in fact it will probably
+launch several, one after the other, depending on how many files need
+to be archived).  We'l refer to this second shell as a subshell.
+
+Our example uses the @code{-c} option of @code{sh}.  Its argument is a
+shell command to be executed by the subshell.  Along with the rest of
+that command, the $@@ is enclosed by single quotes to make sure it is
+passed to the subshell without being expanded by the parent shell.  It
+is also enclosed with double quotes so that the subshell will expand
+@code{$@@} correctly even if one of the file names contains a space or
+newline.
+
+The subshell will use any non-option arguments as positional
+parameters (that is, in the expansion of @code{$@@}).  Because
+@code{xargs} launches the @code{sh -c} subshell with a list of files,
+those files will end up as the expansion of @code{$@@}.
+
+You may also notice the @samp{move} at the end of the command line.
+This is used as the value of @code{$0} by the subshell.  We include it
+because otherwise the name of the first file to be moved would be used
+instead.  If that happened it would not be included in the subshell's
+expansion of @code{$@@}, and so it wouldn't actually get moved.
+
+
+Another reason to use the @code{sh -c} construct could be to
+perform redirection:
+
+@example
+find /usr/include -name '*.h' | xargs grep -wl mode_t |
+xargs -r sh -c 'exec emacs "$@@" < /dev/tty' Emacs
+@end example
+
+Notice that we use the shell builtin @code{exec} here.  That's simply
+because the subshell needs to do nothing once Emacs has been invoked.
+Therefore instead of keeping a @code{sh} process around for no reason,
+we just arrange for the subshell to exec Emacs, saving an extra
+process creation.   
+
+Sometimes, though, it can be helpful to keep the shell process around:
+
+@example
+find /foo -maxdepth 1 -atime +366 -print0 |
+xargs -r0 sh -c 'mv "$@@" /archive || exit 255' move
+@end example
+
+Here, the shell will exit with status 255 if any @code{mv} failed.
+This causes @code{xargs} to stop immediately.
+
+
+@node Regular Expressions
 @section Regular Expressions
 
 The @samp{-regex} and @samp{-iregex} tests of @code{find} allow
@@ -3136,7 +3646,7 @@ should be one of the following:
 
 @include regexprops.texi
 
-@node Environment Variables,, Regular Expressions, Reference
+@node Environment Variables
 @section Environment Variables
 @table @var
 @item LANG
@@ -3176,6 +3686,15 @@ Determines the block size used by @samp{-ls} and @samp{-fls}.
 If @var{POSIXLY_CORRECT} is set, blocks are units of 512 bytes.  Otherwise
 they are units of 1024 bytes.
 
+Setting this variable also turns off warning messages (that is, implies
+@samp{-nowarn}) by default, because POSIX requires that apart from
+the output for @samp{-ok}, all messages printed on stderr are
+diagnositcs and must result in a non-zero exit status.
+
+Arguments to @samp{-perm} beginning with @samp{+} are treated
+differently when POSIXLY_CORRECT is set. See 
+@ref{Mode Bits,-perm,File Mode Bits}.
+
 @item TZ 
 Affects the time zone used for some of the time-related format
 directives of @samp{-printf} and @samp{-fprintf}.
@@ -3183,7 +3702,7 @@ directives of @samp{-printf} and @samp{-fprintf}.
 
 
 
-@node Common Tasks, Worked Examples, Reference, Top
+@node Common Tasks
 @chapter Common Tasks
 
 The sections that follow contain some extended examples that both give
@@ -3229,7 +3748,23 @@ xargs --arg-file=todo emacs
 @end example
 
 Here, @code{xargs} will run @code{emacs} as many times as necessary to
-visit all of the files listed in the file @file{todo}.
+visit all of the files listed in the file @file{todo}.  Generating a
+temporary file is not always convenient, though.  This command does
+much the same thing without needing one:
+
+@example
+find /usr/include -name '*.h' | xargs grep -l mode_t |
+xargs sh -c 'emacs "$@@" < /dev/tty' Emacs
+@end example
+
+The example above illustrates a useful trick; Using @code{sh -c} you
+can invoke a shell command from @code{xargs}.  The @code{$@@} in the
+command line is expanded by the shell to a list of arguments as
+provided by @code{xargs}.  The single quotes in the command line
+protect the @code{$@@} against expansion by your interactive shell
+(which will normally have no arguments and thus expand @code{$@@} to
+nothing).  The capitalised @samp{Emacs} on the command line is used as
+@code{$0} by the shell that @code{xargs} launches.
 
 @node Archiving
 @section Archiving
@@ -3329,14 +3864,46 @@ Removing old files from @file{/tmp} is commonly done from @code{cron}:
 
 @c Idea from Kaveh Ghazi.
 @example
-find /tmp /var/tmp -not -type d -mtime +3 -delete
-find /tmp /var/tmp -depth -mindepth 1 -type d -empty -delete
+find /tmp /var/tmp -depth -not        -type d -mtime +3 -delete
+find /tmp /var/tmp -depth -mindepth 1 -type d -empty    -delete
 @end example
 
-The second @code{find} command above uses @samp{-depth} so it cleans
-out empty directories depth-first, hoping that the parents become
-empty and can be removed too.  It uses @samp{-mindepth} to avoid
-removing @file{/tmp} itself if it becomes totally empty.
+The second @code{find} command above cleans out empty directories
+depth-first (@samp{-delete} implies @samp{-depth} anyway), hoping that
+the parents become empty and can be removed too.  It uses
+@samp{-mindepth} to avoid removing @file{/tmp} itself if it becomes
+totally empty.
+
+
+Lastly, an example of a program that almost certainly does not do what
+the user intended:
+
+@c inspired by Savannah bug #20865 (Bruno De Fraine)
+@example
+find dirname -delete -name quux
+@end example
+
+If the user hoped to delete only files named @file{quux} they will get
+an unpleasant surprise; this command will attempt to delete everything
+at or below the starting point @file{dirname}.  This is because
+@code{find} evaluates the items on the command line as an expression.
+The @code{find} program will normally execute an action if the
+preceeding action succeeds.  Here, there is no action or test before
+the @samp{-delete} so it will always be executed.  The @samp{-name
+quux} test will be performed for files we successfully deleted, but
+that test has no effect since @samp{-delete} also disables the default
+@samp{-print} operation.   So the above example will probably delete a
+lot of files the user didn't want to delete.
+
+This command is also likely to do something you did not intend:
+@example
+find dirname -path dirname/foo -prune -o -delete
+@end example
+
+Because @samp{-delete} turns on @samp{-depth}, the @samp{-prune}
+action has no effect and files in @file{dirname/foo} will be deleted
+too.
+
 
 @node Strange File Names
 @section Strange File Names
@@ -3438,7 +4005,7 @@ cat allexec
 @code{find} has only to make one scan through the directory tree
 (which is one of the most time consuming parts of its work).
 
-@node Worked Examples, Security Considerations, Common Tasks, Top
+@node Worked Examples
 @chapter Worked Examples
 
 The tools in the findutils package, and in particular @code{find},
@@ -3452,6 +4019,7 @@ performed, and compares the different ways of achieving them.
 
 @menu
 * Deleting Files::
+* Copying A Subset of Files::
 * Updating A Timestamp File::
 @end menu
 
@@ -3478,7 +4046,7 @@ We'll assume that the files we want to delete are old files underneath
 
 @subsection The Traditional Way
 
-The traditional way to delete files in @file{var/tmp/stuff} that have
+The traditional way to delete files in @file{/var/tmp/stuff} that have
 not been modified in over 90 days would have been:
 
 @smallexample
@@ -3588,7 +4156,7 @@ correctly handles all the possible characters that could appear in the
 list of files to delete.  This is good news.  However, there is, as
 I'm sure you're expecting, also more bad news.  The problem is that
 this is not a portable construct; although other versions of Unix
-(notable BSD-derived ones) support @samp{-print0}, it's not
+(notably BSD-derived ones) support @samp{-print0}, it's not
 universal.  So, is there a more universal mechanism?
 
 @subsection Going back to -exec
@@ -3794,6 +4362,49 @@ portable.  The most efficient portable alternative is @samp{-exec
 @dots{}+}, but this is insecure and isn't supported by versions of GNU
 findutils prior to 4.2.12.
 
+@node Copying A Subset of Files
+@section Copying A Subset of Files
+
+Suppose you want to copy some files from @file{/source-dir} to
+@file{/dest-dir}, but there are a small number of files in
+@file{/source-dir} you don't want to copy. 
+
+One option of course is @code{cp /source-dir /dest-dir} followed by
+deletion of the unwanted material under @file{/dest-dir}.  But often
+that can be inconvenient, because for example we would have copied a
+large amount of extraneous material, or because @file{/dest-dir} is
+too small.  Naturally there are many other possible reasons why this
+strategy may be unsuitable.
+
+So we need to have some way of identifying which files we want to
+copy, and we need to have a way of copying that file list.  The second
+part of this condition is met by @code{cpio -p}.  Of course, we can
+identify the files we wish to copy by using @code{find}.  Here is a
+command that solves our problem:
+
+@example
+cd /source-dir
+find . -name '.snapshot' -prune -o \( \! -name '*~' -print0 \) | 
+cpio -pmd0   /dest-dir
+@end example
+
+The first part of the @code{find} command here identifies files or
+directoires named @file{.snapshot} and tells @code{find} not to
+recurse into them (since they do not need to be copied).  The
+combination @code{-name '.snapshot' -prune} yields false for anything
+that didn't get pruned, but it is exactly those files we want to
+copy.  Therefore we need to use an OR (@samp{-o}) condition to
+introduce the rest of our expression.  The remainder of the expression
+simply arranges for the name of any file not ending in @samp{~} to be
+printed.  
+
+Using @code{-print0} ensures that white space characters in file names
+do not pose a problem.  The @code{cpio} command does the actual work
+of copying files.  The program as a whole fails if the @code{cpio}
+program returns nonzero.  If the @code{find} command returns non-zero
+on the other hand, the Unix shell will not diagnose a problem (since
+@code{find} is not the last command in the pipeline).
+
 
 @node Updating A Timestamp File
 @section Updating A Timestamp File
@@ -3885,36 +4496,14 @@ value of @code{$newest} if that variable is set, but to
 @file{timestamp} otherwise.  This ensures that an argument is always
 given to the @samp{-r} option of the @code{touch} command.
 
-This approach seems quite efficient, but unfortunately it has a bug.
-Many operating systems now keep file modification time information at
-a granularity which is finer than one second.  Unfortunately the
-@samp{%A@@} format for @samp{-printf} only prints a whole-number value
-currently; that is, these values are at a one-second granularity.
-This means that in our example above, @samp{$newest} will be the name
-of a file which is no more than one second older than the newest file,
-but may indeed be older.
+This approach seems quite efficient, but unfortunately it has a
+problem.  Many operating systems now keep file modification time
+information at a granularity which is finer than one second.
+Findutils version 4.3.3 and later will print a fractional part with
+%A@@, but older versions will not.
 
-It would be possible to solve this problem with some kind of loop:
 
-@smallexample
-while true; do
-        newest=$(find subdir -newer timestamp -printf "%A@@:%p\n" | 
-           sort -n | 
-           tail -1 | 
-           cut -d: -f2- ) 
-        if test -z "$newest" ; then
-                break
-        else
-                touch -r "$newest" timestamp
-        fi
-done
-@end smallexample
-
-A better fix for this problem would be to allow the @samp{%A@@} format
-to produce a result having a fractional part, too.  While this is
-planned for GNU @code{find}, it hasn't been done yet.
-
-@subsection Coping with sub-second timestamp resolution
+@subsection Solving the problem with make
 
 Another tool which often works with timestamps is @code{make}.  We can
 use @code{find} to generate a @file{Makefile} file on the fly and then
@@ -3979,7 +4568,7 @@ other, to the nearest second.  The second @code{find} command takes
 each resulting file one at a time, and if that is newer than the
 timestamp file, the timestamp is updated.
 
-@node Security Considerations, Error Messages, Worked Examples, Top
+@node Security Considerations
 @chapter Security Considerations
 
 Security considerations are important if you are using @code{find} or
@@ -4133,6 +4722,7 @@ However, your degree of safety does depend on the nature of the
 program you are running.  For example constructs such as these two commands
 
 @example
+# risky
 find -exec sh -c "something @{@}" \;
 find -execdir sh -c "something @{@}" \;
 @end example
@@ -4147,6 +4737,19 @@ So for this reason do not run any command which will pass untrusted
 data (such as the names of files) to commands which interpret
 arguments as commands to be further interpreted (for example
 @samp{sh}).
+
+In the case of the shell, there is a clever workaround for this
+problem:
+
+@example
+# safer 
+find -exec sh -c 'something "$@@"' @{@} \;
+find -execdir sh -c 'something "$@@"' @{@}\;
+@end example
+
+This approach is not guaranteed to avoid every problem, but it is much
+safer than substituting data of an attacker's choice into the text of
+a shell command.
 
 @node Changing the Current Working Directory
 @subsection Changing the Current Working Directory
@@ -4188,7 +4791,7 @@ properties of your system.
 If your system supports the O_NOFOLLOW flag @footnote{GNU/Linux
 (kernel version 2.1.126 and later) and FreeBSD (3.0-CURRENT and later)
 support this} to the @code{open(2)} system call, @code{find} uses it
-when safely changing directory.  The target directory is first opened
+to safely change directories.  The target directory is first opened
 and then @code{find} changes working directory with the
 @code{fchdir()} system call.  This ensures that symbolic links are not
 followed, preventing the sort of race condition attack in which use
@@ -4244,7 +4847,8 @@ fail.
 However, this does not normally represent a security problem, since
 the automounter configuration is normally set up by the system
 administrator.  Therefore, if the @code{chdir()} sanity check fails,
-@code{find} will make one more attempt.  If that succeeds, execution
+@code{find} will make one more attempt@footnote{This may not be the
+case for the fts-based executable}.  If that succeeds, execution
 carries on as normal.  This is the usual case for automounters.
 
 Where an attacker is trying to exploit a race condition, the problem
@@ -4381,6 +4985,14 @@ ensures that @code{xargs} considers file names to be separated by
 ASCII NUL characters rather than whitespace.  However, useful as this
 option is, the POSIX standard does not make it mandatory.
 
+POSIX also specifies that @code{xargs} interprets quoting and trailing
+whitespace specially in filenames, too.  This means that using
+@code{find ... -print | xargs ...} can cause the commands run by
+@code{xargs} to receive a list of file names which is not the same as
+the list printed by @code{find}.   The interpretation of quotes and
+trailing whitespace is turned off by the @samp{-0} argument to
+@code{xargs}, which is another reason to use that option.
+
 @comment  node-name,  next,  previous,  up
 @node Security Considerations for locate
 @section Security Considerations for @code{locate}
@@ -4388,21 +5000,28 @@ option is, the POSIX standard does not make it mandatory.
 @subsection Race Conditions
 It is fairly unusual for the output of @code{locate} to be fed into
 another command.  However, if this were to be done, this would raise
-the same set of security issues as the use of @samp{find @dots{}
--print}.  Although the problems relating to whitespace in file names
-can be resolved by the @samp{-0} option of @code{locate}, this still
-leaves the race condition problems associated with @samp{find @dots{}
--print0}.  There is no way to avoid these problems in the case of
-@code{locate}.
+the same set of security issues as the use of @samp{find @dots{} -print}.
+Although the problems relating to whitespace in file names can be
+resolved by using @code{locate}'s @samp{-0} option, this still leaves
+the race condition problems associated with @samp{find @dots{} -print0}.
+There is no way to avoid these problems in the case of @code{locate}.
 
 @subsection Long File Name Bugs with Old-Format Databases
-All versions of @code{locate} prior to 4.2.31, and also versions 4.3.0
-to 4.3.6, have a bug in the way that old-format databases are read.
-They read file names into a fixed-length 1026 byte buffer, allocated
-on the heap.  This buffer is not extended if file names are too long
-to fit into the buffer.  No range checking on the length of the
-filename is performed.  This could in theory lead to a privilege
-escalation attack.
+Old versions of @code{locate} have a bug in the way that old-format
+databases are read.  This bug affects the following versions of
+@code{locate}:
+
+@enumerate
+@item All releases prior to 4.2.31
+@item All 4.3.x releases prior to 4.3.7
+@end enumerate
+
+The affected versions of @code{locate} read file names into a
+fixed-length 1026 byte buffer, allocated on the heap.  This buffer is
+not extended if file names are too long to fit into the buffer.  No
+range checking on the length of the filename is performed.  This could
+in theory lead to a privilege escalation attack.  Findutils versions
+4.3.0 to 4.3.6 are also affected.
 
 On systems using the old database format and affected versions of
 @code{locate}, carefully-chosen long file names could in theory allow
@@ -4411,9 +5030,9 @@ locate.
 
 If remote users can choose the names of files stored on your system,
 and these files are indexed by @code{updatedb}, this may be a remote
-security vulnerability.  Findutils version 4.2.31 fixes this problem.
-The @code{updatedb}, @code{bigram} and @code{code} programs do no
-appear to be affected.
+security vulnerability.  Findutils version 4.2.31 and findutils
+version 4.3.7 include fixes for this problem.  The @code{updatedb},
+@code{bigram} and @code{code} programs do no appear to be affected.
 
 If you are also using GNU coreutils, you can use the following command
 to determine the length of the longest file name on a given system:
@@ -4425,6 +5044,7 @@ find / -print0 | tr -c '\0' 'x' | tr '\0' '\n' | wc -L
 Although this problem is significant, the old database format is not
 the default, and use of the old database format is not common.  Most
 installations and most users will not be affected by this problem.  
+
 
 
 @node Security Summary
@@ -4451,7 +5071,7 @@ only trusted programs.
 @end table
 
 @comment  node-name,  next,  previous,  up
-@node Error Messages, GNU Free Documentation License, Security Considerations, Top
+@node Error Messages
 @chapter Error Messages
 
 This section describes some of the error messages sometimes made by
@@ -4460,13 +5080,13 @@ cases provides advice as to what you should do about this.
 
 This manual is written in English.  The GNU findutils software
 features translations of error messages for many languages.  For this
-reason the error messages produced by
-the programs are made to be as self-explanatory as possible.  This approach avoids leaving people to
-figure out which test an English-language error message
-corresponds to. Error messages which are self-explanatory
-will not normally be mentioned in this document.  For
-those messages mentioned in this document, only the
-English-language version of the message will be listed.
+reason the error messages produced by the programs are made to be as
+self-explanatory as possible.  This approach avoids leaving people to
+figure out which test an English-language error message corresponds
+to.  Error messages which are self-explanatory will not normally be
+mentioned in this document.  For those messages mentioned in this
+document, only the English-language version of the message will be
+listed.
 
 @menu
 * Error Messages From find::
@@ -4475,8 +5095,13 @@ English-language version of the message will be listed.
 * Error Messages From updatedb::
 @end menu
 
-@node Error Messages From find, Error Messages From xargs, , Error Messages
+@node Error Messages From find
 @section Error Messages From @code{find}
+
+Most error messages produced by find are self-explanatory.  Error
+messages sometimes include a filename.  When this happens, the
+filename is quoted in order to prevent any unusual characters in the
+filename making unwanted changes in the state of the terminal.
 
 @table @samp
 @item invalid predicate `-foo'
@@ -4496,7 +5121,7 @@ This usually happens if you have an extra bracket on the command line
 @item Warning: filesystem /path/foo has recently been mounted
 @itemx Warning: filesystem /path/foo has recently been unmounted
 These messages might appear when @code{find} moves into a directory
-and finds that the device number and inode are different to what it
+and finds that the device number and inode are different from what it
 expected them to be.  If the directory @code{find} has moved into is
 on an network filesystem (NFS), it will not issue this message, because
 @code{automount} frequently mounts new filesystems on directories as
@@ -4536,7 +5161,7 @@ time consuming operation, somebody has moved one of the parent directories to
 another location in the same filesystem.  This may or may not have been done
 maliciously.  In any case, @code{find} stops at this point
 to avoid traversing parts of the filesystem that it wasn't
-intended.  You can use @code{ls -li} or @code{find /path -inum
+intended to.  You can use @code{ls -li} or @code{find /path -inum
 12345 -o -inum 67893} to find out more about what has happened.
 
 @item sanity check of the fnmatch() library function failed.
@@ -4562,7 +5187,7 @@ with a fatal signal.  This is just an advisory message.
 @end table
 
 
-@node Error Messages From xargs, Error Messages From locate, Error Messages From find, Error Messages
+@node Error Messages From xargs
 @section Error Messages From xargs
 
 @table @samp
@@ -4598,11 +5223,11 @@ return status 255.
 See the description of the similar message for @code{find}.
 @end table
 
-@node Error Messages From locate, Error Messages From updatedb, Error Messages From xargs, Error Messages
+@node Error Messages From locate
 @section Error Messages From @code{locate}
 
 @table @samp
-@item warning: database `/usr/local/var/locatedb' is more than 8 days old
+@item warning: database @file{@value{LOCATE_DB}} is more than 8 days old
 The @code{locate} program relies on a database which is periodically
 built by the @code{updatedb} program.  That hasn't happened in a long
 time.  To fix this problem, run @code{updatedb} manually.  This can
@@ -4610,7 +5235,7 @@ often happen on systems that are generally not left on, so the
 periodic ``cron'' task which normally does this doesn't get a chance
 to run.
 
-@item locate database `/usr/local/var/locatedb' is corrupt or invalid
+@item locate database @file{@value{LOCATE_DB}} is corrupt or invalid
 This should not happen.  Re-run @code{updatedb}.  If that works, but
 @code{locate} still produces this error, run @code{locate --version}
 and @code{updatedb --version}.  These should produce the same output.
@@ -4622,7 +5247,7 @@ these programs should interoperate without problem.  Ask for help on
 @end table
 
 
-@node Error Messages From updatedb, , Error Messages From locate, Error Messages
+@node Error Messages From updatedb
 @section Error Messages From updatedb
 
 The @code{updatedb} program (and the programs it invokes) do issue
@@ -4630,13 +5255,11 @@ error messages, but none seem to be candidates for guidance.  If
 you are having a problem understanding one of these, ask for help on
 @email{bug-findutils@@gnu.org}.
 
-
-@node GNU Free Documentation License, Primary Index, Error Messages, Top
-@comment  node-name,  next,  previous,  up
+@node GNU Free Documentation License
 @appendix GNU Free Documentation License
 @include fdl.texi
 
-@node Primary Index, , GNU Free Documentation License, Top
+@node Primary Index
 @unnumbered @code{find} Primary Index
 
 This is a list of all of the primaries (tests, actions, and options)

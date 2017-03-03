@@ -18,12 +18,26 @@
 
 # csh original by James Woods; sh conversion by David MacKenzie.
 
+#exec 2> /tmp/updatedb-trace.txt 
+#set -x
+
+version='
+updatedb (@PACKAGE_NAME@) @VERSION@
+Copyright (C) 2007 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Eric B. Decker, James Youngman, and Kevin Dalley.
+'
+
+
 usage="\
 Usage: $0 [--findoptions='-option1 -option2...']
        [--localpaths='dir1 dir2...'] [--netpaths='dir1 dir2...']
        [--prunepaths='dir1 dir2...'] [--prunefs='fs1 fs2...']
        [--output=dbfile] [--netuser=user] [--localuser=user] 
-       [--old-format] [--version] [--help]
+       [--old-format] [--dbformat] [--version] [--help]
 
 Report bugs to <bug-findutils@gnu.org>."
 changeto=/
@@ -47,30 +61,59 @@ do
     --localuser) LOCALUSER="$val" ;;
     --old-format) old=yes ;;
     --changecwd)  changeto="$val" ;;
-    --version) echo "GNU updatedb version @VERSION@"; exit 0 ;;
-    --help) echo "$usage"; exit 0 ;;
+    --dbformat)   dbformat="$val" ;;
+    --version) fail=0; echo "$version" || fail=1; exit $fail ;;
+    --help)    fail=0; echo "$usage"   || fail=1; exit $fail ;;
     *) echo "updatedb: invalid option $opt
 $usage" >&2
        exit 1 ;;
   esac
 done
 
-if test "$old" = yes; then
-    echo "Warning: future versions of findutils will shortly discontinue support for the old locate database format." >&2
 
+
+
+case "${dbformat:+yes}_${old}" in 
+    yes_yes)
+	echo "The --dbformat and --old cannot both be specified." >&2
+	exit 1
+	;;
+	*) 
+	;;
+esac
+
+if test "$old" = yes || test "$dbformat" = "old" ; then
+    echo "Warning: future versions of findutils will shortly discontinue support for the old locate database format." >&2
+    old=yes
     sort="@SORT@"
     print_option="-print"
     frcode_options=""
 else
+    frcode_options=""
+    case "$dbformat" in 
+	"")
+		# Default, use LOCATE02
+	    ;;
+	LOCATE02)
+	    ;;
+	slocate)
+	    frcode_options="$frcode_options -S 1"
+	    ;;
+	*)
+	    echo "Unsupported locate database format ${dbformat}: Supported formats are:" >&2
+	    echo "LOCATE02, slocate, old" >&2
+	    exit 1
+    esac
+
+
     if @SORT_SUPPORTS_Z@
     then
         sort="@SORT@ -z"
         print_option="-print0"
-        frcode_options="-0"
+        frcode_options="$frcode_options -0"
     else
         sort="@SORT@"
         print_option="-print"
-        frcode_options=""
     fi
 fi
 
@@ -115,7 +158,7 @@ select_shell() {
 : ${NETPATHS=}
 
 # Directories to not put in the database, which would otherwise be.
-: ${PRUNEPATHS="/tmp /usr/tmp /var/tmp /afs /amd /sfs"}
+: ${PRUNEPATHS="/tmp /usr/tmp /var/tmp /afs /amd /sfs /proc"}
 
 # Trailing slashes result in regex items that are never matched, which 
 # is not what the user will expect.   Therefore we now reject such 
@@ -168,6 +211,21 @@ fi
 : ${code:=${LIBEXECDIR}/@code@}
 
 
+checkbinary () {
+    if test -x "$1" ; then
+	: ok
+    else
+      eval echo "updatedb needs to be able to execute $1, but cannot." >&2
+      exit 1
+    fi
+}
+
+for binary in $find $frcode $bigram $code
+do
+  checkbinary $binary
+done
+
+
 PATH=/bin:/usr/bin:${BINDIR}; export PATH
 
 : ${PRUNEFS="nfs NFS proc afs proc smbfs autofs iso9660 ncpfs coda devpts ftpfs devfs mfs sysfs shfs"}
@@ -186,8 +244,7 @@ rm -f $LOCATE_DB.n
 trap 'rm -f $LOCATE_DB.n; exit' HUP TERM
 
 if test $old = no; then
-
-# FIXME figure out how to sort null-terminated strings, and use -print0.
+# LOCATE02 or slocate format
 if {
 cd "$changeto"
 if test -n "$SEARCHPATHS"; then
@@ -220,7 +277,7 @@ if [ "$myuid" = 0 ]; then
 fi
 } | $sort -f | $frcode $frcode_options > $LOCATE_DB.n
 then
-    # OK so far
+    : OK so far
     true
 else
     rv=$?
@@ -232,9 +289,8 @@ fi
 # To avoid breaking locate while this script is running, put the
 # results in a temp file, then rename it atomically.
 if test -s $LOCATE_DB.n; then
-  rm -f $LOCATE_DB
-  mv $LOCATE_DB.n $LOCATE_DB
-  chmod 644 $LOCATE_DB
+  chmod 644 ${LOCATE_DB}.n
+  mv ${LOCATE_DB}.n $LOCATE_DB
 else
   echo "updatedb: new database would be empty" >&2
   rm -f $LOCATE_DB.n
@@ -243,12 +299,12 @@ fi
 else # old
 
 if ! bigrams=`mktemp -t updatedbXXXXXXXXX`; then
-    echo tempfile failed
+    echo mktemp failed >&2
     exit 1
 fi
 
 if ! filelist=`mktemp -t updatedbXXXXXXXXX`; then
-    echo tempfile failed
+    echo mktemp failed >&2
     exit 1
 fi
 
@@ -302,9 +358,8 @@ rm -f $bigrams $filelist
 # To reduce the chances of breaking locate while this script is running,
 # put the results in a temp file, then rename it atomically.
 if test -s $LOCATE_DB.n; then
-  rm -f $LOCATE_DB
-  mv $LOCATE_DB.n $LOCATE_DB
-  chmod 644 $LOCATE_DB
+  chmod 644 ${LOCATE_DB}.n
+  mv ${LOCATE_DB}.n $LOCATE_DB
 else
   echo "updatedb: new database would be empty" >&2
   rm -f $LOCATE_DB.n

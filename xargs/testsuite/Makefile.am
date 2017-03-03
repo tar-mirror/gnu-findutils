@@ -79,6 +79,9 @@ xargs.posix/s6.exp \
 xargs.posix/savannah-11865.exp \
 xargs.posix/space.exp \
 xargs.posix/space-I.exp \
+xargs.posix/sv-bug-18714.exp \
+xargs.posix/sv-bug-18714b.exp \
+xargs.posix/sv-bug-20273.exp \
 xargs.posix/unmatched2.exp \
 xargs.posix/unmatched.exp \
 xargs.posix/unmatched-n2-x.exp \
@@ -96,6 +99,7 @@ xargs.sysv/l1.exp \
 xargs.sysv/l1n4.exp \
 xargs.sysv/lc_l2.exp \
 xargs.sysv/s30-t.exp \
+xargs.sysv/sv-bug-18713.exp \
 xargs.sysv/space-t.exp \
 xargs.sysv/trace.exp
 
@@ -161,6 +165,9 @@ xargs.posix/s47.xo \
 xargs.posix/s48.xo \
 xargs.posix/savannah-11865.xo \
 xargs.posix/space.xo \
+xargs.posix/sv-bug-18714.xo \
+xargs.posix/sv-bug-18714b.xo \
+xargs.posix/sv-bug-20273.xo \
 xargs.posix/unmatched2.xo \
 xargs.posix/unmatched.xo \
 xargs.sysv/eEOF.xo \
@@ -177,6 +184,7 @@ xargs.sysv/l1n4.xo \
 xargs.sysv/l1.xo \
 xargs.sysv/lc_l2.xo \
 xargs.sysv/s30-t.xo \
+xargs.sysv/sv-bug-18713.xo \
 xargs.sysv/space-t.xo \
 xargs.sysv/trace.xo
 
@@ -195,6 +203,7 @@ EXTRA_DIST_XI = \
 inputs/16383-ys.xi \
 inputs/32767-ys.xi \
 inputs/blank.xi \
+inputs/empty.xi \
 inputs/eof_-0.xi \
 inputs/EOFb.xi \
 inputs/EOFe.xi \
@@ -206,6 +215,7 @@ inputs/ett.xi \
 inputs/files0.xi \
 inputs/files.xi \
 inputs/foobar.xi \
+inputs/formfeeds.xi \
 inputs/ftt.xi \
 inputs/helloworld.xi \
 inputs/items-0.xi \
@@ -225,8 +235,10 @@ inputs/stairs2-0.xi \
 inputs/stairs2.xi \
 inputs/stairs.xi \
 inputs/stt.xi \
+inputs/sv-bug-20273.xi \
 inputs/unmatched2.xi \
-inputs/unmatched.xi
+inputs/unmatched.xi \
+inputs/verticaltabs.xi
 
 
 EXTRA_DIST = $(EXTRA_DIST_EXP) $(EXTRA_DIST_XO) $(EXTRA_DIST_XI) $(EXTRA_DIST_XE)

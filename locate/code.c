@@ -1,6 +1,5 @@
 /* code -- bigram- and front-encode filenames for locate
-   Copyright (C) 1994, 2000, 2003, 2004, 2005, 2007 Free Software
-   Foundation, Inc.
+   Copyright (C) 1994, 2005, 2007, 2008 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,13 +32,13 @@
    followed by a (partially bigram-encoded) ASCII remainder.
    The output lines have no terminating byte; the start of the next line
    is indicated by its first byte having a value <= 30.
-
+   
    The encoding of the output bytes is:
 
    0-28		likeliest differential counts + offset (14) to make nonnegative
    30		escape code for out-of-range count to follow in next halfword
-   128-255	bigram codes (the 128 most common, as determined by `updatedb')
-   32-127	single character (printable) ASCII remainder
+   128-255      bigram codes (the 128 most common, as determined by `updatedb')
+   32-127       single character (printable) ASCII remainder
 
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.org>.  */
@@ -47,12 +46,10 @@
 #include <config.h>
 #include <stdio.h>
 #include <sys/types.h>
-
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
 #include <string.h>
-#else
-#include <strings.h>
-#endif
+#include <errno.h>
+#include <stdbool.h>
+
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
@@ -75,12 +72,19 @@
 
 #include "locatedb.h"
 #include "closeout.h"
+#include "xalloc.h"
 #include "gnulib-version.h"
+#include "progname.h"
+#include "error.h"
+#include "findutils-version.h"
 
-char *xmalloc PARAMS((size_t));
+#ifndef ATTRIBUTE_NORETURN
+# define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+#endif
+
 
 /* The name this program was run with.  */
-char *program_name;
+extern const char *program_name;
 
 /* The 128 most common bigrams in the file list, padded with NULs
    if there are fewer.  */
@@ -131,6 +135,26 @@ or     %s most_common_bigrams < file-list > locate-database\n"),
 }
 
 
+static void inerr (const char *filename) ATTRIBUTE_NORETURN;
+static void outerr(void)                 ATTRIBUTE_NORETURN;
+
+static void
+inerr(const char *filename) 
+{
+  error(1, errno, "%s", filename);
+  /*NOTREACHED*/
+  abort();
+}
+
+static void
+outerr(void) 
+{
+  error(1, errno, _("write error"));
+  /*NOTREACHED*/
+  abort();
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -143,7 +167,7 @@ main (int argc, char **argv)
   FILE *fp;			/* Most common bigrams file.  */
   int line_len;			/* Length of input line.  */
 
-  program_name = argv[0];
+  set_program_name(argv[0]);
   atexit (close_stdout);
 
   bigram[2] = '\0';
@@ -153,7 +177,7 @@ main (int argc, char **argv)
       usage(stderr);
       return 2;
     }
-
+  
   if (0 == strcmp(argv[1], "--help"))
     {
       usage(stdout);
@@ -161,11 +185,10 @@ main (int argc, char **argv)
     }
   else if (0 == strcmp(argv[1], "--version"))
     {
-      printf (_("GNU findutils version %s\n"), version_string);
-      printf (_("Built using GNU gnulib version %s\n"), gnulib_version);
+      display_findutils_version("code");
       return 0;
     }
-
+  
   fp = fopen (argv[1], "r");
   if (fp == NULL)
     {
@@ -173,7 +196,7 @@ main (int argc, char **argv)
       perror (argv[1]);
       return 1;
     }
-
+  
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);
@@ -184,9 +207,14 @@ main (int argc, char **argv)
 
   /* Copy the list of most common bigrams to the output,
      padding with NULs if there are <128 of them.  */
-  fgets (bigrams, 257, fp);
-  fwrite (bigrams, 1, 256, stdout);
-  fclose (fp);
+  if (NULL == fgets (bigrams, 257, fp))
+    inerr(argv[1]);
+  
+  if (256 != fwrite (bigrams, 1, 256, stdout))
+     outerr();
+
+  if (EOF == fclose (fp))
+     inerr(argv[1]);
 
   while ((line_len = getline (&path, &pathsize, stdin)) > 0)
     {
@@ -208,11 +236,19 @@ main (int argc, char **argv)
 	 otherwise, two bytes plus a marker noting that fact.  */
       if (diffcount < -LOCATEDB_OLD_OFFSET || diffcount > LOCATEDB_OLD_OFFSET)
 	{
-	  putc (LOCATEDB_OLD_ESCAPE, stdout);
-	  putw (diffcount + LOCATEDB_OLD_OFFSET, stdout);
+	  if (EOF ==- putc (LOCATEDB_OLD_ESCAPE, stdout))
+	    outerr ();
+
+	  if (!putword (stdout,
+			diffcount+LOCATEDB_OLD_OFFSET,
+			GetwordEndianStateNative))
+	    outerr ();
 	}
       else
-	putc (diffcount + LOCATEDB_OLD_OFFSET, stdout);
+	{
+	  if (EOF == putc (diffcount + LOCATEDB_OLD_OFFSET, stdout))
+	    outerr ();
+	}
 
       /* Look for bigrams in the remainder of the path.  */
       for (pp = path + count; *pp != '\0'; pp += 2)

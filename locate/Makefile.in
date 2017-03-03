@@ -38,19 +38,22 @@ libexec_PROGRAMS = frcode$(EXEEXT) code$(EXEEXT) bigram$(EXEEXT)
 subdir = locate
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/findlib.m4 \
-	$(top_srcdir)/m4/mkinstalldirs.m4 $(top_srcdir)/m4/nullsort.m4 \
-	$(top_srcdir)/gnulib/m4/alloca.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/gnulib/m4/alloca.m4 \
 	$(top_srcdir)/gnulib/m4/argmatch.m4 \
+	$(top_srcdir)/gnulib/m4/assert.m4 \
+	$(top_srcdir)/gnulib/m4/bison.m4 \
 	$(top_srcdir)/gnulib/m4/canonicalize-lgpl.m4 \
 	$(top_srcdir)/gnulib/m4/canonicalize.m4 \
 	$(top_srcdir)/gnulib/m4/chdir-long.m4 \
 	$(top_srcdir)/gnulib/m4/chown.m4 \
+	$(top_srcdir)/gnulib/m4/clock_time.m4 \
 	$(top_srcdir)/gnulib/m4/close-stream.m4 \
 	$(top_srcdir)/gnulib/m4/closein.m4 \
 	$(top_srcdir)/gnulib/m4/closeout.m4 \
 	$(top_srcdir)/gnulib/m4/codeset.m4 \
+	$(top_srcdir)/gnulib/m4/cycle-check.m4 \
 	$(top_srcdir)/gnulib/m4/d-ino.m4 \
+	$(top_srcdir)/gnulib/m4/d-type.m4 \
 	$(top_srcdir)/gnulib/m4/dirfd.m4 \
 	$(top_srcdir)/gnulib/m4/dirname.m4 \
 	$(top_srcdir)/gnulib/m4/dos.m4 \
@@ -75,18 +78,23 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/findlib.m4 \
 	$(top_srcdir)/gnulib/m4/fseeko.m4 \
 	$(top_srcdir)/gnulib/m4/fstypename.m4 \
 	$(top_srcdir)/gnulib/m4/ftello.m4 \
+	$(top_srcdir)/gnulib/m4/fts.m4 \
 	$(top_srcdir)/gnulib/m4/getcwd-abort-bug.m4 \
 	$(top_srcdir)/gnulib/m4/getcwd-path-max.m4 \
 	$(top_srcdir)/gnulib/m4/getcwd.m4 \
+	$(top_srcdir)/gnulib/m4/getdate.m4 \
 	$(top_srcdir)/gnulib/m4/getdelim.m4 \
 	$(top_srcdir)/gnulib/m4/getline.m4 \
 	$(top_srcdir)/gnulib/m4/getopt.m4 \
 	$(top_srcdir)/gnulib/m4/gettext.m4 \
+	$(top_srcdir)/gnulib/m4/gettime.m4 \
+	$(top_srcdir)/gnulib/m4/gettimeofday.m4 \
 	$(top_srcdir)/gnulib/m4/glibc21.m4 \
 	$(top_srcdir)/gnulib/m4/gnulib-common.m4 \
 	$(top_srcdir)/gnulib/m4/gnulib-comp.m4 \
 	$(top_srcdir)/gnulib/m4/hash.m4 \
 	$(top_srcdir)/gnulib/m4/human.m4 \
+	$(top_srcdir)/gnulib/m4/i-ring.m4 \
 	$(top_srcdir)/gnulib/m4/iconv.m4 \
 	$(top_srcdir)/gnulib/m4/idcache.m4 \
 	$(top_srcdir)/gnulib/m4/include_next.m4 \
@@ -99,14 +107,23 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/findlib.m4 \
 	$(top_srcdir)/gnulib/m4/lib-link.m4 \
 	$(top_srcdir)/gnulib/m4/lib-prefix.m4 \
 	$(top_srcdir)/gnulib/m4/localcharset.m4 \
+	$(top_srcdir)/gnulib/m4/locale-fr.m4 \
+	$(top_srcdir)/gnulib/m4/locale-tr.m4 \
+	$(top_srcdir)/gnulib/m4/locale-zh.m4 \
 	$(top_srcdir)/gnulib/m4/longlong.m4 \
 	$(top_srcdir)/gnulib/m4/ls-mntd-fs.m4 \
 	$(top_srcdir)/gnulib/m4/lseek.m4 \
 	$(top_srcdir)/gnulib/m4/lstat.m4 \
 	$(top_srcdir)/gnulib/m4/malloc.m4 \
 	$(top_srcdir)/gnulib/m4/malloca.m4 \
+	$(top_srcdir)/gnulib/m4/mbchar.m4 \
+	$(top_srcdir)/gnulib/m4/mbiter.m4 \
 	$(top_srcdir)/gnulib/m4/mbrtowc.m4 \
+	$(top_srcdir)/gnulib/m4/mbscasestr.m4 \
+	$(top_srcdir)/gnulib/m4/mbslen.m4 \
+	$(top_srcdir)/gnulib/m4/mbsstr.m4 \
 	$(top_srcdir)/gnulib/m4/mbstate_t.m4 \
+	$(top_srcdir)/gnulib/m4/memchr.m4 \
 	$(top_srcdir)/gnulib/m4/memcmp.m4 \
 	$(top_srcdir)/gnulib/m4/mempcpy.m4 \
 	$(top_srcdir)/gnulib/m4/memrchr.m4 \
@@ -129,14 +146,18 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/findlib.m4 \
 	$(top_srcdir)/gnulib/m4/same.m4 \
 	$(top_srcdir)/gnulib/m4/save-cwd.m4 \
 	$(top_srcdir)/gnulib/m4/savedir.m4 \
+	$(top_srcdir)/gnulib/m4/setenv.m4 \
 	$(top_srcdir)/gnulib/m4/ssize_t.m4 \
 	$(top_srcdir)/gnulib/m4/st_dm_mode.m4 \
+	$(top_srcdir)/gnulib/m4/stat-time.m4 \
+	$(top_srcdir)/gnulib/m4/stdarg.m4 \
 	$(top_srcdir)/gnulib/m4/stdbool.m4 \
 	$(top_srcdir)/gnulib/m4/stdint.m4 \
 	$(top_srcdir)/gnulib/m4/stdio-safer.m4 \
 	$(top_srcdir)/gnulib/m4/stdio_h.m4 \
 	$(top_srcdir)/gnulib/m4/stdlib_h.m4 \
 	$(top_srcdir)/gnulib/m4/stpcpy.m4 \
+	$(top_srcdir)/gnulib/m4/strcasestr.m4 \
 	$(top_srcdir)/gnulib/m4/strdup.m4 \
 	$(top_srcdir)/gnulib/m4/strerror.m4 \
 	$(top_srcdir)/gnulib/m4/strftime.m4 \
@@ -150,23 +171,30 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/findlib.m4 \
 	$(top_srcdir)/gnulib/m4/strtoull.m4 \
 	$(top_srcdir)/gnulib/m4/strtoumax.m4 \
 	$(top_srcdir)/gnulib/m4/sys_stat_h.m4 \
+	$(top_srcdir)/gnulib/m4/sys_time_h.m4 \
 	$(top_srcdir)/gnulib/m4/time_h.m4 \
 	$(top_srcdir)/gnulib/m4/time_r.m4 \
+	$(top_srcdir)/gnulib/m4/timespec.m4 \
 	$(top_srcdir)/gnulib/m4/tm_gmtoff.m4 \
 	$(top_srcdir)/gnulib/m4/unistd-safer.m4 \
 	$(top_srcdir)/gnulib/m4/unistd_h.m4 \
 	$(top_srcdir)/gnulib/m4/wchar.m4 \
 	$(top_srcdir)/gnulib/m4/wchar_t.m4 \
 	$(top_srcdir)/gnulib/m4/wctype.m4 \
+	$(top_srcdir)/gnulib/m4/wcwidth.m4 \
 	$(top_srcdir)/gnulib/m4/wint_t.m4 \
 	$(top_srcdir)/gnulib/m4/xalloc.m4 \
 	$(top_srcdir)/gnulib/m4/xgetcwd.m4 \
 	$(top_srcdir)/gnulib/m4/xstrndup.m4 \
+	$(top_srcdir)/gnulib/m4/xstrtod.m4 \
 	$(top_srcdir)/gnulib/m4/xstrtol.m4 \
-	$(top_srcdir)/gnulib/m4/yesno.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/gnulib/m4/yesno.m4 $(top_srcdir)/m4/findlib.m4 \
+	$(top_srcdir)/m4/mkinstalldirs.m4 $(top_srcdir)/m4/noreturn.m4 \
+	$(top_srcdir)/m4/nullsort.m4 $(top_srcdir)/m4/withfts.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/build-aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
@@ -178,34 +206,30 @@ PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
 bigram_SOURCES = bigram.c
 bigram_OBJECTS = bigram.$(OBJEXT)
 bigram_LDADD = $(LDADD)
-bigram_DEPENDENCIES = ../find/version.o ../lib/libfind.a \
-	../gnulib/lib/libgnulib.a
-code_SOURCES = code.c
-code_OBJECTS = code.$(OBJEXT)
+bigram_DEPENDENCIES = ../lib/libfind.a ../gnulib/lib/libgnulib.a
+am_code_OBJECTS = code.$(OBJEXT) word_io.$(OBJEXT)
+code_OBJECTS = $(am_code_OBJECTS)
 code_LDADD = $(LDADD)
-code_DEPENDENCIES = ../find/version.o ../lib/libfind.a \
-	../gnulib/lib/libgnulib.a
+code_DEPENDENCIES = ../lib/libfind.a ../gnulib/lib/libgnulib.a
 frcode_SOURCES = frcode.c
 frcode_OBJECTS = frcode.$(OBJEXT)
 frcode_LDADD = $(LDADD)
-frcode_DEPENDENCIES = ../find/version.o ../lib/libfind.a \
-	../gnulib/lib/libgnulib.a
-locate_SOURCES = locate.c
-locate_OBJECTS = locate.$(OBJEXT)
+frcode_DEPENDENCIES = ../lib/libfind.a ../gnulib/lib/libgnulib.a
+am_locate_OBJECTS = locate.$(OBJEXT) word_io.$(OBJEXT)
+locate_OBJECTS = $(am_locate_OBJECTS)
 locate_LDADD = $(LDADD)
-locate_DEPENDENCIES = ../find/version.o ../lib/libfind.a \
-	../gnulib/lib/libgnulib.a
+locate_DEPENDENCIES = ../lib/libfind.a ../gnulib/lib/libgnulib.a
 binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
 SCRIPTS = $(bin_SCRIPTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = bigram.c code.c frcode.c locate.c
-DIST_SOURCES = bigram.c code.c frcode.c locate.c
+SOURCES = bigram.c $(code_SOURCES) frcode.c $(locate_SOURCES)
+DIST_SOURCES = bigram.c $(code_SOURCES) frcode.c $(locate_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -230,6 +254,7 @@ AMTAR = @AMTAR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUXDIR = @AUXDIR@
 AWK = @AWK@
 BITSIZEOF_PTRDIFF_T = @BITSIZEOF_PTRDIFF_T@
 BITSIZEOF_SIG_ATOMIC_T = @BITSIZEOF_SIG_ATOMIC_T@
@@ -242,6 +267,7 @@ CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DEFAULT_ARG_SIZE = @DEFAULT_ARG_SIZE@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DIRENT_H = @DIRENT_H@
@@ -252,6 +278,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FCNTL_H = @FCNTL_H@
 FINDLIBOBJS = @FINDLIBOBJS@
+FINDLIBS = @FINDLIBS@
 FNMATCH_H = @FNMATCH_H@
 GETOPT_H = @GETOPT_H@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
@@ -329,6 +356,7 @@ GNULIB_VSNPRINTF = @GNULIB_VSNPRINTF@
 GNULIB_VSPRINTF_POSIX = @GNULIB_VSPRINTF_POSIX@
 GNULIB_WCWIDTH = @GNULIB_WCWIDTH@
 GREP = @GREP@
+HAVE_ATTRIBUTE_NORETURN = @HAVE_ATTRIBUTE_NORETURN@
 HAVE_CALLOC_POSIX = @HAVE_CALLOC_POSIX@
 HAVE_DECL_GETDELIM = @HAVE_DECL_GETDELIM@
 HAVE_DECL_GETLINE = @HAVE_DECL_GETLINE@
@@ -377,9 +405,11 @@ HAVE_STRCHRNUL = @HAVE_STRCHRNUL@
 HAVE_STRNDUP = @HAVE_STRNDUP@
 HAVE_STRPBRK = @HAVE_STRPBRK@
 HAVE_STRSEP = @HAVE_STRSEP@
+HAVE_STRUCT_TIMEVAL = @HAVE_STRUCT_TIMEVAL@
 HAVE_SYS_BITYPES_H = @HAVE_SYS_BITYPES_H@
 HAVE_SYS_INTTYPES_H = @HAVE_SYS_INTTYPES_H@
 HAVE_SYS_PARAM_H = @HAVE_SYS_PARAM_H@
+HAVE_SYS_TIME_H = @HAVE_SYS_TIME_H@
 HAVE_SYS_TYPES_H = @HAVE_SYS_TYPES_H@
 HAVE_UNISTD_H = @HAVE_UNISTD_H@
 HAVE_UNSIGNED_LONG_LONG_INT = @HAVE_UNSIGNED_LONG_LONG_INT@
@@ -407,6 +437,11 @@ LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBTESTS_LIBDEPS = @LIBTESTS_LIBDEPS@
+LIB_CLOCK_GETTIME = @LIB_CLOCK_GETTIME@
+LOCALE_FR_UTF8 = @LOCALE_FR_UTF8@
+LOCALE_TR_UTF8 = @LOCALE_TR_UTF8@
+LOCALE_ZH_CN = @LOCALE_ZH_CN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
@@ -424,6 +459,7 @@ NEXT_STDIO_H = @NEXT_STDIO_H@
 NEXT_STDLIB_H = @NEXT_STDLIB_H@
 NEXT_STRING_H = @NEXT_STRING_H@
 NEXT_SYS_STAT_H = @NEXT_SYS_STAT_H@
+NEXT_SYS_TIME_H = @NEXT_SYS_TIME_H@
 NEXT_TIME_H = @NEXT_TIME_H@
 NEXT_UNISTD_H = @NEXT_UNISTD_H@
 NEXT_WCHAR_H = @NEXT_WCHAR_H@
@@ -453,9 +489,11 @@ REPLACE_FTELL = @REPLACE_FTELL@
 REPLACE_FTELLO = @REPLACE_FTELLO@
 REPLACE_GETCWD = @REPLACE_GETCWD@
 REPLACE_GETLINE = @REPLACE_GETLINE@
+REPLACE_GETTIMEOFDAY = @REPLACE_GETTIMEOFDAY@
 REPLACE_LCHOWN = @REPLACE_LCHOWN@
 REPLACE_LOCALTIME_R = @REPLACE_LOCALTIME_R@
 REPLACE_LSEEK = @REPLACE_LSEEK@
+REPLACE_MEMMEM = @REPLACE_MEMMEM@
 REPLACE_MKSTEMP = @REPLACE_MKSTEMP@
 REPLACE_NANOSLEEP = @REPLACE_NANOSLEEP@
 REPLACE_OPEN = @REPLACE_OPEN@
@@ -482,6 +520,7 @@ STDBOOL_H = @STDBOOL_H@
 STDINT_H = @STDINT_H@
 STRIP = @STRIP@
 SYS_STAT_H = @SYS_STAT_H@
+SYS_TIME_H = @SYS_TIME_H@
 SYS_TIME_H_DEFINES_STRUCT_TIMESPEC = @SYS_TIME_H_DEFINES_STRUCT_TIMESPEC@
 TIME_H_DEFINES_STRUCT_TIMESPEC = @TIME_H_DEFINES_STRUCT_TIMESPEC@
 U = @U@
@@ -496,6 +535,8 @@ WINT_T_SUFFIX = @WINT_T_SUFFIX@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
 XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
+YACC = @YACC@
+YFLAGS = @YFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -520,6 +561,8 @@ dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 gl_LIBOBJS = @gl_LIBOBJS@
 gl_LTLIBOBJS = @gl_LTLIBOBJS@
+gltests_LIBOBJS = @gltests_LIBOBJS@
+gltests_LTLIBOBJS = @gltests_LTLIBOBJS@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -558,11 +601,15 @@ AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = \
 
 bin_SCRIPTS = updatedb
 man_MANS = locate.1 updatedb.1 locatedb.5
+BUILT_SOURCES = dblocation.texi
 EXTRA_DIST = locatedb.h updatedb.sh $(man_MANS)
-CLEANFILES = updatedb
-LDADD = ../find/version.o ../lib/libfind.a ../gnulib/lib/libgnulib.a @INTLLIBS@
+CLEANFILES = updatedb dblocation.texi
+locate_SOURCES = locate.c word_io.c
+code_SOURCES = code.c word_io.c
+LDADD = ../lib/libfind.a ../gnulib/lib/libgnulib.a @INTLLIBS@
 SUBDIRS = . testsuite
-all: all-recursive
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .c .o .obj
@@ -575,9 +622,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnits  locate/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  locate/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnits  locate/Makefile
+	  $(AUTOMAKE) --gnu  locate/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -730,6 +777,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/code.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/frcode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/locate.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/word_io.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -1009,15 +1057,20 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-hook
 check-am: all-am
-check: check-recursive
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS)
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -1042,6 +1095,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-generic clean-libexecPROGRAMS \
@@ -1113,25 +1167,26 @@ uninstall-man: uninstall-man1 uninstall-man5
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am check check-am clean clean-binPROGRAMS \
 	clean-generic clean-libexecPROGRAMS ctags ctags-recursive \
-	distclean distclean-compile distclean-generic distclean-tags \
-	distdir dvi dvi-am html html-am info info-am install \
-	install-am install-binPROGRAMS install-binSCRIPTS install-data \
-	install-data-am install-data-hook install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libexecPROGRAMS \
-	install-man install-man1 install-man5 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installcheck-binPROGRAMS \
-	installcheck-binSCRIPTS installcheck-libexecPROGRAMS \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-binSCRIPTS uninstall-libexecPROGRAMS uninstall-man \
-	uninstall-man1 uninstall-man5
+	dist-hook distclean distclean-compile distclean-generic \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-binPROGRAMS install-binSCRIPTS \
+	install-data install-data-am install-data-hook install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am \
+	install-libexecPROGRAMS install-man install-man1 install-man5 \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am \
+	installcheck-binPROGRAMS installcheck-binSCRIPTS \
+	installcheck-libexecPROGRAMS installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-libexecPROGRAMS uninstall-man uninstall-man1 \
+	uninstall-man5
 
 
-$(PROGRAMS) $(LIBPROGRAMS): ../find/version.o ../lib/libfind.a ../gnulib/lib/libgnulib.a
+$(PROGRAMS) $(LIBPROGRAMS): ../lib/libfind.a ../gnulib/lib/libgnulib.a
 
 updatedb: updatedb.sh
 	rm -f $@
@@ -1144,6 +1199,7 @@ updatedb: updatedb.sh
 	-e "s,@""libexecdir""@,$(libexecdir)," \
 	-e "s,@""LOCATE_DB""@,$(LOCATE_DB)," \
 	-e "s,@""VERSION""@,@VERSION@," \
+	-e "s,@""PACKAGE_NAME""@,@PACKAGE_NAME@," \
 	-e "s,@""find""@,$${find}," \
 	-e "s,@""frcode""@,$${frcode}," \
 	-e "s,@""bigram""@,$${bigram}," \
@@ -1154,7 +1210,15 @@ updatedb: updatedb.sh
 	chmod +x $@
 
 install-data-hook:
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(localstatedir)
+	$(top_srcdir)/build-aux/mkinstalldirs $(DESTDIR)$(localstatedir)
+
+dblocation.texi: Makefile
+	echo '@set LOCATE_DB $(LOCATE_DB)' > $@
+
+dist-hook: findutils-check-manpages
+
+findutils-check-manpages:
+	$(top_srcdir)/build-aux/man-lint.sh $(srcdir) $(man_MANS)
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

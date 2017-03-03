@@ -1,6 +1,6 @@
 /* locate -- search databases for filenames that match patterns
    Copyright (C) 1994, 1996, 1998, 1999, 2000, 2003,
-                 2004, 2005, 2007 Free Software Foundation, Inc.
+                 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@
 
    0-28		likeliest differential counts + offset (14) to make nonnegative
    30		escape code for out-of-range count to follow in next halfword
-   128-255	bigram codes (the 128 most common, as determined by `updatedb')
-   32-127	single character (printable) ASCII remainder
+   128-255      bigram codes (the 128 most common, as determined by `updatedb')
+   32-127       single character (printable) ASCII remainder
 
    Earlier versions of GNU locate used to use a novel two-tiered
    string search technique, which was described in Usenix ;login:, Vol
@@ -59,14 +59,19 @@
 */
 
 #include <config.h>
+
 #include <stdio.h>
+#include <signal.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <grp.h>		/* for setgroups() */
 #include <sys/stat.h>
 #include <time.h>
 #include <fnmatch.h>
 #include <getopt.h>
 #include <xstrtol.h>
+
+#include <stdbool.h>		/* for bool/boolean */
 
 /* The presence of unistd.h is assumed by gnulib these days, so we 
  * might as well assume it too. 
@@ -74,26 +79,18 @@
 /* We need <unistd.h> for isatty(). */
 #include <unistd.h>
 
+#include <fcntl.h>
 
 #define NDEBUG
 #include <assert.h>
-
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
 #include <string.h>
-#else
-#include <strings.h>
-#define strchr index
-#endif
+
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
 #endif
 
-#ifdef HAVE_ERRNO_H
 #include <errno.h>
-#else
-extern int errno;
-#endif
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -106,11 +103,12 @@ extern int errno;
 # define _(Text) Text
 #define textdomain(Domain)
 #define bindtextdomain(Package, Directory)
+#define ngettext(singular,plural,n) ((1==n) ? singular : plural)
 #endif
 #ifdef gettext_noop
 # define N_(String) gettext_noop (String)
 #else
-/* We used to use (String) instead of just String, but apparentl;y ISO C
+/* We used to use (String) instead of just String, but apparently ISO C
  * doesn't allow this (at least, that's what HP said when someone reported
  * this as a compiler bug).  This is HP case number 1205608192.  See
  * also http://gcc.gnu.org/bugzilla/show_bug.cgi?id=11250 (which references 
@@ -132,9 +130,9 @@ extern int errno;
 #include "quotearg.h"
 #include "printquoted.h"
 #include "regextype.h"
-#include "gnulib-version.h"
+#include "findutils-version.h"
 
-/* Note that this evaluates C many times.  */
+/* Note that this evaluates Ch many times.  */
 #ifdef _LIBC
 # define TOUPPER(Ch) toupper (Ch)
 # define TOLOWER(Ch) tolower (Ch)
@@ -147,12 +145,11 @@ extern int errno;
 
 /* Warn if a database is older than this.  8 days allows for a weekly
    update that takes up to a day to perform.  */
-#define WARN_NUMBER_UNITS (8)
+static unsigned int warn_number_units = 8;
+
 /* Printable name of units used in WARN_SECONDS */
 static const char warn_name_units[] = N_("days");
 #define SECONDS_PER_UNIT (60 * 60 * 24)
-
-#define WARN_SECONDS ((SECONDS_PER_UNIT) * (WARN_NUMBER_UNITS))
 
 enum visit_result
   {
@@ -180,6 +177,57 @@ static int separator = '\n';
 static struct quoting_options * quote_opts = NULL;
 static bool stdout_is_a_tty;
 static bool print_quoted_filename;
+static bool results_were_filtered;
+
+static const char *selected_secure_db = NULL;
+
+
+/* Change the number of days old the database can be 
+ * before we complain about it. 
+ */
+static void
+set_max_db_age(const char *s) 
+{
+  char *end;
+  unsigned long int val;
+  /* XXX: we ignore the case where the input is negative, which is allowed(!). */
+
+  if (0 == *s)
+    {
+      error(1, 0,
+	    _("The argument for option --max-database-age must not be empty"));
+    }
+  
+  
+  /* We have to set errno here, otherwise when the function returns ULONG_MAX,
+   * we would not be able to tell if that is the correct answer, or whether it
+   * signifies an error.
+   */
+  errno = 0;
+  val = strtoul(s, &end, 10);
+  
+  /* Diagnose number too large, non-numbes and trailing junk. */
+  if ((ULONG_MAX == val && ERANGE == errno) ||
+      (0 == val && EINVAL == errno))
+    {
+      error(1, errno,
+	    _("Invalid argument %s for option --max-database-age"),
+	    quotearg_n_style(0, locale_quoting_style, s));
+    }
+  else if (*end)
+    {
+      /* errno wasn't set, don't print its message */
+      error(1, 0,
+	    _("Invalid argument %s for option --max-database-age"),
+	    quotearg_n_style(0, locale_quoting_style, s));
+    }
+  else
+    {
+      warn_number_units = val;
+    }
+}
+
+
 
 /* Read in a 16-bit int, high byte first (network byte order).  */
 
@@ -226,14 +274,15 @@ locate_read_str(char **buf, size_t *siz, FILE *fp, int delimiter, int offs)
 {
   char * p = NULL;
   size_t sz = 0;
-  int needed, nread;
+  int nread;
+  size_t needed;
 
   nread = getdelim(&p, &sz, delimiter, fp);
   if (nread >= 0)
     {
       assert(p != NULL);
       
-      needed = offs + nread + 1;
+      needed = offs + nread + 1u;
       if (needed > (*siz))
 	{
 	  char *pnew = realloc(*buf, needed);
@@ -253,17 +302,6 @@ locate_read_str(char **buf, size_t *siz, FILE *fp, int delimiter, int offs)
   return nread;
 }
 
-
-static void
-lc_strcpy(char *dest, const char *src)
-{
-  while (*src)
-    {
-      *dest++ = TOLOWER(*src);
-      ++src;
-    }
-  *dest = 0;
-}
 
 struct locate_limits
 {
@@ -285,21 +323,6 @@ struct locate_stats
 static struct locate_stats statistics;
 
 
-struct stringbuf
-{
-  char *buffer;
-  size_t buffersize;
-  size_t *preqlen;
-};
-static struct stringbuf casebuf;
-
-
-struct casefolder
-{
-  const char *pattern;
-  struct stringbuf *pbuf;
-};
-
 struct regular_expression
 {
   struct re_pattern_buffer regex; /* for --regex */
@@ -309,13 +332,16 @@ struct regular_expression
 struct process_data
 {
   int c;			/* An input byte.  */
+  char itemcount;	        /* Indicates we're at the beginning of an slocate db. */
   int count; /* The length of the prefix shared with the previous database entry.  */
   int len;
   char *original_filename;	/* The current input database entry. */
   size_t pathsize;		/* Amount allocated for it.  */
   char *munged_filename;	/* path or basename(path) */
   FILE *fp;			/* The pathname database.  */
-  char *dbfile;			/* Its name, or "<stdin>" */
+  const char *dbfile;		/* Its name, or "<stdin>" */
+  int  slocatedb_format;	/* Allows us to cope with slocate's format variant */
+  GetwordEndianState endian_state;
   /* for the old database format,
      the first and second characters of the most common bigrams.  */
   char bigram1[128];
@@ -338,49 +364,40 @@ static struct visitor *inspectors = NULL;
 static struct visitor *lastinspector = NULL;
 static struct visitor *past_pat_inspector = NULL;
 
-/* 0 or 1 pattern(s) */
-static int
-process_simple(struct process_data *procdata)
+static inline int visit(const struct visitor *p,
+			int accept_flags,
+			struct process_data *procdata,
+			const struct visitor * const stop)
 {
-  int result = VISIT_CONTINUE;
-  const struct visitor *p = inspectors;
-  
-  while ( ((VISIT_CONTINUE | VISIT_ACCEPTED) & result) && (NULL != p) )
+  register int result = accept_flags;
+  while ( (accept_flags & result) && (stop != p) )
     {
       result = (p->inspector)(procdata, p->context);
       p = p->next;
     }
+  return result;
+}
 
-    return result;
+/* 0 or 1 pattern(s) */
+static int
+process_simple(struct process_data *procdata)
+{
+  return visit(inspectors, (VISIT_CONTINUE|VISIT_ACCEPTED), procdata, NULL);
 }
 
 /* Accept if any pattern matches. */
 static int
 process_or (struct process_data *procdata)
 {
-  int result = VISIT_CONTINUE;
-  const struct visitor *p = inspectors;
+  int result;
   
-  while ( ((VISIT_CONTINUE | VISIT_REJECTED) & result) && (past_pat_inspector != p) )
-    {
-      result = (p->inspector)(procdata, p->context);
-      p = p->next;
-    }
-
+  result = visit(inspectors, (VISIT_CONTINUE|VISIT_REJECTED), procdata, past_pat_inspector);
   if (result == VISIT_CONTINUE)
     result = VISIT_REJECTED;
   if (result & (VISIT_ABORT | VISIT_REJECTED))
     return result;
 
-  p = past_pat_inspector;
-  result = VISIT_CONTINUE;
-
-  while ( (VISIT_CONTINUE == result) && (NULL != p) )
-    {
-      result = (p->inspector)(procdata, p->context);
-      p = p->next;
-    }
-  
+  result = visit(past_pat_inspector, VISIT_CONTINUE, procdata, NULL);
   if (VISIT_CONTINUE == result)
     return VISIT_ACCEPTED;
   else
@@ -391,29 +408,15 @@ process_or (struct process_data *procdata)
 static int
 process_and (struct process_data *procdata)
 {
-  int result = VISIT_CONTINUE;
-  const struct visitor *p = inspectors;
+  int result;
   
-  while ( ((VISIT_CONTINUE | VISIT_ACCEPTED) & result) && (past_pat_inspector != p) )
-    {
-      result = (p->inspector)(procdata, p->context);
-      p = p->next;
-    }
-
+  result = visit(inspectors, (VISIT_CONTINUE|VISIT_ACCEPTED), procdata, past_pat_inspector);
   if (result == VISIT_CONTINUE)
     result = VISIT_REJECTED;
   if (result & (VISIT_ABORT | VISIT_REJECTED))
     return result;
 
-  p = past_pat_inspector;
-  result = VISIT_CONTINUE;
-
-  while ( (VISIT_CONTINUE == result) && (NULL != p) )
-    {
-      result = (p->inspector)(procdata, p->context);
-      p = p->next;
-    }
-  
+  result = visit(past_pat_inspector, VISIT_CONTINUE, procdata, NULL);
   if (VISIT_CONTINUE == result)
     return VISIT_ACCEPTED;
   else
@@ -442,8 +445,6 @@ add_visitor(visitfunc fn, void *context)
       lastinspector = p;
     }
 }
-
-
 
 static int
 visit_justprint_quoted(struct process_data *procdata, void *context)
@@ -502,10 +503,26 @@ visit_old_format(struct process_data *procdata, void *context)
 
   /* Get the offset in the path where this path info starts.  */
   if (procdata->c == LOCATEDB_OLD_ESCAPE)
-    procdata->count += getw (procdata->fp) - LOCATEDB_OLD_OFFSET;
+    {
+      int minval, maxval;
+      int word;
+      
+      procdata->count -= LOCATEDB_OLD_OFFSET;
+      minval = (0       - procdata->count);
+      if (procdata->count >= 0)
+	maxval = (procdata->len - procdata->count);
+      else
+	maxval = (procdata->len - 0);
+      word = getword(procdata->fp, procdata->dbfile,
+		     minval, maxval, &procdata->endian_state);
+      procdata->count += word;
+      assert(procdata->count >= 0);
+    }
   else
-    procdata->count += procdata->c - LOCATEDB_OLD_OFFSET;
-  assert(procdata->count > 0);
+    {
+      procdata->count += (procdata->c - LOCATEDB_OLD_OFFSET);
+      assert(procdata->count >= 0);
+    }
 
   /* Overlay the old path with the remainder of the new.  Read 
    * more data until we get to the next filename.
@@ -537,12 +554,11 @@ visit_old_format(struct process_data *procdata, void *context)
    */
   extend (procdata, i, 1u);
   procdata->original_filename[i] = 0;
-
+  procdata->len = i;
   procdata->munged_filename = procdata->original_filename;
   
   return VISIT_CONTINUE;
 }
-
 
 static int
 visit_locate02_format(struct process_data *procdata, void *context)
@@ -551,12 +567,37 @@ visit_locate02_format(struct process_data *procdata, void *context)
   int nread;
   (void) context;
 
-  if (procdata->c == LOCATEDB_ESCAPE)
-    procdata->count += (short)get_short (procdata->fp);
-  else if (procdata->c > 127)
-    procdata->count += procdata->c - 256;
+  if (procdata->slocatedb_format)
+    {
+      if (procdata->itemcount == 0)
+	{
+	  ungetc(procdata->c, procdata->fp);
+	  procdata->count = 0;
+	  procdata->len = 0;
+	}
+      else if (procdata->itemcount == 1)
+	{
+	  procdata->count = procdata->len-1;
+	}
+      else
+	{
+	  if (procdata->c == LOCATEDB_ESCAPE)
+	    procdata->count += (short)get_short (procdata->fp);
+	  else if (procdata->c > 127)
+	    procdata->count += procdata->c - 256;
+	  else
+	    procdata->count += procdata->c;
+	}
+    }
   else
-    procdata->count += procdata->c;
+    {
+      if (procdata->c == LOCATEDB_ESCAPE)
+	procdata->count += (short)get_short (procdata->fp);
+      else if (procdata->c > 127)
+	procdata->count += procdata->c - 256;
+      else
+	procdata->count += procdata->c;
+    }
 
   if (procdata->count > procdata->len || procdata->count < 0)
     {
@@ -564,11 +605,13 @@ visit_locate02_format(struct process_data *procdata, void *context)
        * reading in data which is outside our control, we
        * cannot prevent it.
        */
-      error(1, 0, _("locate database `%s' is corrupt or invalid"), procdata->dbfile);
+      error(1, 0, _("locate database %s is corrupt or invalid"),
+	    quotearg_n_style(0, locale_quoting_style, procdata->dbfile));
     }
  
   /* Overlay the old path with the remainder of the new.  */
-  nread = locate_read_str (&procdata->original_filename, &procdata->pathsize,
+  nread = locate_read_str (&procdata->original_filename,
+			   &procdata->pathsize,
 			   procdata->fp, 0, procdata->count);
   if (nread < 0)
     return VISIT_ABORT;
@@ -581,6 +624,16 @@ visit_locate02_format(struct process_data *procdata, void *context)
 
   procdata->munged_filename = procdata->original_filename;
   
+  if (procdata->slocatedb_format)
+    {
+      /* Don't increment indefinitely, it might overflow. */
+      if (procdata->itemcount < 6)
+	{
+	  ++(procdata->itemcount);
+	}
+    }
+  
+
   return VISIT_CONTINUE;
 }
 
@@ -594,21 +647,6 @@ visit_basename(struct process_data *procdata, void *context)
 }
 
 
-static int
-visit_casefold(struct process_data *procdata, void *context)
-{
-  struct stringbuf *b = context;
-
-  if (*b->preqlen+1 > b->buffersize)
-    {
-      b->buffer = xrealloc(b->buffer, *b->preqlen+1); /* XXX: consider using extendbuf(). */
-      b->buffersize = *b->preqlen+1;
-    }
-  lc_strcpy(b->buffer, procdata->munged_filename);
-
-  return VISIT_CONTINUE;
-}
-  
 /* visit_existing_follow implements -L -e */
 static int
 visit_existing_follow(struct process_data *procdata, void *context)
@@ -698,10 +736,21 @@ visit_non_existing_nofollow(struct process_data *procdata, void *context)
 }
 
 static int
-visit_substring_match_nocasefold(struct process_data *procdata, void *context)
+visit_substring_match_nocasefold_wide(struct process_data *procdata, void *context)
 {
   const char *pattern = context;
 
+  if (NULL != mbsstr(procdata->munged_filename, pattern))
+    return VISIT_ACCEPTED;
+  else
+    return VISIT_REJECTED;
+}
+
+static int
+visit_substring_match_nocasefold_narrow(struct process_data *procdata, void *context)
+{
+  const char *pattern = context;
+  assert(MB_CUR_MAX == 1);
   if (NULL != strstr(procdata->munged_filename, pattern))
     return VISIT_ACCEPTED;
   else
@@ -709,13 +758,24 @@ visit_substring_match_nocasefold(struct process_data *procdata, void *context)
 }
 
 static int
-visit_substring_match_casefold(struct process_data *procdata, void *context)
+visit_substring_match_casefold_wide(struct process_data *procdata, void *context)
 {
-  const struct casefolder * p = context;
-  const struct stringbuf * b = p->pbuf;
-  (void) procdata;
+  const char *pattern = context;
 
-  if (NULL != strstr(b->buffer, p->pattern))
+  if (NULL != mbscasestr(procdata->munged_filename, pattern))
+    return VISIT_ACCEPTED;
+  else
+    return VISIT_REJECTED;
+}
+
+
+static int
+visit_substring_match_casefold_narrow(struct process_data *procdata, void *context)
+{
+  const char *pattern = context;
+
+  assert(MB_CUR_MAX == 1);
+  if (NULL != strcasestr(procdata->munged_filename, pattern))
     return VISIT_ACCEPTED;
   else
     return VISIT_REJECTED;
@@ -830,160 +890,336 @@ visit_count(struct process_data *procdata, void *context)
 static void
 print_stats(int argc, size_t database_file_size)
 {
-  char hbuf[LONGEST_HUMAN_READABLE + 1];
+  char hbuf1[LONGEST_HUMAN_READABLE + 1];
+  char hbuf2[LONGEST_HUMAN_READABLE + 1];
+  char hbuf3[LONGEST_HUMAN_READABLE + 1];
+  char hbuf4[LONGEST_HUMAN_READABLE + 1];
   
-  printf(_("Locate database size: %s bytes\n"),
+  printf(ngettext("Locate database size: %s byte\n",
+		  "Locate database size: %s bytes\n",
+		  database_file_size),
 	 human_readable ((uintmax_t) database_file_size,
-			 hbuf, human_ceiling, 1, 1));
+			 hbuf1, human_ceiling, 1, 1));
   
-  printf(_("Filenames: %s "),
-	 human_readable (statistics.total_filename_count,
-			 hbuf, human_ceiling, 1, 1));
-  printf(_("with a cumulative length of %s bytes"),
-	 human_readable (statistics.total_filename_length,
-			 hbuf, human_ceiling, 1, 1));
-  
-  printf(_("\n\tof which %s contain whitespace, "),
-	 human_readable (statistics.whitespace_count,
-			 hbuf, human_ceiling, 1, 1));
-  printf(_("\n\t%s contain newline characters, "),
-	 human_readable (statistics.newline_count,
-			 hbuf, human_ceiling, 1, 1));
-  printf(_("\n\tand %s contain characters with the high bit set.\n"),
-	 human_readable (statistics.highbit_filename_count,
-			 hbuf, human_ceiling, 1, 1));
+  printf( (results_were_filtered ? 
+	   _("Matching Filenames: %s\n") :
+	   _("All Filenames: %s\n")),
+	  human_readable (statistics.total_filename_count,
+			 hbuf1, human_ceiling, 1, 1));
+  /* XXX: We would ideally use ngettext() here, but I don't know 
+   *      how to use it to handle more than one possibly-plural thing/
+   */
+  printf(_("File names have a cumulative length of %s bytes.\n"
+	   "Of those file names,\n"
+	   "\n\t%s contain whitespace, "
+	   "\n\t%s contain newline characters, "
+	   "\n\tand %s contain characters with the high bit set.\n"),
+	 human_readable (statistics.total_filename_length,  hbuf1, human_ceiling, 1, 1),
+	 human_readable (statistics.whitespace_count,       hbuf2, human_ceiling, 1, 1),
+	 human_readable (statistics.newline_count,          hbuf3, human_ceiling, 1, 1),
+	 human_readable (statistics.highbit_filename_count, hbuf4, human_ceiling, 1, 1));
   
   if (!argc)
-    printf(_("Compression ratio %4.2f%%\n"),
-	   100.0 * ((double)statistics.total_filename_length
-		    - (double) database_file_size)
-	   / (double) statistics.total_filename_length);
+    {
+      if (results_were_filtered)
+	{
+	  printf(_("Some filenames may have been filtered out, "
+		   "so we cannot compute the compression ratio.\n"));
+	}
+      else
+	{
+	  if (statistics.total_filename_length)
+	    {
+	      /* A negative compression ratio just means that the
+	       * compressed database is larger than the list of
+	       * filenames.  This can happen for example for
+	       * old-format databases containing a small list of short
+	       * filenames, because the bigram list is 256 bytes.
+	       */
+	      printf(_("Compression ratio %4.2f%% (higher is better)\n"),
+		     100.0 * ((double)statistics.total_filename_length
+			      - (double) database_file_size)
+		     / (double) statistics.total_filename_length);
+	    }
+	  else
+	    {
+	      printf(_("Compression ratio is undefined\n"));
+	    }
+	}
+    }
   printf("\n");
 }
+
+/*
+ * Return nonzero if the data we read in indicates that we are 
+ * looking at a LOCATE02 locate database. 
+ */
+static int 
+looking_at_gnu_locatedb (const char *data, size_t len)
+{
+  if (len < sizeof (LOCATEDB_MAGIC))
+    return 0;
+  else if (0 == memcmp (data, LOCATEDB_MAGIC, sizeof (LOCATEDB_MAGIC)))
+    return 1;			/* We saw the magic byte sequence */
+  else
+    return 0;
+}
+
+/*
+ * Return nonzero if the data we read in indicates that we are 
+ * looking at an slocate database. 
+ */
+static int 
+looking_at_slocate_locatedb (const char *filename,
+			     const char *data,
+			     size_t len,
+			     int *seclevel)
+{
+  assert(len <= 2);
+  
+  if (len < 2)
+    {
+      return 0;
+    }
+  else 
+    {
+      /* Check that the magic number is a one-byte string */
+      if (0 == data[1])
+	{
+	  if (isdigit((unsigned char)data[0]))
+	    {
+	      /* looks promising. */
+	      *seclevel = (data[0] - '0');
+	      
+	      if (*seclevel > 1)
+		{
+		  /* Hmm, well it's probably an slocate database 
+		   * of some awsomely huge security level, like 2.
+		   * We don't know how to handle those.
+		   */
+		  error(0, 0,
+			_("locate database %s looks like an slocate "
+			  "database but it seems to have security level %c, "
+			  "which GNU findutils does not currently support"),
+			quotearg_n_style(0, locale_quoting_style, filename),
+			data[1]);
+		  return 1;
+		}
+	      else
+		{
+		  return 1;
+		}
+	    }
+	  else
+	    {
+	      /* Not a digit. */
+	      return 0;
+	    }
+	}
+      else
+	{
+	  /* Definitely not slocate. */
+	  return 0;
+	}
+    }
+}
+
+
+static int 
+i_am_little_endian(void)
+{
+  union 
+  {
+    unsigned char uch[4];
+    unsigned int ui;
+  } u;
+  u.ui = 0u;
+  u.uch[0] = 1;
+  u.uch[1] = u.uch[2] = u.uch[3] = 0;
+  return u.ui == 1;
+}
+
+
 
 
 /* Print or count the entries in DBFILE that match shell globbing patterns in 
    ARGV. Return the number of entries matched. */
 
 static unsigned long
-locate (int argc,
-	char **argv,
-	char *dbfile,
-	int ignore_case,
-	int enable_print,
-	int basename_only,
-	int use_limit,
-	struct locate_limits *plimit,
-	int stats,
-	int op_and,
-	int regex,
-	int regex_options)
+search_one_database (int argc,
+		     char **argv,
+		     const char *dbfile,
+		     FILE *fp,
+		     off_t filesize,
+		     int ignore_case,
+		     int enable_print,
+		     int basename_only,
+		     int use_limit,
+		     struct locate_limits *plimit,
+		     int stats,
+		     int op_and,
+		     int regex,
+		     int regex_options)
 {
   char *pathpart;		/* A pattern to consider. */
   int argn;			/* Index to current pattern in argv. */
-  int need_fold;	/* Set when folding and any pattern is non-glob. */
   int nread;		     /* number of bytes read from an entry. */
   struct process_data procdata;	/* Storage for data shared with visitors. */
-  
-  int old_format = 0; /* true if reading a bigram-encoded database.  */
-  static bool did_stdin = false; /* Set to prevent rereading stdin. */
+  int slocate_seclevel;
+  int oldformat;
   struct visitor* pvis; /* temp for determining past_pat_inspector. */
+  const char *format_name;
+  enum ExistenceCheckType do_check_existence;
+
+
+  /* We may turn on existence checking for a given database. 
+   * We ensure that we can return to the previous behaviour 
+   * by using two variables, do_check_existence (which we act on) 
+   * and check_existence (whcih indicates the default before we 
+   * adjust it on the bassis of what kind of database we;re using 
+   */
+  do_check_existence = check_existence;
+   
   
-  /* To check the age of the database.  */
-  struct stat st;
-  time_t now;
-
-
   if (ignore_case)
     regex_options |= RE_ICASE;
-  
+
+  oldformat = 0;
+  procdata.endian_state = GetwordEndianStateInitial;
   procdata.len = procdata.count = 0;
-  if (!strcmp (dbfile, "-"))
-    {
-      if (did_stdin)
-	{
-	  error (0, 0, _("warning: the locate database can only be read from stdin once."));
-	  return 0;
-	}
-      
-	    
-      procdata.dbfile = "<stdin>";
-      procdata.fp = stdin;
-      did_stdin = true;
-    }
-  else
-    {
-      if (stat (dbfile, &st) || (procdata.fp = fopen (dbfile, "r")) == NULL)
-	{
-	  error (0, errno, "%s", dbfile);
-	  return 0;
-	}
-      time(&now);
-      if (now - st.st_mtime > WARN_SECONDS)
-	{
-	  /* For example:
-	     warning: database `fred' is more than 8 days old */
-	  error (0, 0, _("warning: database `%s' is more than %d %s old"),
-		 dbfile, WARN_NUMBER_UNITS, _(warn_name_units));
-	}
-      procdata.dbfile = dbfile;
-    }
+  procdata.slocatedb_format = 0;
+  procdata.itemcount = 0;
 
-  procdata.pathsize = 1026;	/* Increased as necessary by locate_read_str.  */
-  procdata.original_filename = xmalloc (procdata.pathsize);
-
-  nread = fread (procdata.original_filename, 1, sizeof (LOCATEDB_MAGIC),
-		 procdata.fp);
-  if (nread != sizeof (LOCATEDB_MAGIC)
-      || memcmp (procdata.original_filename, LOCATEDB_MAGIC,
-		 sizeof (LOCATEDB_MAGIC)))
-    {
-      int i;
-      /* Read the list of the most common bigrams in the database.  */
-      nread = fread (procdata.original_filename + sizeof (LOCATEDB_MAGIC), 1,
-	  256 - sizeof (LOCATEDB_MAGIC), procdata.fp);
-      for (i = 0; i < 128; i++)
-	{
-	  procdata.bigram1[i] = procdata.original_filename[i << 1];
-	  procdata.bigram2[i] = procdata.original_filename[(i << 1) + 1];
-	}
-      old_format = 1;
-    }
-
+  procdata.dbfile = dbfile;
+  procdata.fp = fp;
+    
   /* Set up the inspection regime */
   inspectors = NULL;
   lastinspector = NULL;
   past_pat_inspector = NULL;
+  results_were_filtered = false;
+#if 0  
+  procdata.pathsize = 1026;	/* Increased as necessary by locate_read_str.  */
+#else
+  procdata.pathsize = 128;	/* Increased as necessary by locate_read_str.  */
+#endif
+  procdata.original_filename = xmalloc (procdata.pathsize);
 
-  if (old_format)
-    add_visitor(visit_old_format, NULL);
-  else
-    add_visitor(visit_locate02_format, NULL);
+
+  nread = fread (procdata.original_filename, 1, SLOCATE_DB_MAGIC_LEN,
+		 procdata.fp);
+  slocate_seclevel = 0;
+  if (looking_at_slocate_locatedb(procdata.dbfile,
+				  procdata.original_filename,
+				  nread,
+				  &slocate_seclevel))
+    {
+      error(0, 0,
+	    _("%s is an slocate database.  "
+	      "Support for these is new, expect problems for now."),
+	    quotearg_n_style(0, locale_quoting_style, procdata.dbfile));
+      
+      /* slocate also uses frcode, but with a different header. 
+       * We handle the header here and then work with the data 
+       * in the normal way.
+       */
+      if (slocate_seclevel > 1)
+	{
+	  /* We don't know what those security levels mean, 
+	   * so do nothing further 
+	   */
+	  error(0, 0,
+		_("%s is an slocate database of unsupported security level %d; skipping it."),
+		quotearg_n_style(0, locale_quoting_style, procdata.dbfile),
+		slocate_seclevel);
+	  return 0;
+	}
+      else if (slocate_seclevel > 0)
+	{
+	  /* Don't show the filenames to the user if they don't exist.
+	   * Showing stats is safe since filenames are only counted
+	   * after the existence check 
+	   */
+	  if (ACCEPT_NON_EXISTING == check_existence)
+	    {
+	      /* Do not allow the user to see a list of filenames that they 
+	       * cannot stat().
+	       */
+	      error(0, 0, 
+		    _("You specified the -E option, but that option "
+		      "cannot be used with slocate-format databases "
+		      "with a non-zero security level.  No results will be "
+		      "generated for this database.\n"));
+	      return 0;
+	    }
+	  if (ACCEPT_EXISTING != do_check_existence) 
+	    {
+	      if (enable_print || stats)
+		{
+		  error(0, 0,
+			_("%s is an slocate database.  "
+			  "Turning on the '-e' option."),
+			quotearg_n_style(0, locale_quoting_style, procdata.dbfile));
+		}
+	      do_check_existence = ACCEPT_EXISTING;
+	    }
+	}
+      add_visitor(visit_locate02_format, NULL);
+      format_name = "slocate";
+      procdata.slocatedb_format = 1;
+    }
+  else 
+    {
+      int nread2;
+      
+      procdata.slocatedb_format = 0;
+      extend (&procdata, sizeof(LOCATEDB_MAGIC), 0u);
+      nread2 = fread (procdata.original_filename+nread, 1, sizeof (LOCATEDB_MAGIC)-nread,
+		      procdata.fp);
+      if (looking_at_gnu_locatedb(procdata.original_filename, nread+nread2))
+	{
+	  add_visitor(visit_locate02_format, NULL);
+	  format_name = "GNU LOCATE02";
+	}
+      else				/* Use the old format */
+	{
+	  int i;
+
+	  nread += nread2;
+	  extend (&procdata, 256u, 0u);
+	  /* Read the list of the most common bigrams in the database.  */
+	  if (nread < 256)
+	    {
+	      int more_read = fread (procdata.original_filename + nread, 1,
+				     256 - nread, procdata.fp);
+	      if ( (more_read + nread) != 256 )
+		{
+		  error(1, 0,
+			_("Old-format locate database %s is "
+			  "too short to be valid"),
+			quotearg_n_style(0, locale_quoting_style, dbfile));
+		  
+		}
+	    }
+	  
+	  for (i = 0; i < 128; i++)
+	    {
+	      procdata.bigram1[i] = procdata.original_filename[i << 1];
+	      procdata.bigram2[i] = procdata.original_filename[(i << 1) + 1];
+	    }
+	  format_name = "old";
+	  oldformat = 1;
+	  add_visitor(visit_old_format, NULL);
+	}
+    }
 
   if (basename_only)
     add_visitor(visit_basename, NULL);
   
-  /* See if we need fold. */
-  if (ignore_case && !regex)
-    for ( argn = 0; argn < argc; argn++ )
-      {
-        pathpart = argv[argn];
-        if (!contains_metacharacter(pathpart))
-	  {
-	    need_fold = 1;
-	    break;
-	  }
-      }
-
-  if (need_fold)
-    {
-      add_visitor(visit_casefold, &casebuf);
-      casebuf.preqlen = &procdata.pathsize;
-    }
-  
   /* Add an inspector for each pattern we're looking for. */
   for ( argn = 0; argn < argc; argn++ )
     {
+      results_were_filtered = true;
       pathpart = argv[argn];
       if (regex)
 	{
@@ -994,7 +1230,7 @@ locate (int argc,
 	  
 	  re_set_syntax(regex_options);
 	  p->regex.allocated = 100;
-	  p->regex.buffer = (unsigned char *) xmalloc (p->regex.allocated);
+	  p->regex.buffer = xmalloc (p->regex.allocated);
 	  p->regex.fastmap = NULL;
 	  p->regex.syntax = regex_options;
 	  p->regex.translate = NULL;
@@ -1025,21 +1261,26 @@ locate (int argc,
 	   * traditional behaviour.
 	   * James Youngman <jay@gnu.org> 
 	   */
-	  if (ignore_case)
+	  visitfunc matcher;
+	  if (1 == MB_CUR_MAX)
 	    {
-	      struct casefolder * cf = xmalloc(sizeof(*cf));
-	      cf->pattern = pathpart;
-	      cf->pbuf = &casebuf;
-	      add_visitor(visit_substring_match_casefold, cf);
-	      /* If we ignore case, convert it to lower now so we don't have to
-	       * do it every time
+	      /* As an optimisation, use a strstr() matcher if we are
+	       * in a unibyte locale.  This can give a x2 speedup in
+	       * the C locale.  Some light testing reveals that
+	       * glibc's strstr() is somewhere around 40% faster than
+	       * gnulib's, so we just use strstr().
 	       */
-	      lc_strcpy(pathpart, pathpart);
+	      matcher = ignore_case ?
+		visit_substring_match_casefold_narrow  :
+		visit_substring_match_nocasefold_narrow;
 	    }
 	  else
 	    {
-	      add_visitor(visit_substring_match_nocasefold, pathpart);
+	      matcher = ignore_case ?
+		visit_substring_match_casefold_wide  :
+		visit_substring_match_nocasefold_wide;
 	    }
+	  add_visitor(matcher, pathpart);
 	}
     }
 
@@ -1048,9 +1289,10 @@ locate (int argc,
   /* We add visit_existing_*() as late as possible to reduce the
    * number of stat() calls.
    */
-  switch (check_existence)
+  switch (do_check_existence)
     {
       case ACCEPT_EXISTING:
+	results_were_filtered = true;
 	if (follow_symlinks)	/* -L, default */
 	  add_visitor(visit_existing_follow, NULL);
 	else			/* -P */
@@ -1058,6 +1300,7 @@ locate (int argc,
 	break;
 	  
       case ACCEPT_NON_EXISTING:
+	results_were_filtered = true;
 	if (follow_symlinks)	/* -L, default */
 	  add_visitor(visit_non_existing_follow, NULL);
 	else			/* -P */
@@ -1068,7 +1311,11 @@ locate (int argc,
 	/* do nothing; no extra processing. */
 	break;
     }
-      
+
+  /* Security issue: The stats visitor must be added immediately
+   * before the print visitor, because otherwise the -S option would
+   * leak information about files that the caller cannot see.
+   */
   if (stats)
     add_visitor(visit_stats, &statistics);
 
@@ -1100,9 +1347,9 @@ locate (int argc,
 
   if (stats)
     {
-	printf(_("Database %s is in the %s format.\n"),
-	       procdata.dbfile,
-	       old_format ? _("old") : "LOCATE02");
+      printf(_("Database %s is in the %s format.\n"),
+	     procdata.dbfile,
+	     format_name);
     }
 
 
@@ -1118,20 +1365,38 @@ locate (int argc,
   
   if (stats)
     {
-      print_stats(argc, st.st_size);
+      if (oldformat)
+	{
+	  int host_little_endian = i_am_little_endian();
+	  const char *little = _("The database has little-endian "
+				 "machine-word encoding.\n");
+	  const char *big    = _("The database has big-endian "
+				 "machine-word encoding.\n");
+	  
+	  if (GetwordEndianStateNative == procdata.endian_state)
+	    {
+	      printf("%s", (host_little_endian ? little : big));
+	    }
+	  else if (GetwordEndianStateSwab == procdata.endian_state)
+	    {
+	      printf("%s", (host_little_endian ? big : little));
+	    }
+	  else
+	    {
+	      printf(_("The database machine-word encoding order "
+		       "is not obvious.\n"));
+	    }
+	}
+      if (filesize)
+	print_stats(argc, filesize);
     }
   
   if (ferror (procdata.fp))
     {
-      error (0, errno, "%s", procdata.dbfile);
+      error (0, errno, "%s",
+	     quotearg_n_style(0, locale_quoting_style, procdata.dbfile));
       return 0;
     }
-  if (procdata.fp != stdin && fclose (procdata.fp) == EOF)
-    {
-      error (0, errno, "%s", dbfile);
-      return 0;
-    }
-
   return plimit->items_accepted;
 }
 
@@ -1152,14 +1417,15 @@ Usage: %s [-d path | --database=path] [-e | -E | --[non-]existing]\n\
       [--limit=N | -l N] [-S | --statistics] [-0 | --null] [-c | --count]\n\
       [-P | -H | --nofollow] [-L | --follow] [-m | --mmap ] [ -s | --stdio ]\n\
       [-A | --all] [-p | --print] [-r | --regex ] [--regextype=TYPE]\n\
-      [--version] [--help]\n\
+      [--max-database-age D] [--version] [--help]\n\
       pattern...\n"),
 	   program_name);
   fputs (_("\nReport bugs to <bug-findutils@gnu.org>.\n"), stream);
 }
 enum
   {
-    REGEXTYPE_OPTION = CHAR_MAX + 1
+    REGEXTYPE_OPTION = CHAR_MAX + 1,
+    MAX_DB_AGE
   };
 
 
@@ -1186,11 +1452,121 @@ static struct option const longopts[] =
   {"statistics",  no_argument, NULL, 'S'},
   {"follow",      no_argument, NULL, 'L'},
   {"nofollow",    no_argument, NULL, 'P'},
+  {"max-database-age",    required_argument, NULL, MAX_DB_AGE},
   {NULL, no_argument, NULL, 0}
 };
 
+
+static int 
+drop_privs(void)
+{
+  const char * what = "failed";
+  const uid_t orig_euid = geteuid();
+  const uid_t uid       = getuid();
+  const gid_t gid       = getgid();
+
+#if HAVE_SETGROUPS  
+  /* Use of setgroups() is restricted to root only. */
+  if (0 == orig_euid)
+    {
+      /* We're either root or running setuid-root. */
+      gid_t groups[1];
+      groups[0] = gid;
+      if (0 != setgroups(1u, groups)) 
+	{
+	  what = _("failed to drop group privileges");
+	  goto fail;
+	}
+    }
+#endif
+
+  /* Drop any setuid privileges */
+  if (uid != orig_euid)
+    {
+      if (0 == uid)
+	{
+	  /* We're really root anyway, but are setuid to something else. Leave it. */
+	}
+      else
+	{
+	  errno = 0;
+	  if (0 != setuid(getuid()))
+	    {
+	      what = _("failed to drop setuid privileges");
+	      goto fail;
+	    }
+	  
+	  /* Defend against the case where the attacker runs us with the
+	   * capability to call setuid() turned off, which on some systems
+	   * will cause the above attempt to drop privileges fail (leaving us
+	   * privileged).
+	   */
+	  else
+	    {
+	      /* Check that we can no longer switch bask to root */
+	      if (0 == setuid(0))
+		{
+		  what = _("Failed to fully drop privileges");
+		  /* The errno value here is not interesting (since
+		   * the system call we are complaining about
+		   * succeeded when we wanted it to fail).  Arrange
+		   * for the call to error() not to print the errno
+		   * value by setting errno=0.
+		   */
+		  errno = 0;
+		  goto fail;
+		}
+	    }
+	}
+    }
+  
+  /* Drop any setgid privileges */
+  errno = 0;
+  if (0 != setgid(gid))
+    {
+      what = _("failed to drop setgid privileges");
+      goto fail;
+    }
+
+  /* success. */
+  return 0;
+  
+ fail:
+  error(1, errno, "%s",
+	quotearg_n_style(0, locale_quoting_style, what));
+  abort();
+  kill(0, SIGKILL);
+  _exit(1);
+  /*NOTREACHED*/
+  /* ... we hope. */
+  for (;;)
+    {
+      /* deliberate infinite loop */
+    }
+}
+
+static int
+opendb(const char *name)
+{
+  int fd = open(name, O_RDONLY
+#if defined O_LARGEFILE
+		|O_LARGEFILE
+#endif
+		);
+  if (fd >= 0) 
+    {
+      /* Make sure it won't survive an exec */
+      if (0 != fcntl(fd, F_SETFD, FD_CLOEXEC)) 
+	{
+	  close(fd);
+	  fd = -1;
+	}
+    }
+  return fd;
+}
+
 int
-main (int argc, char **argv)
+dolocate (int argc, char **argv, int secure_db_fd)
 {
   char *dbpath;
   unsigned long int found = 0uL;
@@ -1203,7 +1579,10 @@ main (int argc, char **argv)
   int regex_options = RE_SYNTAX_EMACS;
   int stats = 0;
   int op_and = 0;
-  char *e;
+  const char *e;
+  FILE *fp;
+  int they_chose_db = 0;
+  bool did_stdin = false;	/* Set to prevent rereading stdin. */
   
   program_name = argv[0];
 
@@ -1220,9 +1599,15 @@ main (int argc, char **argv)
   quote_opts = clone_quoting_options (NULL);
   print_quoted_filename = true;
   
+  /* We cannot simultaneously trust $LOCATE_PATH and use the
+   * setuid-access-controlled database,, since that could cause a leak
+   * of private data.
+   */
   dbpath = getenv ("LOCATE_PATH");
-  if (dbpath == NULL)
-    dbpath = LOCATE_DB;
+  if (dbpath)
+    {
+      they_chose_db = 1;
+    }
 
   check_existence = ACCEPT_EITHER;
 
@@ -1255,6 +1640,7 @@ main (int argc, char **argv)
 
 	case 'd':
 	  dbpath = optarg;
+	  they_chose_db = 1;
 	  break;
 
 	case 'e':
@@ -1273,13 +1659,17 @@ main (int argc, char **argv)
 	  usage (stdout);
 	  return 0;
 
+	case MAX_DB_AGE:
+	  /* XXX: nothing in the test suite for this option. */
+	  set_max_db_age (optarg);
+	  break;
+
 	case 'p':
 	  print = 1;
 	  break;
 
 	case 'v':
-	  printf (_("GNU locate version %s\n"), version_string);
-	  printf (_("Built using GNU gnulib version %s\n"), gnulib_version);
+	  display_findutils_version ("locate");
 	  return 0;
 
 	case 'w':
@@ -1336,6 +1726,19 @@ main (int argc, char **argv)
 	}
     }
 
+
+  /* If the user gave the -d option or set LOCATE_PATH,
+   * relinquish access to the secure database.
+   */
+  if (they_chose_db)
+    {
+      if (secure_db_fd >= 0)
+	{
+	  close(secure_db_fd);
+	  secure_db_fd = -1;
+	}
+    }
+
   if (!just_count && !stats)
     print = 1;
 
@@ -1359,12 +1762,16 @@ main (int argc, char **argv)
   else
     stdout_is_a_tty = false;
 
-  next_element (dbpath, 0);	/* Initialize.  */
+  if (they_chose_db)
+    next_element (dbpath, 0);	/* Initialize.  */
 
   /* Bail out early if limit already reached. */
-  while ((e = next_element ((char *) NULL, 0)) != NULL  &&
-	 (!use_limit || limits.limit > limits.items_accepted))
+  while (!use_limit || limits.limit > limits.items_accepted)
     {
+      struct stat st;
+      int fd;
+      off_t filesize;
+      
       statistics.compressed_bytes = 
       statistics.total_filename_count = 
       statistics.total_filename_length = 
@@ -1372,16 +1779,121 @@ main (int argc, char **argv)
       statistics.newline_count = 
       statistics.highbit_filename_count = 0u;
 
-      if (0 == strlen(e) || 0 == strcmp(e, "."))
+      if (they_chose_db)
 	{
-	  /* Use the default database name instead (note: we
-	   * don't use 'dbpath' since that might itself contain a 
-	   * colon-separated list.
-	   */
-	  e = LOCATE_DB;
-	}
+	  /* Take the next element from the list of databases */
+	  e = next_element ((char *) NULL, 0);
+	  if (NULL == e)
+	    break;
 	  
-      found = locate (argc - optind, &argv[optind], e, ignore_case, print, basename_only, use_limit, &limits, stats, op_and, regex, regex_options);
+	  if (0 == strcmp (e, "-"))
+	    {
+	      if (did_stdin)
+		{
+		  error (0, 0,
+			 _("warning: the locate database can only be read from stdin once."));
+		  return 0;
+		}
+	      else
+		{
+		  e = "<stdin>";
+		  fd = 0;
+		  did_stdin = true;
+		}
+	    }
+	  else
+	    {
+	      if (0 == strlen(e) || 0 == strcmp(e, "."))
+		{
+		  e = LOCATE_DB;
+		}
+	  
+	      /* open the database */
+	      fd = opendb(e);
+	      if (fd < 0)
+		{
+		  error (0, errno, "%s",
+			 quotearg_n_style(0, locale_quoting_style, e));
+		  return 0;
+		}
+	    }
+	}
+      else
+	{
+	  if (-1 == secure_db_fd)
+	    {
+	      /* Already searched the database, it's time to exit the loop */
+	      break;
+	    }
+	  else
+	    {
+	      e = selected_secure_db;
+	      fd = secure_db_fd;
+	      secure_db_fd = -1;
+	    }
+	}
+      
+      /* Check the database to see if it is old. */
+      if (fstat(fd, &st))
+	{
+	  error (0, errno, "%s",
+		 quotearg_n_style(0, locale_quoting_style, e));
+	  /* continue anyway */
+	  filesize = (off_t)0;
+	}
+      else
+	{
+	  time_t now;
+	  
+	  filesize = st.st_size;
+	  
+	  if ((time_t)-1 == time(&now))
+	    {
+	      /* If we can't tell the time, we don't know how old the
+	       * database is.  But since the message is just advisory,
+	       * we continue anyway.
+	       */
+	      error (0, errno, _("time system call failed"));
+	    }
+	  else
+	    {
+	      double age          = difftime(now, st.st_mtime);
+	      double warn_seconds = SECONDS_PER_UNIT * warn_number_units;
+	      if (age > warn_seconds)
+		{
+		  /* For example:
+		     warning: database `fred' is more than 8 days old (actual age is 10 days)*/
+		  error (0, 0,
+			 _("warning: database %s is more than %d %s old (actual age is %.1f %s)"),
+			 quotearg_n_style(0,  locale_quoting_style, e), 
+			 warn_number_units,              _(warn_name_units),
+			 (age/(double)SECONDS_PER_UNIT), _(warn_name_units));
+		}
+	    }
+	}
+
+      fp = fdopen(fd, "r");
+      if (NULL == fp)
+	{
+	  error (0, errno, "%s",
+		 quotearg_n_style(0, locale_quoting_style, e));
+	  return 0;
+	}
+
+      /* Search this database for all patterns simultaneously */
+      found = search_one_database (argc - optind, &argv[optind],
+				   e, fp, filesize,
+				   ignore_case, print, basename_only,
+				   use_limit, &limits, stats,
+				   op_and, regex, regex_options);
+
+      /* Close the databsase (even if it is stdin) */
+      if (fclose (fp) == EOF)
+	{
+	  error (0, errno, "%s",
+		 quotearg_n_style(0, locale_quoting_style, e));
+	  return 0;
+	}
     }
   
   if (just_count)
@@ -1393,4 +1905,37 @@ main (int argc, char **argv)
     return 0;
   else
     return 1;
+}
+
+#define ARRAYSIZE(a) (sizeof(a)/sizeof(a[0]))
+static int 
+open_secure_db(void)
+{
+  int fd, i;
+  
+  const char * secure_db_list[] = 
+    {
+      LOCATE_DB,
+      "/var/lib/slocate/slocate.db",
+      NULL
+    };
+  for (i=0; secure_db_list[i]; ++i)
+    {
+      fd = opendb(secure_db_list[i]);
+      if (fd >= 0)
+	{
+	  selected_secure_db = secure_db_list[i];
+	  return fd;
+	}
+    }
+  return -1;
+}
+
+int
+main (int argc, char **argv)
+{
+  int dbfd = open_secure_db();
+  drop_privs();
+  
+  return dolocate(argc, argv, dbfd);
 }

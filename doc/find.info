@@ -1,5 +1,7 @@
-This is ../../findutils/doc/find.info, produced by makeinfo version
-4.11 from ../../findutils/doc/find.texi.
+This is
+/home/james/source/GNU/findutils/cvs/4.4/findutils/doc/find.info,
+produced by makeinfo version 4.11 from
+/home/james/source/GNU/findutils/cvs/4.4/findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
 START-INFO-DIR-ENTRY
@@ -49,7 +51,7 @@ Free Documentation License."
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.2.33, for `find' version 4.2.33.
+   This is edition 4.4.0, for `find' version 4.4.0.
 
 * Menu:
 
@@ -58,6 +60,7 @@ certain criteria and performing various actions on them.
 * Actions::                     Doing things to files you have found.
 * Databases::                   Maintaining file name databases.
 * File Permissions::            How to control access to files.
+* Date input formats::          Specifying literal times.
 * Reference::                   Summary of how to invoke the programs.
 * Common Tasks::                Solutions to common real-world problems.
 * Worked Examples::             Examples demonstrating more complex points.
@@ -118,6 +121,17 @@ you much more effectively if you include the following things:
 
    * The output you expected to get
 
+   It may also be the case that the bug you are describing has already
+been fixed, if it is a bug.  Please check the most recent findutils
+releases at `ftp://ftp.gnu.org/gnu/findutils' and, if possible, the
+development branch at `ftp://alpha.gnu.org/gnu/findutils'.  If you take
+the time to check that your bug still exists in current releases, this
+will greatly help people who want to help you solve your problem.
+Please also be aware that if you obtained findutils as part of the
+GNU/Linux 'distribution', the distributions often lag seriously behind
+findutils releases, even the stable release.  Please check the GNU FTP
+site.
+
 * Menu:
 
 * Scope::
@@ -163,7 +177,7 @@ trees that:
 
    * are owned by a certain user or group;
 
-   * have certain access permissions;
+   * have certain access permissions or special mode bits;
 
    * contain text that matches a certain pattern;
 
@@ -271,6 +285,9 @@ files for which the entire expression is true (*note Print File Name::).
    Options take effect immediately, rather than being evaluated for each
 file when their place in the expression is reached.  Therefore, for
 clarity, it is best to place them at the beginning of the expression.
+There are two exceptions to this; `-daystart' and `-follow' have
+different effects depending on where in the command line they appear.
+This can be confusing, so it's best to keep them at the beginning, too.
 
    Many of the primaries take arguments, which immediately follow them
 in the next command line argument to `find'.  Some arguments are file
@@ -304,7 +321,7 @@ information about the matching files.
 * Size::
 * Type::
 * Owner::
-* Permissions::
+* Mode Bits::
 * Contents::
 * Directories::
 * Filesystems::
@@ -370,23 +387,48 @@ File: find.info,  Node: Full Name Patterns,  Next: Fast Full Name Search,  Prev:
 2.1.2 Full Name Patterns
 ------------------------
 
+ -- Test: -path pattern
  -- Test: -wholename pattern
- -- Test: -iwholename pattern
      True if the entire file name, starting with the command line
      argument under which the file was found, matches shell pattern
-     PATTERN.  For `-iwholename', the match is case-insensitive.  To
-     ignore a whole directory tree, use `-prune' rather than checking
-     every file in the tree (*note Directories::).  The "entire file
-     name" as used by `find' starts with the starting-point specified
-     on the command line, and is not converted to an absolute pathname,
-     so for example `cd /; find tmp -wholename /tmp' will never match
-     anything.
+     PATTERN.  To ignore a whole directory tree, use `-prune' rather
+     than checking every file in the tree (*note Directories::).  The
+     "entire file name" as used by `find' starts with the starting-point
+     specified on the command line, and is not converted to an absolute
+     pathname, so for example `cd /; find tmp -wholename /tmp' will
+     never match anything.   The name `-wholename' is GNU-specific, but
+     `-path' is more portable; it is supported by HP-UX `find' and will
+     soon be part of POSIX.
 
- -- Test: -path pattern
  -- Test: -ipath pattern
-     These tests are deprecated, but work as for `-wholename' and
-     `-iwholename', respectively.  The `-ipath' test is a GNU
-     extension, but `-path' is also provided by HP-UX `find'.
+ -- Test: -iwholename pattern
+     These tests are like `-wholename' and `-path', but the match is
+     case-insensitive.
+
+   In the context of the tests `-path', `-wholename', `-ipath' and
+`-wholename', a "full path" is the name of all the directories
+traversed from `find''s start point to the file being tested, followed
+by the base name of the file itself.  These paths are often not
+absolute paths; for example
+
+     $ cd /tmp
+     $ mkdir -p foo/bar/baz
+     $ find foo -path foo/bar -print
+     foo/bar
+     $ find foo -path /tmp/foo/bar -print
+     $ find /tmp/foo -path /tmp/foo/bar -print
+     /tmp/foo/bar
+
+   Notice that the second `find' command prints nothing, even though
+`/tmp/foo/bar' exists and was examined by `find'.
+
+   Unlike file name expansion on the command line, a `*' in the pattern
+will match both `/' and leading dots in file names:
+
+     $ find .  -path '*f'
+     ./quux/bar/baz/f
+     $ find .  -path '*/*config'
+     ./quux/bar/baz/.config
 
  -- Test: -regex expr
  -- Test: -iregex expr
@@ -475,7 +517,8 @@ which the databases are updated, and the directories for which they
 contain entries.
 
    Here is how to select which file name databases `locate' searches.
-The default is system-dependent.
+The default is system-dependent.  At the time this document was
+generated, the default was `/usr/local/var/locatedb'.
 
 `--database=PATH'
 `-d PATH'
@@ -484,6 +527,17 @@ The default is system-dependent.
      database file names.  You can also use the environment variable
      `LOCATE_PATH' to set the list of database files to search.  The
      option overrides the environment variable if both are used.
+
+   GNU `locate' can read file name databases generated by the `slocate'
+package.  However, these generally contain a list of all the files on
+the system, and so when using this database, `locate' will produce
+output only for files which are accessible to you.  *Note Invoking
+locate::, for a description of the `--existing' option which is used to
+do this.
+
+   The `updatedb' program can also generate database in a format
+compatible with `slocate'.  *Note Invoking updatedb::, for a
+description of its `--dbformat' and `--output' options.
 
 
 File: find.info,  Node: Shell Pattern Matching,  Prev: Fast Full Name Search,  Up: Name
@@ -579,14 +633,14 @@ examine the file that each link points to, specify the `-L' option to
 ensures that any symbolic links listed on the command line are
 dereferenced, but other symbolic links are not.
 
-   Symbolic links are different to "hard links" in the sense that you
-need permissions upon the linked-to file in order to be able to
+   Symbolic links are different from "hard links" in the sense that you
+need permission to search the directories in the linked-to file name to
 dereference the link.  This can mean that even if you specify the `-L'
 option, `find' may not be able to determine the properties of the file
-that the link points to (because you don't have sufficient
-permissions).  In this situation, `find' uses the properties of the
-link itself.  This also occurs if a symbolic link exists but points to
-a file that is missing.
+that the link points to (because you don't have sufficient permission).
+In this situation, `find' uses the properties of the link itself.  This
+also occurs if a symbolic link exists but points to a file that is
+missing.
 
    The options controlling the behaviour of `find' with respect to
 links are as follows :-
@@ -727,7 +781,13 @@ certain operations were performed on the file:
 
   3. modify (change the file's contents)
 
-   There is no timestamp that indicates when a file was _created_.
+   Some systems also provide a timestamp that indicates when a file was
+_created_.   For example, the UFS2 fileystem under NetBSD-3.1 records
+the _birth time_ of each file.  This information is also available
+under other versions of BSD and some versions of Cygwin.  However, even
+on systems which support file birth time, files may exist for which
+this information was not recorded (for example, UFS1 file systems
+simply do not contain this information).
 
    You can search for files whose time stamps are within a certain age
 range, or compare them to other time stamps.
@@ -752,7 +812,9 @@ These tests are mainly useful with ranges (`+N' and `-N').
      was modified) N*24 hours ago.  The number of 24-hour periods since
      the file's timestamp is always rounded down; therefore 0 means
      "less than 24 hours ago", 1 means "between 24 and 48 hours ago",
-     and so forth.
+     and so forth.  Fractional values are supported but this only
+     really makes sense for the case where ranges (`+N' and `-N') are
+     used.
 
  -- Test: -amin n
  -- Test: -cmin n
@@ -760,8 +822,8 @@ These tests are mainly useful with ranges (`+N' and `-N').
      True if the file was last accessed (or its status changed, or it
      was modified) N minutes ago.  These tests provide finer granularity
      of measurement than `-atime' et al., but rounding is done in a
-     similar way.  For example, to list files in `/u/bill' that were
-     last read from 2 to 6 minutes ago:
+     similar way (again, fractions are supported).  For example, to list
+     files in `/u/bill' that were last read from 2 to 6 minutes ago:
 
           find /u/bill -amin +2 -amin -6
 
@@ -770,7 +832,7 @@ These tests are mainly useful with ranges (`+N' and `-N').
      ago.  So, to list the regular files in your home directory that
      were modified yesterday, do
 
-          find ~ -daystart -type f -mtime 1
+          find ~/ -daystart -type f -mtime 1
 
      The `-daystart' option is unlike most other options in that it has
      an effect on the way that other tests are performed.  The affected
@@ -784,11 +846,56 @@ File: find.info,  Node: Comparing Timestamps,  Prev: Age Ranges,  Up: Time
 2.3.2 Comparing Timestamps
 --------------------------
 
-As an alternative to comparing timestamps to the current time, you can
-compare them to another file's timestamp.  That file's timestamp could
-be updated by another program when some event occurs.  Or you could set
-it to a particular fixed date using the `touch' command.  For example,
-to list files in `/usr' modified after February 1 of the current year:
+ -- Test: -newerXY reference
+     Succeeds if timestamp `X' of the file being considered is newer
+     than timestamp `Y' of the file `reference'.   The latters `X' and
+     `Y' can be any of the following letters:
+
+    `a'
+          Last-access time of `reference'
+
+    `B'
+          Birth time of `reference' (when this is not known, the test
+          cannot succeed)
+
+    `c'
+          Last-change time of `reference'
+
+    `m'
+          Last-modification time of `reference'
+
+    `t'
+          The `reference' argument is interpreted as a literal time,
+          rather than the name of a file.  *Note Date input formats::,
+          for a description of how the timestamp is understood.  Tests
+          of the form `-newerXt' are valid but tests of the form
+          `-newertY' are not.
+
+     For example the test `-newerac /tmp/foo' succeeds for all files
+     which have been accessed more recently than `/tmp/foo' was
+     changed.   Here `X' is `a' and `Y' is `c'.
+
+     Not all files have a known birth time.  If `Y' is `b' and the
+     birth time of `reference' is not available, `find' exits with an
+     explanatory error message.  If `X' is `b' and we do not know the
+     birth time the file currently being considered, the test simply
+     fails (that is, it behaves like `-false' does).
+
+     Some operating systems (for example, most implementations of Unix)
+     do not support file birth times.  Some others, for example
+     NetBSD-3.1, do.  Even on operating systems which support file
+     birth times, the information may not be available for specific
+     files.  For example, under NetBSD, file birth times are supported
+     on UFS2 file systems, but not UFS1 file systems.
+
+
+   There are two ways to list files in `/usr' modified after February 1
+of the current year.  One uses `-newermt':
+
+     find /usr -newermt "Feb 1"
+
+   The other way of doing this works on the versions of find before
+4.3.3:
 
      touch -t 02010000 /tmp/stamp$$
      find /usr -newer /tmp/stamp$$
@@ -842,7 +949,7 @@ File: find.info,  Node: Size,  Next: Type,  Prev: Time,  Up: Finding Files
 
      The `b' suffix always considers blocks to be 512 bytes.  This is
      not affected by the setting (or non-setting) of the POSIXLY_CORRECT
-     environment variable.  This behaviour is different to the
+     environment variable.  This behaviour is different from the
      behaviour of the `-ls' action).  If you want to use 1024-byte
      units, use the `k' suffix instead.
 
@@ -931,7 +1038,7 @@ File: find.info,  Node: Type,  Next: Owner,  Prev: Size,  Up: Finding Files
      *Note Symbolic Links::, for more information on `-follow' and `-L'.
 
 
-File: find.info,  Node: Owner,  Next: Permissions,  Prev: Type,  Up: Finding Files
+File: find.info,  Node: Owner,  Next: Mode Bits,  Prev: Type,  Up: Finding Files
 
 2.6 Owner
 =========
@@ -956,53 +1063,97 @@ File: find.info,  Node: Owner,  Next: Permissions,  Prev: Type,  Up: Finding Fil
      program.
 
 
-File: find.info,  Node: Permissions,  Next: Contents,  Prev: Owner,  Up: Finding Files
+File: find.info,  Node: Mode Bits,  Next: Contents,  Prev: Owner,  Up: Finding Files
 
-2.7 Permissions
-===============
+2.7 File Mode Bits
+==================
 
-*Note File Permissions::, for information on how file permissions are
+*Note File Permissions::, for information on how file mode bits are
 structured and how to specify them.
 
- -- Test: -perm mode
-     True if the file's permissions are exactly MODE, which can be
-     numeric or symbolic.
+   Four tests determine what users can do with files.  These are
+`-readable', `-writable', `-executable' and `-perm'.  The first three
+tests ask the operating system if the current user can perform the
+relevant operation on a file, while `-perm' just examines the file's
+mode.  The file mode may give a misleading impression of what the user
+can actually do, because the file may have an access control list, or
+exist on a read-only filesystem, for example.  Of these four tests
+though, only `-perm' is specified by the POSIX standard.
 
-     If MODE starts with `-', true if _all_ of the permissions set in
-     MODE are set for the file; permissions not set in MODE are ignored.
+   The `-readable', `-writable' and `-executable' tests are implemented
+via the `access' system call.  This is implemented within the operating
+system itself.  If the file being considered is on an NFS filesystem,
+the remote system may allow or forbid read or write operations for
+reasons of which the NFS client cannot take account.  This includes
+user-ID mapping, either in the general sense or the more restricted
+sense in which remote superusers are treated by the NFS server as if
+they are the local user `nobody' on the NFS server.
 
-     If MODE starts with `/', true if _any_ of the permissions set in
-     MODE are set for the file; permissions not set in MODE are ignored.
-     This is a GNU extension.
+   None of the tests in this section should be used to verify that a
+user is authorised to perform any operation (on the file being tested or
+any other file) because of the possibility of a race condition.  That
+is, the situation may change between the test and an action being taken
+on the basis of the result of that test.
+
+ -- Test: -readable
+     True if the file can be read by the invoking user.
+
+ -- Test: -writable
+     True if the file can be written by the invoking user.  This is an
+     in-principle check, and other things may prevent a successful write
+     operation; for example, the filesystem might be full.
+
+ -- Test: -executable
+     True if the file can be executed/searched by the invoking user.
+
+ -- Test: -perm pmode
+     True if the file's mode bits match PMODE, which can be either a
+     symbolic or numeric MODE (*note File Permissions::) optionally
+     prefixed by `-' or `/'.
+
+     A PMODE that starts with neither `-' nor `/' matches if MODE
+     exactly matches the file mode bits.
+
+     A PMODE that starts with `+' but which is not valid (for example
+     `+a+x') is an error if the POSIXLY_CORRECT environment variable it
+     set.  Otherwise this is treated as if the initial `+' were a `/',
+     for backward compatibility.
+
+     A PMODE that starts with `-' matches if _all_ the file mode bits
+     set in MODE are set for the file; bits not set in MODE are ignored.
+
+     A PMODE that starts with `/' matches if _any_ of the file mode
+     bits set in MODE are set for the file; bits not set in MODE are
+     ignored.  This is a GNU extension.
 
      If you don't use the `/' or `-' form with a symbolic mode string,
      you may have to specify a rather complex mode string.  For example
-     `-perm g=w' will only match files which have mode 0020 (that is,
-     ones for which group write permission is the only permission set).
-     It is more likely that you will want to use the `/' or `-' forms,
-     for example `-perm -g=w', which matches any file with group write
-     permission.
+     `-perm g=w' will only match files that have mode 0020 (that is,
+     ones for which group write permission is the only file mode bit
+     set).  It is more likely that you will want to use the `/' or `-'
+     forms, for example `-perm -g=w', which matches any file with group
+     write permission.
 
     `-perm 664'
-          Match files which have read and write permission for their
-          owner, and group, but which the rest of the world can read
-          but not write to.  Files which meet these criteria but have
-          other permissions bits set (for example if someone can
-          execute the file) will not be matched.
+          Match files that have read and write permission for their
+          owner, and group, but that the rest of the world can read but
+          not write to.  Do not match files that meet these criteria
+          but have other file mode bits set (for example if someone can
+          execute/search the file).
 
     `-perm -664'
-          Match files which have read and write permission for their
-          owner, and group, but which the rest of the world can read
-          but not write to, without regard to the presence of any extra
-          permission bits (for example the executable bit).  This will
-          match a file which has mode 0777, for example.
+          Match files that have read and write permission for their
+          owner, and group, but that the rest of the world can read but
+          not write to, without regard to the presence of any extra
+          file mode bits (for example the executable bit).  This
+          matches a file with mode 0777, for example.
 
     `-perm /222'
-          Match files which are writable by somebody (their owner, or
+          Match files that are writable by somebody (their owner, or
           their group, or anybody else).
 
     `-perm /022'
-          Match files which are writable by either their owner or their
+          Match files that are writable by either their owner or their
           group.  The files don't have to be writable by both the owner
           and group to be matched; either will do.
 
@@ -1010,16 +1161,16 @@ structured and how to specify them.
           As above.
 
     `-perm /g=w,o=w'
-          As above
+          As above.
 
     `-perm -022'
-          Search for files which are writable by both their owner and
-          their group.
+          Match files that are writable by both their owner and their
+          group.
 
     `-perm -444 -perm /222 ! -perm /111'
-          Search for files which are readable for everybody, have at
-          least one write bit set (i.e. somebody can write to them),
-          but which cannot be executed by anybody.  Note that in some
+          Match files that are readable for everybody, have at least one
+          write bit set (i.e., somebody can write to them), but that
+          cannot be executed/searched by anybody.  Note that in some
           shells the `!' must be escaped;.
 
     `-perm -a+r -perm /a+w ! -perm /a+x'
@@ -1029,15 +1180,13 @@ structured and how to specify them.
           As above.
 
           Warning: If you specify `-perm /000' or `-perm /mode' where
-          the symbolic mode `mode' has no bits set, the test currently
-          matches no files.  This differs from the behaviour of `-perm
-          -000', which matches all files.  The behaviour of `-perm
-          /000' will be changed to be consistent with the behaviour of
-          `-perm -000'.  The change will probably be made in early 2006.
+          the symbolic mode `mode' has no bits set, the test matches
+          all files.  Versions of GNU `find' prior to 4.3.3 matched no
+          files in this situation.
 
 
 
-File: find.info,  Node: Contents,  Next: Directories,  Prev: Permissions,  Up: Finding Files
+File: find.info,  Node: Contents,  Next: Directories,  Prev: Mode Bits,  Up: Finding Files
 
 2.8 Contents
 ============
@@ -1124,8 +1273,12 @@ slice of a directory tree.
           find . -wholename './src/emacs' -prune , -print
 
      If the `-depth' option is in effect, the subdirectories will have
-     already been visited in any case.  Hence `-prune' has no effect
-     and returns false.
+     already been visited in any case.  Hence `-prune' has no effect in
+     this case.
+
+     Because `-delete' implies `-depth', using `-prune' in combination
+     with `-delete' may well result in the deletion of more files than
+     you intended.
 
  -- Action: -quit
      Exit immediately (with return value zero if no errors have
@@ -1324,14 +1477,14 @@ File: find.info,  Node: Print File Information,  Next: Run Commands,  Prev: Prin
           set, in which case 512-byte blocks are used.  *Note Size::,
           for how to find files based on their size.
 
-       3. The file's type and permissions.  The type is shown as a dash
-          for a regular file; for other file types, a letter like for
-          `-type' is used (*note Type::).  The permissions are read,
-          write, and execute for the file's owner, its group, and other
-          users, respectively; a dash means the permission is not
-          granted.  *Note File Permissions::, for more details about
-          file permissions.  *Note Permissions::, for how to find files
-          based on their permissions.
+       3. The file's type and file mode bits.  The type is shown as a
+          dash for a regular file; for other file types, a letter like
+          for `-type' is used (*note Type::).  The file mode bits are
+          read, write, and execute/search for the file's owner, its
+          group, and other users, respectively; a dash means the
+          permission is not granted.  *Note File Permissions::, for
+          more details about file permissions.  *Note Mode Bits::, for
+          how to find files based on their file mode bits.
 
        4. The number of hard links to the file.
 
@@ -1507,18 +1660,17 @@ File: find.info,  Node: Ownership Directives,  Next: Size Directives,  Prev: Nam
      File's numeric user ID.
 
 `%m'
-     File's permissions (in octal).  If you always want to have a
-     leading zero on the number, use the '#' format flag, for example
-     '%#m'.
+     File's mode bits (in octal).  If you always want to have a leading
+     zero on the number, use the '#' format flag, for example '%#m'.
 
-     The permission numbers used are the traditional Unix permission
-     numbers, which will be as expected on most systems, but if your
-     system's permission bit layout differs from the traditional Unix
-     semantics, you will see a difference between the mode as printed by
-     `%m' and the mode as it appears in `struct stat'.
+     The file mode bit numbers used are the traditional Unix numbers,
+     which will be as expected on most systems, but if your system's
+     file mode bit layout differs from the traditional Unix semantics,
+     you will see a difference between the mode as printed by `%m' and
+     the mode as it appears in `struct stat'.
 
 `%M'
-     File's permissions (in symbolic form, as for `ls').  This
+     File's type and mode bits (in symbolic form, as for `ls').  This
      directive is supported in findutils 4.2.5 and later.
 
 
@@ -1541,6 +1693,17 @@ File: find.info,  Node: Size Directives,  Next: Location Directives,  Prev: Owne
 
 `%s'
      File's size in bytes.
+
+`%S'
+     File's sparseness.  This is calculated as `(BLOCKSIZE*st_blocks /
+     st_size)'.  The exact value you will get for an ordinary file of a
+     certain length is system-dependent.  However, normally sparse files
+     will have values less than 1.0, and files which use indirect blocks
+     and have few holes may have a value which is greater than 1.0.  The
+     value used for BLOCKSIZE is system-dependent, but is usually 512
+     bytes.  If the file size is zero, the value printed is undefined.
+     On systems which lack support for st_blocks, a file's sparseness is
+     assumed to be 1.0.
 
 
 File: find.info,  Node: Location Directives,  Next: Time Directives,  Prev: Size Directives,  Up: Format Directives
@@ -1664,10 +1827,17 @@ The following format directives print single components of the time.
      minute (00..59)
 
 `S'
-     second (00..61)
+     second (00..61).  There is a fractional part.
 
 `@'
-     seconds since Jan. 1, 1970, 00:00 GMT.
+     seconds since Jan. 1, 1970, 00:00 GMT, with fractional part.
+
+   The fractional part of the seconds field is of indeterminate length
+and precision.  That is, the length of the fractional part of the
+seconds field will in general vary between findutils releases and
+between systems.  This means that it is unwise to assume that field has
+any specific length.  The length of this field is not usually a guide
+to the precision of timestamps in the underlying file system.
 
 
 File: find.info,  Node: Date Components,  Next: Combined Time Formats,  Prev: Time Components,  Up: Time Formats
@@ -1733,7 +1903,9 @@ components.
      locale's time representation (H:M:S)
 
 `c'
-     locale's date and time (Sat Nov 04 12:02:33 EST 1989)
+     locale's date and time in ctime format (Sat Nov 04 12:02:33 EST
+     1989).  This format does not include any fractional part in the
+     seconds field.
 
 `D'
      date (mm/dd/yy)
@@ -1742,9 +1914,11 @@ components.
      locale's date representation (mm/dd/yy)
 
 `+'
-     Date and time, separated by '+', for example `2004-04-28+22:22:05'.
-     The time is given in the current timezone (which may be affected by
-     setting the TZ environment variable).  This is a GNU extension.
+     Date and time, separated by '+', for example
+     `2004-04-28+22:22:05.0000000000'.  The time is given in the
+     current timezone (which may be affected by setting the TZ
+     environment variable).  This is a GNU extension.  The seconds
+     field includes a fractional part.
 
 
 File: find.info,  Node: Formatting Flags,  Prev: Time Directives,  Up: Format Directives
@@ -1802,11 +1976,30 @@ Here is how to run a command on one file at a time.
 
           find . -name '*.h' -execdir diff -u '{}' /tmp/master ';'
 
-   If you use``-execdir', you must ensure that the current directory is
-not on $PATH, because otherwise an attacker could make `find' run
-commands of their choice simply by leaving a suitably-named file in the
-right directory.  GNU find will refuse to run if you use `-execdir' and
-the current directory is in $PATH.
+   If you use `-execdir', you must ensure that the `$PATH' variable
+contains only absolute directory names.  Having an empty element in
+`$PATH' or explicitly including `.' (or any other non-absolute name) is
+insecure.  GNU find will refuse to run if you use `-execdir' and it
+thinks your `$PATH' setting is insecure.  For example:
+
+`/bin:/usr/bin:'
+     Insecure; empty path element (at the end)
+
+`:/bin:/usr/bin:/usr/local/bin'
+     Insecure; empty path element (at the start)
+
+`/bin:/usr/bin::/usr/local/bin'
+     Insecure; empty path element (two colons in a row)
+
+`/bin:/usr/bin:.:/usr/local/bin'
+     Insecure; `.' is a path element (`.' is not an absolute file name)
+
+`/bin:/usr/bin:sbin:/usr/local/bin'
+     Insecure; `sbin' is not an absolute file name
+
+`/bin:/usr/bin:/sbin:/usr/local/bin'
+     Secure (if you control the contents of those directories and any
+     access to them)
 
    Another similar option, `-exec' is supported, but is less secure.
 *Note Security Considerations::, for a discussion of the security
@@ -1887,7 +2080,9 @@ arguments are delimited by blanks (which can be protected with double
 or single quotes or a backslash) or newlines.  It executes the COMMAND
 (default is `/bin/echo') one or more times with any INITIAL-ARGUMENTS
 followed by arguments read from standard input.  Blank lines on the
-standard input are ignored.
+standard input are ignored.  If the `-L' option is in use, trailing
+blanks indicate that `xargs' should consider the following line to be
+part of this one.
 
    Instead of blank-delimited names, it is safer to use `find -print0'
 or `find -fprint0' and process the output by giving the `-0' or
@@ -1937,6 +2132,10 @@ default mode of operation.  But since most files' names do not contain
 blanks, this problem occurs only infrequently.  If you are only
 searching through files that you know have safe names, then you need
 not be concerned about it.
+
+   Error messages issued by `find' and `locate' quote unusual
+characters in file names in order to prevent unwanted changes in the
+terminal's state.
 
    In many applications, if `xargs' botches processing a file because
 its name contains special characters, some data might be lost.  The
@@ -2128,6 +2327,14 @@ options modify those values.
      appropriate upper or lower limit is used instead.  You can use
      `--show-limits' option to understand the command-line limits
      applying to `xargs' and how this is affected by any other options.
+     The POSIX limits shown when you do this have already been adjusted
+     to take into account the size of your environment variables.
+
+     The largest allowed value is system-dependent, and is calculated as
+     the argument length limit for exec, less the size of your
+     environment, less 2048 bytes of headroom.  If this value is more
+     than 128KiB, 128Kib is used as the default value; otherwise, the
+     default value is the maximum.
 
 `--max-procs=MAX-PROCS'
 `-P MAX-PROCS'
@@ -2177,7 +2384,7 @@ occur.  For example:
 
    Here, the first invocation of `xargs' has no input line length limit
 because it doesn't use the `-I' option. The second invocation of
-`xargs' does have such a limit, but we have ensured that the it never
+`xargs' does have such a limit, but we have ensured that it never
 encounters a line which is longer than it can handle.
 
    This is not an ideal solution.  Instead, the `-I' option should not
@@ -2236,7 +2443,12 @@ File: find.info,  Node: Delete Files,  Next: Adding Tests,  Prev: Run Commands, 
      removal failed, an error message is issued.
 
      The use of the `-delete' action on the command line automatically
-     turns on the `-depth' option (*note find Expressions::).
+     turns on the `-depth' option (*note find Expressions::).  This can
+     be surprising if you were previously just testing with `-print',
+     so it is usually best to remember to use `-depth' explicitly.
+
+     If `-delete' fails, `find''s exit status will be nonzero (when it
+     eventually exits).
 
 
 File: find.info,  Node: Adding Tests,  Prev: Delete Files,  Up: Actions
@@ -2342,8 +2554,17 @@ fileserver where that filesystem is on a local disk, to prevent
 thrashing the network.
 
    *Note Invoking updatedb::, for the description of the options to
-`updatedb', which specify which directories would each database contain
-entries for.
+`updatedb'.  These options can be used to specify which directories are
+indexed by each database file.
+
+   The default location for the locate database depends on how findutils
+is built, but the findutils installation accompanying this manual uses
+the default location `/usr/local/var/locatedb'.
+
+   If no database exists at `/usr/local/var/locatedb' but the user did
+not specify where to look (by using `-d' or setting `LOCATE_PATH'),
+then `locate' will also check for a "secure" database in
+`/var/lib/slocate/slocate.db'.
 
 
 File: find.info,  Node: Database Formats,  Next: Newline Handling,  Prev: Database Locations,  Up: Databases
@@ -2354,28 +2575,32 @@ File: find.info,  Node: Database Formats,  Next: Newline Handling,  Prev: Databa
 The file name databases contain lists of files that were in particular
 directory trees when the databases were last updated.  The file name
 database format changed starting with GNU `locate' version 4.0 to allow
-machines with different byte orderings to share the databases.  The new
-GNU `locate' can read both the old and new database formats.  However,
-old versions of `locate' and `find' produce incorrect results if given
-a new-format database.
+machines with different byte orderings to share the databases.
+
+   GNU `locate' can read both the old and new database formats.
+However, old versions of `locate' (on other Unix systems, or GNU
+`locate' before version 4.0) produce incorrect results if run against a
+database in something other than the old format.
 
    Support for the old database format will eventually be discontinued,
-first in `updatedb' and later in `xargs'.
+first in `updatedb' and later in `locate'.
 
    If you run `locate --statistics', the resulting summary indicates
-the type of each `locate' database.
+the type of each `locate' database.   You select which database format
+`updatedb' will use with the `--dbformat' option.
 
 * Menu:
 
-* New Database Format::
-* Sample Database::
+* LOCATE02 Database Format::
+* Sample LOCATE02 Database::
+* slocate Database Format::
 * Old Database Format::
 
 
-File: find.info,  Node: New Database Format,  Next: Sample Database,  Up: Database Formats
+File: find.info,  Node: LOCATE02 Database Format,  Next: Sample LOCATE02 Database,  Up: Database Formats
 
-4.2.1 New Database Format
--------------------------
+4.2.1 LOCATE02 Database Format
+------------------------------
 
 `updatedb' runs a program called `frcode' to "front-compress" the list
 of file names, which reduces the database size by a factor of 4 to 5.
@@ -2407,10 +2632,10 @@ following databases will be wrong.
 referred to as `LOCATE02'.
 
 
-File: find.info,  Node: Sample Database,  Next: Old Database Format,  Prev: New Database Format,  Up: Database Formats
+File: find.info,  Node: Sample LOCATE02 Database,  Next: slocate Database Format,  Prev: LOCATE02 Database Format,  Up: Database Formats
 
-4.2.2 Sample Database
----------------------
+4.2.2 Sample LOCATE02 Database
+------------------------------
 
 Sample input to `frcode':
 
@@ -2438,19 +2663,33 @@ count bytes made printable:
    (6 = 14 - 8, and -9 = 5 - 14)
 
 
-File: find.info,  Node: Old Database Format,  Prev: Sample Database,  Up: Database Formats
+File: find.info,  Node: slocate Database Format,  Next: Old Database Format,  Prev: Sample LOCATE02 Database,  Up: Database Formats
 
-4.2.3 Old Database Format
+4.2.3 slocate Database Format
+-----------------------------
+
+The `slocate' program uses a database format similar to, but not quite
+the same as, GNU `locate'.  The first byte of the database specifies
+its "security level".  If the security level is 0, `slocate' will read,
+match and print filenames on the basis of the information in the
+database only.  However, if the security level byte is 1, `slocate'
+omits entries from its output if the invoking user is unable to access
+them.  The second byte of the database is zero.  The second byte is
+immediately followed by the first database entry.  The first entry in
+the database is not preceded by any differential count or dummy entry.
+Instead the differential count for the first item is assumed to be zero.
+.P Starting with the second entry (if any) in the database, data is
+interpreted as for the GNU LOCATE02 format.
+
+
+File: find.info,  Node: Old Database Format,  Prev: slocate Database Format,  Up: Database Formats
+
+4.2.4 Old Database Format
 -------------------------
 
 The old database format is used by Unix `locate' and `find' programs
 and earlier releases of the GNU ones.  `updatedb' produces this format
 if given the `--old-format' option.
-
-   Old versions of GNU `locate' fail to correctly handle very long file
-names, possibly leading to security problems relating to a heap buffer
-overrun.  *Note Security Considerations for locate::, for a detailed
-explanation.
 
    `updatedb' runs programs called `bigram' and `code' to produce
 old-format databases.  The old format differs from the new one in the
@@ -2478,11 +2717,31 @@ a single character.
 
    The old format therefore cannot faithfully store entries with
 non-ASCII characters. It therefore should not be used in
-internationalised environments.
+internationalised environments.  That is, most installations should not
+use it.
+
+   Because the long counts are stored by the `code' program as
+native-order machine words, the database format is not eaily used in
+environments which differ in terms of byte order.  If locate databases
+are to be shared between machines, the LOCATE02 database format should
+be used.  This has other benefits as discussed above.  However, the
+length of the filename currently being processed can normally be used
+to place reasonable limits on the long counts and so this information
+is used by locate to help it guess the byte ordering of the old format
+database.  Unless it finds evidence to the contrary, `locate' will
+assume that the byte order of the database is the same as the native
+byte order of the machine running `locate'.  The output of `locate
+--statistics' also includes information about the byte order of
+old-format databases.
 
    The output of `locate --statistics' will give an incorrect count of
 the number of file names containing newlines or high-bit characters for
 old-format databases.
+
+   Old versions of GNU `locate' fail to correctly handle very long file
+names, possibly leading to security problems relating to a heap buffer
+overrun.  *Note Security Considerations for locate::, for a detailed
+explanation.
 
 
 File: find.info,  Node: Newline Handling,  Prev: Database Formats,  Up: Databases
@@ -2517,7 +2776,7 @@ and your system uses GNU `sort', newlines will be correctly handled at
 all times.  Otherwise, newlines may not be correctly handled.
 
 
-File: find.info,  Node: File Permissions,  Next: Reference,  Prev: Databases,  Up: Top
+File: find.info,  Node: File Permissions,  Next: Date input formats,  Prev: Databases,  Up: Top
 
 5 File Permissions
 ******************
@@ -2950,9 +3209,468 @@ starting with the lowest valued bit:
 `ug=rw,o=r'.  Numeric mode 0 corresponds to symbolic mode `a='.
 
 
-File: find.info,  Node: Reference,  Next: Common Tasks,  Prev: File Permissions,  Up: Top
+File: find.info,  Node: Date input formats,  Next: Reference,  Prev: File Permissions,  Up: Top
 
-6 Reference
+6 Date input formats
+********************
+
+First, a quote:
+
+     Our units of temporal measurement, from seconds on up to months,
+     are so complicated, asymmetrical and disjunctive so as to make
+     coherent mental reckoning in time all but impossible.  Indeed, had
+     some tyrannical god contrived to enslave our minds to time, to
+     make it all but impossible for us to escape subjection to sodden
+     routines and unpleasant surprises, he could hardly have done
+     better than handing down our present system.  It is like a set of
+     trapezoidal building blocks, with no vertical or horizontal
+     surfaces, like a language in which the simplest thought demands
+     ornate constructions, useless particles and lengthy
+     circumlocutions.  Unlike the more successful patterns of language
+     and science, which enable us to face experience boldly or at least
+     level-headedly, our system of temporal calculation silently and
+     persistently encourages our terror of time.
+
+     ...  It is as though architects had to measure length in feet,
+     width in meters and height in ells; as though basic instruction
+     manuals demanded a knowledge of five different languages.  It is
+     no wonder then that we often look into our own immediate past or
+     future, last Tuesday or a week from Sunday, with feelings of
+     helpless confusion.  ...
+
+     -- Robert Grudin, `Time and the Art of Living'.
+
+   This section describes the textual date representations that GNU
+programs accept.  These are the strings you, as a user, can supply as
+arguments to the various programs.  The C interface (via the `get_date'
+function) is not described here.
+
+* Menu:
+
+* General date syntax::            Common rules.
+* Calendar date items::            19 Dec 1994.
+* Time of day items::              9:20pm.
+* Time zone items::                EST, PDT, GMT.
+* Day of week items::              Monday and others.
+* Relative items in date strings:: next tuesday, 2 years ago.
+* Pure numbers in date strings::   19931219, 1440.
+* Seconds since the Epoch::        @1078100502.
+* Specifying time zone rules::     TZ="America/New_York", TZ="UTC0".
+* Authors of get_date::            Bellovin, Eggert, Salz, Berets, et al.
+
+
+File: find.info,  Node: General date syntax,  Next: Calendar date items,  Up: Date input formats
+
+6.1 General date syntax
+=======================
+
+A "date" is a string, possibly empty, containing many items separated
+by whitespace.  The whitespace may be omitted when no ambiguity arises.
+The empty string means the beginning of today (i.e., midnight).  Order
+of the items is immaterial.  A date string may contain many flavors of
+items:
+
+   * calendar date items
+
+   * time of day items
+
+   * time zone items
+
+   * day of the week items
+
+   * relative items
+
+   * pure numbers.
+
+We describe each of these item types in turn, below.
+
+   A few ordinal numbers may be written out in words in some contexts.
+This is most useful for specifying day of the week items or relative
+items (see below).  Among the most commonly used ordinal numbers, the
+word `last' stands for -1, `this' stands for 0, and `first' and `next'
+both stand for 1.  Because the word `second' stands for the unit of
+time there is no way to write the ordinal number 2, but for convenience
+`third' stands for 3, `fourth' for 4, `fifth' for 5, `sixth' for 6,
+`seventh' for 7, `eighth' for 8, `ninth' for 9, `tenth' for 10,
+`eleventh' for 11 and `twelfth' for 12.
+
+   When a month is written this way, it is still considered to be
+written numerically, instead of being "spelled in full"; this changes
+the allowed strings.
+
+   In the current implementation, only English is supported for words
+and abbreviations like `AM', `DST', `EST', `first', `January',
+`Sunday', `tomorrow', and `year'.
+
+   The output of the `date' command is not always acceptable as a date
+string, not only because of the language problem, but also because
+there is no standard meaning for time zone items like `IST'.  When using
+`date' to generate a date string intended to be parsed later, specify a
+date format that is independent of language and that does not use time
+zone items other than `UTC' and `Z'.  Here are some ways to do this:
+
+     $ LC_ALL=C TZ=UTC0 date
+     Mon Mar  1 00:21:42 UTC 2004
+     $ TZ=UTC0 date +'%Y-%m-%d %H:%M:%SZ'
+     2004-03-01 00:21:42Z
+     $ date --iso-8601=ns | tr T ' '  # --iso-8601 is a GNU extension.
+     2004-02-29 16:21:42,692722128-0800
+     $ date --rfc-2822  # a GNU extension
+     Sun, 29 Feb 2004 16:21:42 -0800
+     $ date +'%Y-%m-%d %H:%M:%S %z'  # %z is a GNU extension.
+     2004-02-29 16:21:42 -0800
+     $ date +'@%s.%N'  # %s and %N are GNU extensions.
+     @1078100502.692722128
+
+   Alphabetic case is completely ignored in dates.  Comments may be
+introduced between round parentheses, as long as included parentheses
+are properly nested.  Hyphens not followed by a digit are currently
+ignored.  Leading zeros on numbers are ignored.
+
+   Invalid dates like `2005-02-29' or times like `24:00' are rejected.
+In the typical case of a host that does not support leap seconds, a
+time like `23:59:60' is rejected even if it corresponds to a valid leap
+second.
+
+
+File: find.info,  Node: Calendar date items,  Next: Time of day items,  Prev: General date syntax,  Up: Date input formats
+
+6.2 Calendar date items
+=======================
+
+A "calendar date item" specifies a day of the year.  It is specified
+differently, depending on whether the month is specified numerically or
+literally.  All these strings specify the same calendar date:
+
+     1972-09-24     # ISO 8601.
+     72-9-24        # Assume 19xx for 69 through 99,
+                    # 20xx for 00 through 68.
+     72-09-24       # Leading zeros are ignored.
+     9/24/72        # Common U.S. writing.
+     24 September 1972
+     24 Sept 72     # September has a special abbreviation.
+     24 Sep 72      # Three-letter abbreviations always allowed.
+     Sep 24, 1972
+     24-sep-72
+     24sep72
+
+   The year can also be omitted.  In this case, the last specified year
+is used, or the current year if none.  For example:
+
+     9/24
+     sep 24
+
+   Here are the rules.
+
+   For numeric months, the ISO 8601 format `YEAR-MONTH-DAY' is allowed,
+where YEAR is any positive number, MONTH is a number between 01 and 12,
+and DAY is a number between 01 and 31.  A leading zero must be present
+if a number is less than ten.  If YEAR is 68 or smaller, then 2000 is
+added to it; otherwise, if YEAR is less than 100, then 1900 is added to
+it.  The construct `MONTH/DAY/YEAR', popular in the United States, is
+accepted.  Also `MONTH/DAY', omitting the year.
+
+   Literal months may be spelled out in full: `January', `February',
+`March', `April', `May', `June', `July', `August', `September',
+`October', `November' or `December'.  Literal months may be abbreviated
+to their first three letters, possibly followed by an abbreviating dot.
+It is also permitted to write `Sept' instead of `September'.
+
+   When months are written literally, the calendar date may be given as
+any of the following:
+
+     DAY MONTH YEAR
+     DAY MONTH
+     MONTH DAY YEAR
+     DAY-MONTH-YEAR
+
+   Or, omitting the year:
+
+     MONTH DAY
+
+
+File: find.info,  Node: Time of day items,  Next: Time zone items,  Prev: Calendar date items,  Up: Date input formats
+
+6.3 Time of day items
+=====================
+
+A "time of day item" in date strings specifies the time on a given day.
+Here are some examples, all of which represent the same time:
+
+     20:02:00.000000
+     20:02
+     8:02pm
+     20:02-0500      # In EST (U.S. Eastern Standard Time).
+
+   More generally, the time of day may be given as
+`HOUR:MINUTE:SECOND', where HOUR is a number between 0 and 23, MINUTE
+is a number between 0 and 59, and SECOND is a number between 0 and 59
+possibly followed by `.' or `,' and a fraction containing one or more
+digits.  Alternatively, `:SECOND' can be omitted, in which case it is
+taken to be zero.  On the rare hosts that support leap seconds, SECOND
+may be 60.
+
+   If the time is followed by `am' or `pm' (or `a.m.' or `p.m.'), HOUR
+is restricted to run from 1 to 12, and `:MINUTE' may be omitted (taken
+to be zero).  `am' indicates the first half of the day, `pm' indicates
+the second half of the day.  In this notation, 12 is the predecessor of
+1: midnight is `12am' while noon is `12pm'.  (This is the zero-oriented
+interpretation of `12am' and `12pm', as opposed to the old tradition
+derived from Latin which uses `12m' for noon and `12pm' for midnight.)
+
+   The time may alternatively be followed by a time zone correction,
+expressed as `SHHMM', where S is `+' or `-', HH is a number of zone
+hours and MM is a number of zone minutes.  You can also separate HH
+from MM with a colon.  When a time zone correction is given this way, it
+forces interpretation of the time relative to Coordinated Universal
+Time (UTC), overriding any previous specification for the time zone or
+the local time zone.  For example, `+0530' and `+05:30' both stand for
+the time zone 5.5 hours ahead of UTC (e.g., India).  The MINUTE part of
+the time of day may not be elided when a time zone correction is used.
+This is the best way to specify a time zone correction by fractional
+parts of an hour.
+
+   Either `am'/`pm' or a time zone correction may be specified, but not
+both.
+
+
+File: find.info,  Node: Time zone items,  Next: Day of week items,  Prev: Time of day items,  Up: Date input formats
+
+6.4 Time zone items
+===================
+
+A "time zone item" specifies an international time zone, indicated by a
+small set of letters, e.g., `UTC' or `Z' for Coordinated Universal
+Time.  Any included periods are ignored.  By following a
+non-daylight-saving time zone by the string `DST' in a separate word
+(that is, separated by some white space), the corresponding daylight
+saving time zone may be specified.  Alternatively, a
+non-daylight-saving time zone can be followed by a time zone
+correction, to add the two values.  This is normally done only for
+`UTC'; for example, `UTC+05:30' is equivalent to `+05:30'.
+
+   Time zone items other than `UTC' and `Z' are obsolescent and are not
+recommended, because they are ambiguous; for example, `EST' has a
+different meaning in Australia than in the United States.  Instead,
+it's better to use unambiguous numeric time zone corrections like
+`-0500', as described in the previous section.
+
+   If neither a time zone item nor a time zone correction is supplied,
+time stamps are interpreted using the rules of the default time zone
+(*note Specifying time zone rules::).
+
+
+File: find.info,  Node: Day of week items,  Next: Relative items in date strings,  Prev: Time zone items,  Up: Date input formats
+
+6.5 Day of week items
+=====================
+
+The explicit mention of a day of the week will forward the date (only
+if necessary) to reach that day of the week in the future.
+
+   Days of the week may be spelled out in full: `Sunday', `Monday',
+`Tuesday', `Wednesday', `Thursday', `Friday' or `Saturday'.  Days may
+be abbreviated to their first three letters, optionally followed by a
+period.  The special abbreviations `Tues' for `Tuesday', `Wednes' for
+`Wednesday' and `Thur' or `Thurs' for `Thursday' are also allowed.
+
+   A number may precede a day of the week item to move forward
+supplementary weeks.  It is best used in expression like `third
+monday'.  In this context, `last DAY' or `next DAY' is also acceptable;
+they move one week before or after the day that DAY by itself would
+represent.
+
+   A comma following a day of the week item is ignored.
+
+
+File: find.info,  Node: Relative items in date strings,  Next: Pure numbers in date strings,  Prev: Day of week items,  Up: Date input formats
+
+6.6 Relative items in date strings
+==================================
+
+"Relative items" adjust a date (or the current date if none) forward or
+backward.  The effects of relative items accumulate.  Here are some
+examples:
+
+     1 year
+     1 year ago
+     3 years
+     2 days
+
+   The unit of time displacement may be selected by the string `year'
+or `month' for moving by whole years or months.  These are fuzzy units,
+as years and months are not all of equal duration.  More precise units
+are `fortnight' which is worth 14 days, `week' worth 7 days, `day'
+worth 24 hours, `hour' worth 60 minutes, `minute' or `min' worth 60
+seconds, and `second' or `sec' worth one second.  An `s' suffix on
+these units is accepted and ignored.
+
+   The unit of time may be preceded by a multiplier, given as an
+optionally signed number.  Unsigned numbers are taken as positively
+signed.  No number at all implies 1 for a multiplier.  Following a
+relative item by the string `ago' is equivalent to preceding the unit
+by a multiplier with value -1.
+
+   The string `tomorrow' is worth one day in the future (equivalent to
+`day'), the string `yesterday' is worth one day in the past (equivalent
+to `day ago').
+
+   The strings `now' or `today' are relative items corresponding to
+zero-valued time displacement, these strings come from the fact a
+zero-valued time displacement represents the current time when not
+otherwise changed by previous items.  They may be used to stress other
+items, like in `12:00 today'.  The string `this' also has the meaning
+of a zero-valued time displacement, but is preferred in date strings
+like `this thursday'.
+
+   When a relative item causes the resulting date to cross a boundary
+where the clocks were adjusted, typically for daylight saving time, the
+resulting date and time are adjusted accordingly.
+
+   The fuzz in units can cause problems with relative items.  For
+example, `2003-07-31 -1 month' might evaluate to 2003-07-01, because
+2003-06-31 is an invalid date.  To determine the previous month more
+reliably, you can ask for the month before the 15th of the current
+month.  For example:
+
+     $ date -R
+     Thu, 31 Jul 2003 13:02:39 -0700
+     $ date --date='-1 month' +'Last month was %B?'
+     Last month was July?
+     $ date --date="$(date +%Y-%m-15) -1 month" +'Last month was %B!'
+     Last month was June!
+
+   Also, take care when manipulating dates around clock changes such as
+daylight saving leaps.  In a few cases these have added or subtracted
+as much as 24 hours from the clock, so it is often wise to adopt
+universal time by setting the `TZ' environment variable to `UTC0'
+before embarking on calendrical calculations.
+
+
+File: find.info,  Node: Pure numbers in date strings,  Next: Seconds since the Epoch,  Prev: Relative items in date strings,  Up: Date input formats
+
+6.7 Pure numbers in date strings
+================================
+
+The precise interpretation of a pure decimal number depends on the
+context in the date string.
+
+   If the decimal number is of the form YYYYMMDD and no other calendar
+date item (*note Calendar date items::) appears before it in the date
+string, then YYYY is read as the year, MM as the month number and DD as
+the day of the month, for the specified calendar date.
+
+   If the decimal number is of the form HHMM and no other time of day
+item appears before it in the date string, then HH is read as the hour
+of the day and MM as the minute of the hour, for the specified time of
+day.  MM can also be omitted.
+
+   If both a calendar date and a time of day appear to the left of a
+number in the date string, but no relative item, then the number
+overrides the year.
+
+
+File: find.info,  Node: Seconds since the Epoch,  Next: Specifying time zone rules,  Prev: Pure numbers in date strings,  Up: Date input formats
+
+6.8 Seconds since the Epoch
+===========================
+
+If you precede a number with `@', it represents an internal time stamp
+as a count of seconds.  The number can contain an internal decimal
+point (either `.' or `,'); any excess precision not supported by the
+internal representation is truncated toward minus infinity.  Such a
+number cannot be combined with any other date item, as it specifies a
+complete time stamp.
+
+   Internally, computer times are represented as a count of seconds
+since an epoch--a well-defined point of time.  On GNU and POSIX
+systems, the epoch is 1970-01-01 00:00:00 UTC, so `@0' represents this
+time, `@1' represents 1970-01-01 00:00:01 UTC, and so forth.  GNU and
+most other POSIX-compliant systems support such times as an extension
+to POSIX, using negative counts, so that `@-1' represents 1969-12-31
+23:59:59 UTC.
+
+   Traditional Unix systems count seconds with 32-bit two's-complement
+integers and can represent times from 1901-12-13 20:45:52 through
+2038-01-19 03:14:07 UTC.  More modern systems use 64-bit counts of
+seconds with nanosecond subcounts, and can represent all the times in
+the known lifetime of the universe to a resolution of 1 nanosecond.
+
+   On most hosts, these counts ignore the presence of leap seconds.
+For example, on most hosts `@915148799' represents 1998-12-31 23:59:59
+UTC, `@915148800' represents 1999-01-01 00:00:00 UTC, and there is no
+way to represent the intervening leap second 1998-12-31 23:59:60 UTC.
+
+
+File: find.info,  Node: Specifying time zone rules,  Next: Authors of get_date,  Prev: Seconds since the Epoch,  Up: Date input formats
+
+6.9 Specifying time zone rules
+==============================
+
+Normally, dates are interpreted using the rules of the current time
+zone, which in turn are specified by the `TZ' environment variable, or
+by a system default if `TZ' is not set.  To specify a different set of
+default time zone rules that apply just to one date, start the date
+with a string of the form `TZ="RULE"'.  The two quote characters (`"')
+must be present in the date, and any quotes or backslashes within RULE
+must be escaped by a backslash.
+
+   For example, with the GNU `date' command you can answer the question
+"What time is it in New York when a Paris clock shows 6:30am on October
+31, 2004?" by using a date beginning with `TZ="Europe/Paris"' as shown
+in the following shell transcript:
+
+     $ export TZ="America/New_York"
+     $ date --date='TZ="Europe/Paris" 2004-10-31 06:30'
+     Sun Oct 31 01:30:00 EDT 2004
+
+   In this example, the `--date' operand begins with its own `TZ'
+setting, so the rest of that operand is processed according to
+`Europe/Paris' rules, treating the string `2004-10-31 06:30' as if it
+were in Paris.  However, since the output of the `date' command is
+processed according to the overall time zone rules, it uses New York
+time.  (Paris was normally six hours ahead of New York in 2004, but
+this example refers to a brief Halloween period when the gap was five
+hours.)
+
+   A `TZ' value is a rule that typically names a location in the `tz'
+database (http://www.twinsun.com/tz/tz-link.htm).  A recent catalog of
+location names appears in the TWiki Date and Time Gateway
+(http://twiki.org/cgi-bin/xtra/tzdate).  A few non-GNU hosts require a
+colon before a location name in a `TZ' setting, e.g.,
+`TZ=":America/New_York"'.
+
+   The `tz' database includes a wide variety of locations ranging from
+`Arctic/Longyearbyen' to `Antarctica/South_Pole', but if you are at sea
+and have your own private time zone, or if you are using a non-GNU host
+that does not support the `tz' database, you may need to use a POSIX
+rule instead.  Simple POSIX rules like `UTC0' specify a time zone
+without daylight saving time; other rules can specify simple daylight
+saving regimes.  *Note Specifying the Time Zone with `TZ': (libc)TZ
+Variable.
+
+
+File: find.info,  Node: Authors of get_date,  Prev: Specifying time zone rules,  Up: Date input formats
+
+6.10 Authors of `get_date'
+==========================
+
+`get_date' was originally implemented by Steven M. Bellovin
+(<smb@research.att.com>) while at the University of North Carolina at
+Chapel Hill.  The code was later tweaked by a couple of people on
+Usenet, then completely overhauled by Rich $alz (<rsalz@bbn.com>) and
+Jim Berets (<jberets@bbn.com>) in August, 1990.  Various revisions for
+the GNU system were made by David MacKenzie, Jim Meyering, Paul Eggert
+and others.
+
+   This chapter was originally produced by Franc,ois Pinard
+(<pinard@iro.umontreal.ca>) from the `getdate.y' source code, and then
+edited by K. Berry (<kb@cs.umb.edu>).
+
+
+File: find.info,  Node: Reference,  Next: Common Tasks,  Prev: Date input formats,  Up: Top
+
+7 Reference
 ***********
 
 Below are summaries of the command line syntax for the programs
@@ -2970,33 +3688,59 @@ discussed in this manual.
 
 File: find.info,  Node: Invoking find,  Next: Invoking locate,  Up: Reference
 
-6.1 Invoking `find'
+7.1 Invoking `find'
 ===================
 
-     find [-H] [-L] [-P] [FILE...] [EXPRESSION]
+     find [-H] [-L] [-P] [-D DEBUGOPTIONS] [-OLEVEL] [FILE...] [EXPRESSION]
 
    `find' searches the directory tree rooted at each file name FILE by
 evaluating the EXPRESSION on each file it finds in the tree.
 
-   The options `-H', `-L' or `-P' may be specified at the start of the
-command line (if none of these is specified, `-P' is assumed).  If you
-specify more than one of these options, the last one specified takes
-effect (but note that the `-follow' option is equivalent to `-L').  The
-arguments after these are a list of files or directories that should be
-searched.
+   The command line may begin with the `-H', `-L', `-P', `-D' and `-O'
+options.  These are followed by a list of files or directories that
+should be searched.  If no files to search are specified, the current
+directory (`.') is used.
 
    This list of files to search is followed by a list of expressions
 describing the files we wish to search for.  The first part of the
-expression is recognised by the fact that it begins with `-', `(', `)',
-`,', or `!'.  Any arguments after it are the rest of the expression.
-If no files are given, the current directory is used.  If no expression
-is given, the expression `-print' is used.
+expression is recognised by the fact that it begins with `-' followed
+by some other letters (for example `-print'), or is either `(' or `!'.
+Any arguments after it are the rest of the expression.
 
-   `find' exits with status zero if all files matched are processed
-successfully, greater than 0 if errors occur.
+   If no expression is given, the expression `-print' is used.
 
-   Three options can precede the list of files.  They determine the way
-that symbolic links are handled.
+   The `find' command exits with status zero if all files matched are
+processed successfully, greater than zero if errors occur.
+
+   The `find' program also recognises two options for administrative
+use:
+
+`--help'
+     Print a summary of the command line usage and exit.
+
+`--version'
+     Print the version number of `find' and exit.
+
+   The `-version' option is a synonym for `--version'
+
+* Menu:
+
+* Filesystem Traversal Options::
+* Warning Messages::
+* Optimisation Options::
+* Debug Options::
+* Find Expressions::
+
+
+File: find.info,  Node: Filesystem Traversal Options,  Next: Warning Messages,  Up: Invoking find
+
+7.1.1 Filesystem Traversal Options
+----------------------------------
+
+The options `-H', `-L' or `-P' may be specified at the start of the
+command line (if none of these is specified, `-P' is assumed).  If you
+specify more than one of these options, the last one specified takes
+effect (but note that the `-follow' option is equivalent to `-L').
 
 `-P'
      Never follow symbolic links (this is the default), except in the
@@ -3016,36 +3760,21 @@ broken), it falls back on using the properties of the symbolic link
 itself.  *note Symbolic Links:: for a more complete description of how
 symbolic links are handled.
 
-   *Note Primary Index::, for a summary of all of the tests, actions,
-and options that the expression can contain.  If the expression is
-missing, `-print' is assumed.
-
-   `find' also recognises two options for administrative use:
-
-`--help'
-     Print a summary of the command line usage and exit.
-
-`--version'
-`-version'
-     Print the version number of `find' and exit.
-
-* Menu:
-
-* Warning Messages::
-
 
-File: find.info,  Node: Warning Messages,  Up: Invoking find
+File: find.info,  Node: Warning Messages,  Next: Optimisation Options,  Prev: Filesystem Traversal Options,  Up: Invoking find
 
-6.1.1 Warning Messages
+7.1.2 Warning Messages
 ----------------------
 
 If there is an error on the `find' command line, an error message is
 normally issued.  However, there are some usages that are inadvisable
 but which `find' should still accept.  Under these circumstances,
-`find' may issue a warning message.  By default, warnings are enabled
-only if `find' is being run interactively (specifically, if the
-standard input is a terminal).  Warning messages can be controlled
-explicitly by the use of options on the command line:
+`find' may issue a warning message.
+
+   By default, warnings are enabled only if `find' is being run
+interactively (specifically, if the standard input is a terminal) and
+the POSIXLY_CORRECT environment variable is not set.  Warning messages
+can be controlled explicitly by the use of options on the command line:
 
 `-warn'
      Issue warning messages where appropriate.
@@ -3084,9 +3813,93 @@ problems, and consequently cannot be turned off:
    - Use of an unrecognised formatting directive with `-fprintf'
 
 
+File: find.info,  Node: Optimisation Options,  Next: Debug Options,  Prev: Warning Messages,  Up: Invoking find
+
+7.1.3 Optimisation Options
+--------------------------
+
+The `-OLEVEL' option sets `find''s optimisation level to LEVEL.  The
+default optimisation level is 1.
+
+   At certain optimisation levels, `find' reorders tests to speed up
+execution while preserving the overall effect; that is, predicates with
+side effects are not reordered relative to each other.  The
+optimisations performed at each optimisation level are as follows.
+
+`0'
+     Currently equivalent to optimisation level 1.
+
+`1'
+     This is the default optimisation level and corresponds to the
+     traditional behaviour.  Expressions are reordered so that tests
+     based only on the names of files (for example` -name' and
+     `-regex') are performed first.
+
+`2'
+     Any `-type' or `-xtype' tests are performed after any tests based
+     only on the names of files, but before any tests that require
+     information from the inode.  On many modern versions of Unix, file
+     types are returned by `readdir()' and so these predicates are
+     faster to evaluate than predicates which need to stat the file
+     first.
+
+`3'
+     At this optimisation level, the full cost-based query optimiser is
+     enabled.  The order of tests is modified so that cheap (i.e., fast)
+     tests are performed first and more expensive ones are performed
+     later, if necessary.  Within each cost band, predicates are
+     evaluated earlier or later according to whether they are likely to
+     succeed or not.  For `-o', predicates which are likely to succeed
+     are evaluated earlier, and for `-a', predicates which are likely
+     to fail are evaluated earlier.
+
+
+File: find.info,  Node: Debug Options,  Next: Find Expressions,  Prev: Optimisation Options,  Up: Invoking find
+
+7.1.4 Debug Options
+-------------------
+
+The `-D' option makes `find' produce diagnostic output.  Much of the
+information is useful only for diagnosing problems, and so most people
+will not find this option helpful.
+
+   The list of debug options should be comma separated.  Compatibility
+of the debug options is not guaranteed between releases of findutils.
+For a complete list of valid debug options, see the output of `find -D
+help'.  Valid debug options include:
+`help'
+     Explain the debugging options.
+
+`tree'
+     Show the expression tree in its original and optimised form.
+
+`stat'
+     Print messages as files are examined with the stat and lstat system
+     calls.  The find program tries to minimise such calls.
+
+`opt'
+     Prints diagnostic information relating to the optimisation of the
+     expression tree; see the `-O' option.
+
+`rates'
+     Prints a summary indicating how often each predicate succeeded or
+     failed.
+
+
+File: find.info,  Node: Find Expressions,  Prev: Debug Options,  Up: Invoking find
+
+7.1.5 Find Expressions
+----------------------
+
+The final part of the `find' command line is a list of expressions.
+*Note Primary Index::, for a summary of all of the tests, actions, and
+options that the expression can contain.  If the expression is missing,
+`-print' is assumed.
+
+
 File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoking find,  Up: Reference
 
-6.2 Invoking `locate'
+7.2 Invoking `locate'
 =====================
 
      locate [OPTION...] PATTERN...
@@ -3118,16 +3931,17 @@ databases returning each match of PATTERN.
 
 `--database=PATH'
 `-d PATH'
-     Instead of searching the default `locate' database, `locate'
-     search the file name databases in PATH, which is a colon-separated
-     list of database file names.  You can also use the environment
-     variable `LOCATE_PATH' to set the list of database files to
-     search.  The option overrides the environment variable if both are
-     used.  Empty elements in PATH (that is, a leading or trailing
-     colon, or two colons in a row) are taken to stand for the default
-     database.  A database can be supplied on stdin, using `-' as an
-     element of `path'. If more than one element of `path' is `-',
-     later instances are ignored (but a warning message is printed).
+     Instead of searching the default `locate' database
+     `/usr/local/var/locatedb', `locate' searches the file name
+     databases in PATH, which is a colon-separated list of database
+     file names.  You can also use the environment variable
+     `LOCATE_PATH' to set the list of database files to search.  The
+     option overrides the environment variable if both are used.  Empty
+     elements in PATH (that is, a leading or trailing colon, or two
+     colons in a row) are taken to stand for the default database.  A
+     database can be supplied on stdin, using `-' as an element of
+     `path'. If more than one element of `path' is `-', later instances
+     are ignored (but a warning message is printed).
 
 `--existing'
 `-e'
@@ -3137,7 +3951,9 @@ databases returning each match of PATTERN.
      the database.  The way in which broken symbolic links are treated
      is affected by the `-L', `-P' and `-H' options.  Please note that
      it is possible for the file to be deleted after `locate' has
-     checked that it exists, but before you use it.
+     checked that it exists, but before you use it.  This option is
+     automatically turned on when reading an `slocate' database in
+     secure mode (*note slocate Database Format::).
 
 `--non-existing'
 `-E'
@@ -3174,6 +3990,12 @@ databases returning each match of PATTERN.
      `--count' option, the value printed will never be larger than this
      limit.
 
+`--max-database-age=D'
+     Normally, `locate' will issue a warning message when it searches a
+     database which is more than 8 days old.  This option changes that
+     value to something other than 8.  The effect of specifying a
+     negative value is undefined.
+
 `--mmap'
 `-m'
      Accepted but does nothing.  The option is supported only to provide
@@ -3182,14 +4004,13 @@ databases returning each match of PATTERN.
 `--null'
 `-0'
      Results are separated with the ASCII NUL character rather than the
-     newline character.  To get the full benefit of the use of this
-     option, use the new `locate' database format (that is the default
-     anyway).
+     newline character.  To get the full benefit of this option, use
+     the new `locate' database format (that is the default anyway).
 
 `--print'
 `-p'
-     Print search results when they normally would not, because of the
-     presence of `--statistics' (`-S') or `--count' (`-c').
+     Print search results when they normally would not be due to use of
+     `--statistics' (`-S') or `--count' (`-c').
 
 `--wholename'
 `-w'
@@ -3239,7 +4060,7 @@ databases returning each match of PATTERN.
 
 File: find.info,  Node: Invoking updatedb,  Next: Invoking xargs,  Prev: Invoking locate,  Up: Reference
 
-6.3 Invoking `updatedb'
+7.3 Invoking `updatedb'
 =======================
 
      updatedb [OPTION...]
@@ -3293,8 +4114,8 @@ the environment.
      Default is `nfs NFS proc'.
 
 `--output=DBFILE'
-     The database file to build.  Default is system-dependent, but
-     typically `/usr/local/var/locatedb'.
+     The database file to build.  The default is system-dependent, but
+     when this document was formatted it was `/usr/local/var/locatedb'.
 
 `--localuser=USER'
      The user to search the non-network directories as, using `su'.
@@ -3313,10 +4134,17 @@ the environment.
      option means that `locate' will not be able to properly handle
      non-ASCII characters in file names (that is, file names containing
      characters which have the eighth bit set, such as many of the
-     characters from the ISO-8859-1 character set).  Versions of
-     `locate' prior to 4.2.31 fail to correctly handle long filenames
-     in old-format databases.  Versions 4.3.0 to 4.3.6 were also
-     affected.
+     characters from the ISO-8859-1 character set).  *Note Database
+     Formats::, for a detailed description of the supported database
+     formats.
+
+`--dbformat=FORMAT'
+     Generate the locate database in format `FORMAT'.  Supported
+     database formats include `LOCATE02' (which is the default), `old'
+     and `slocate'.  The `old' format exists for compatibility with
+     implementations of `locate' on other Unix systems.  The `slocate'
+     format exists for compatibility with `slocate'.  *Note Database
+     Formats::, for a detailed description of each format.
 
 `--help'
      Print a summary of the command line usage and exit.
@@ -3327,7 +4155,7 @@ the environment.
 
 File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invoking updatedb,  Up: Reference
 
-6.4 Invoking `xargs'
+7.4 Invoking `xargs'
 ====================
 
      xargs [OPTION...] [COMMAND [INITIAL-ARGUMENTS]]
@@ -3358,8 +4186,19 @@ File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invok
    Exit codes greater than 128 are used by the shell to indicate that a
 program died due to a fatal signal.
 
+* Menu:
+
+* xargs options::
+* Invoking the shell from xargs::
+
+
+File: find.info,  Node: xargs options,  Next: Invoking the shell from xargs,  Up: Invoking xargs
+
+7.4.1 xargs options
+-------------------
+
 `--arg-file=INPUTFILE'
-`-a oINPUTFILE'
+`-a INPUTFILE'
      Read names from the file INPUTFILE instead of standard input.  If
      you use this option, the standard input stream remains unchanged
      when commands are run. Otherwise, stdin is redirected from
@@ -3469,9 +4308,91 @@ program died due to a fatal signal.
      possible simultaneously.
 
 
+File: find.info,  Node: Invoking the shell from xargs,  Prev: xargs options,  Up: Invoking xargs
+
+7.4.2 Invoking the shell from xargs
+-----------------------------------
+
+Normally, `xargs' will exec the command you specified directly, without
+invoking a shell.  This is normally the behaviour one would want.  It's
+somewhat more efficient and avoids problems with shell metacharacters,
+for example.  However, sometimes it is necessary to manipulate the
+environment of a command before it is run, in a way that `xargs' does
+not directly support.
+
+   Invoking a shell from `xargs' is a good way of performing such
+manipulations.  However, some care must be taken to prevent problems,
+for example unwanted interpretation of shell metacharacters.
+
+   This command moves a set of files into an archive directory:
+
+     find /foo -maxdepth 1 -atime +366 -exec mv {} /archive \;
+
+   However, this will only move one file at a time.  We cannot in this
+case use `-exec ... +' because the matched file names are added at the
+end of the command line, while the destination directory would need to
+be specified last.  We also can't use `xargs' in the obvious way for
+the same reason.  One way of working around this problem is to make use
+of the special properties of GNU `mv'; it has a `-t' option that allows
+the target directory to be specified before the list of files to be
+moved.  However, while this technique works for GNU `mv', it doesn't
+solve the more general problem.
+
+   Here is a more general technique for solving this problem:
+
+     find /foo -maxdepth 1 -atime +366 -print0 |
+     xargs -r0 sh -c 'mv "$@" /archive' move
+
+   Here, a shell is being invoked.  There are two shell instances to
+think about.  The first is the shell which launches the xargs command
+(this might be the shell into which you are typing, for example).  The
+second is the shell launched by `xargs' (in fact it will probably
+launch several, one after the other, depending on how many files need
+to be archived).  We'l refer to this second shell as a subshell.
+
+   Our example uses the `-c' option of `sh'.  Its argument is a shell
+command to be executed by the subshell.  Along with the rest of that
+command, the $@ is enclosed by single quotes to make sure it is passed
+to the subshell without being expanded by the parent shell.  It is also
+enclosed with double quotes so that the subshell will expand `$@'
+correctly even if one of the file names contains a space or newline.
+
+   The subshell will use any non-option arguments as positional
+parameters (that is, in the expansion of `$@').  Because `xargs'
+launches the `sh -c' subshell with a list of files, those files will
+end up as the expansion of `$@'.
+
+   You may also notice the `move' at the end of the command line.  This
+is used as the value of `$0' by the subshell.  We include it because
+otherwise the name of the first file to be moved would be used instead.
+If that happened it would not be included in the subshell's expansion
+of `$@', and so it wouldn't actually get moved.
+
+   Another reason to use the `sh -c' construct could be to perform
+redirection:
+
+     find /usr/include -name '*.h' | xargs grep -wl mode_t |
+     xargs -r sh -c 'exec emacs "$@" < /dev/tty' Emacs
+
+   Notice that we use the shell builtin `exec' here.  That's simply
+because the subshell needs to do nothing once Emacs has been invoked.
+Therefore instead of keeping a `sh' process around for no reason, we
+just arrange for the subshell to exec Emacs, saving an extra process
+creation.
+
+   Sometimes, though, it can be helpful to keep the shell process
+around:
+
+     find /foo -maxdepth 1 -atime +366 -print0 |
+     xargs -r0 sh -c 'mv "$@" /archive || exit 255' move
+
+   Here, the shell will exit with status 255 if any `mv' failed.  This
+causes `xargs' to stop immediately.
+
+
 File: find.info,  Node: Regular Expressions,  Next: Environment Variables,  Prev: Invoking xargs,  Up: Reference
 
-6.5 Regular Expressions
+7.5 Regular Expressions
 =======================
 
 The `-regex' and `-iregex' tests of `find' allow matching by regular
@@ -3502,7 +4423,7 @@ should be one of the following:
 
 File: find.info,  Node: findutils-default regular expression syntax,  Next: awk regular expression syntax,  Up: Regular Expressions
 
-6.5.1 `findutils-default' regular expression syntax
+7.5.1 `findutils-default' regular expression syntax
 ---------------------------------------------------
 
 The character `.' matches any single character.
@@ -3588,7 +4509,7 @@ subexpressions within groups.
 
 File: find.info,  Node: awk regular expression syntax,  Next: egrep regular expression syntax,  Prev: findutils-default regular expression syntax,  Up: Regular Expressions
 
-6.5.2 `awk' regular expression syntax
+7.5.2 `awk' regular expression syntax
 -------------------------------------
 
 The character `.' matches any single character except the null
@@ -3645,7 +4566,7 @@ subexpressions within groups.
 
 File: find.info,  Node: egrep regular expression syntax,  Next: emacs regular expression syntax,  Prev: awk regular expression syntax,  Up: Regular Expressions
 
-6.5.3 `egrep' regular expression syntax
+7.5.3 `egrep' regular expression syntax
 ---------------------------------------
 
 The character `.' matches any single character except newline.
@@ -3711,7 +4632,7 @@ subexpressions within groups.
 
 File: find.info,  Node: emacs regular expression syntax,  Next: gnu-awk regular expression syntax,  Prev: egrep regular expression syntax,  Up: Regular Expressions
 
-6.5.4 `emacs' regular expression syntax
+7.5.4 `emacs' regular expression syntax
 ---------------------------------------
 
 The character `.' matches any single character except newline.
@@ -3797,7 +4718,7 @@ subexpressions within groups.
 
 File: find.info,  Node: gnu-awk regular expression syntax,  Next: grep regular expression syntax,  Prev: emacs regular expression syntax,  Up: Regular Expressions
 
-6.5.5 `gnu-awk' regular expression syntax
+7.5.5 `gnu-awk' regular expression syntax
 -----------------------------------------
 
 The character `.' matches any single character.
@@ -3870,7 +4791,7 @@ subexpressions within groups.
 
 File: find.info,  Node: grep regular expression syntax,  Next: posix-awk regular expression syntax,  Prev: gnu-awk regular expression syntax,  Up: Regular Expressions
 
-6.5.6 `grep' regular expression syntax
+7.5.6 `grep' regular expression syntax
 --------------------------------------
 
 The character `.' matches any single character except newline.
@@ -3962,7 +4883,7 @@ subexpressions within groups.
 
 File: find.info,  Node: posix-awk regular expression syntax,  Next: posix-basic regular expression syntax,  Prev: grep regular expression syntax,  Up: Regular Expressions
 
-6.5.7 `posix-awk' regular expression syntax
+7.5.7 `posix-awk' regular expression syntax
 -------------------------------------------
 
 The character `.' matches any single character except the null
@@ -4025,94 +4946,15 @@ subexpressions within groups.
 
 File: find.info,  Node: posix-basic regular expression syntax,  Next: posix-egrep regular expression syntax,  Prev: posix-awk regular expression syntax,  Up: Regular Expressions
 
-6.5.8 `posix-basic' regular expression syntax
+7.5.8 `posix-basic' regular expression syntax
 ---------------------------------------------
 
-The character `.' matches any single character except the null
-character.
-
-`\+'
-     indicates that the regular expression should match one or more
-     occurrences of the previous atom or regexp.
-
-`\?'
-     indicates that the regular expression should match zero or one
-     occurrence of the previous atom or regexp.
-
-`+ and ?'
-     match themselves.
-
-   Bracket expressions are used to match ranges of characters.  Bracket
-expressions where the range is backward, for example `[z-a]', are
-invalid.  Within square brackets, `\' is taken literally.  Character
-classes are supported; for example `[[:digit:]]' will match a single
-decimal digit.
-
-   GNU extensions are supported:
-  1. `\w' matches a character within a word
-
-  2. `\W' matches a character which is not within a word
-
-  3. `\<' matches the beginning of a word
-
-  4. `\>' matches the end of a word
-
-  5. `\b' matches a word boundary
-
-  6. `\B' matches characters which are not a word boundary
-
-  7. `\`' matches the beginning of the whole input
-
-  8. `\'' matches the end of the whole input
-
-
-   Grouping is performed with backslashes followed by parentheses `\(',
-`\)'.  A backslash followed by a digit acts as a back-reference and
-matches the same thing as the previous grouped expression indicated by
-that number.  For example `\2' matches the second group expression.
-The order of group expressions is determined by the position of their
-opening parenthesis `\('.
-
-   The alternation operator is `\|'.
-
-   The character `^' only represents the beginning of a string when it
-appears:
-  1. At the beginning of a regular expression
-
-  2. After an open-group, signified by `\('
-
-  3. After the alternation operator `\|'
-
-
-   The character `$' only represents the end of a string when it
-appears:
-  1. At the end of a regular expression
-
-  2. Before a close-group, signified by `\)'
-
-  3. Before the alternation operator `\|'
-
-
-   `\*', `\+' and `\?' are special at any point in a regular expression
-except:
-  1. At the beginning of a regular expression
-
-  2. After an open-group, signified by `\('
-
-  3. After the alternation operator `\|'
-
-
-   Intervals are specified by `\{' and `\}'.  Invalid intervals such as
-`a\{1z' are not accepted.
-
-   The longest possible match is returned; this applies to the regular
-expression as a whole and (subject to this constraint) to
-subexpressions within groups.
+This is a synonym for ed.
 
 
 File: find.info,  Node: posix-egrep regular expression syntax,  Next: posix-extended regular expression syntax,  Prev: posix-basic regular expression syntax,  Up: Regular Expressions
 
-6.5.9 `posix-egrep' regular expression syntax
+7.5.9 `posix-egrep' regular expression syntax
 ---------------------------------------------
 
 The character `.' matches any single character except newline.
@@ -4181,7 +5023,7 @@ subexpressions within groups.
 
 File: find.info,  Node: posix-extended regular expression syntax,  Prev: posix-egrep regular expression syntax,  Up: Regular Expressions
 
-6.5.10 `posix-extended' regular expression syntax
+7.5.10 `posix-extended' regular expression syntax
 -------------------------------------------------
 
 The character `.' matches any single character except the null
@@ -4258,7 +5100,7 @@ subexpressions within groups.
 
 File: find.info,  Node: Environment Variables,  Prev: Regular Expressions,  Up: Reference
 
-6.6 Environment Variables
+7.6 Environment Variables
 =========================
 
 LANG
@@ -4305,6 +5147,14 @@ POSIXLY_CORRECT
      POSIXLY_CORRECT is set, blocks are units of 512 bytes.  Otherwise
      they are units of 1024 bytes.
 
+     Setting this variable also turns off warning messages (that is,
+     implies `-nowarn') by default, because POSIX requires that apart
+     from the output for `-ok', all messages printed on stderr are
+     diagnositcs and must result in a non-zero exit status.
+
+     Arguments to `-perm' beginning with `+' are treated differently
+     when POSIXLY_CORRECT is set. See *note -perm: Mode Bits.
+
 TZ
      Affects the time zone used for some of the time-related format
      directives of `-printf' and `-fprintf'.
@@ -4312,7 +5162,7 @@ TZ
 
 File: find.info,  Node: Common Tasks,  Next: Worked Examples,  Prev: Reference,  Up: Top
 
-7 Common Tasks
+8 Common Tasks
 **************
 
 The sections that follow contain some extended examples that both give
@@ -4331,7 +5181,7 @@ common real-world problems.
 
 File: find.info,  Node: Viewing And Editing,  Next: Archiving,  Up: Common Tasks
 
-7.1 Viewing And Editing
+8.1 Viewing And Editing
 =======================
 
 To view a list of files that meet certain criteria, simply run your
@@ -4354,12 +5204,25 @@ this way.  We can get around this difficulty by using xargs like this:
      xargs --arg-file=todo emacs
 
    Here, `xargs' will run `emacs' as many times as necessary to visit
-all of the files listed in the file `todo'.
+all of the files listed in the file `todo'.  Generating a temporary
+file is not always convenient, though.  This command does much the same
+thing without needing one:
+
+     find /usr/include -name '*.h' | xargs grep -l mode_t |
+     xargs sh -c 'emacs "$@" < /dev/tty' Emacs
+
+   The example above illustrates a useful trick; Using `sh -c' you can
+invoke a shell command from `xargs'.  The `$@' in the command line is
+expanded by the shell to a list of arguments as provided by `xargs'.
+The single quotes in the command line protect the `$@' against
+expansion by your interactive shell (which will normally have no
+arguments and thus expand `$@' to nothing).  The capitalised `Emacs' on
+the command line is used as `$0' by the shell that `xargs' launches.
 
 
 File: find.info,  Node: Archiving,  Next: Cleaning Up,  Prev: Viewing And Editing,  Up: Common Tasks
 
-7.2 Archiving
+8.2 Archiving
 =============
 
 You can pass a list of files produced by `find' to a file archiving
@@ -4403,7 +5266,7 @@ another:
 
 File: find.info,  Node: Cleaning Up,  Next: Strange File Names,  Prev: Archiving,  Up: Common Tasks
 
-7.3 Cleaning Up
+8.3 Cleaning Up
 ===============
 
 This section gives examples of removing unwanted files in various
@@ -4439,18 +5302,41 @@ David J. MacKenzie<1>#'.
 
    Removing old files from `/tmp' is commonly done from `cron':
 
-     find /tmp /var/tmp -not -type d -mtime +3 -delete
-     find /tmp /var/tmp -depth -mindepth 1 -type d -empty -delete
+     find /tmp /var/tmp -depth -not        -type d -mtime +3 -delete
+     find /tmp /var/tmp -depth -mindepth 1 -type d -empty    -delete
 
-   The second `find' command above uses `-depth' so it cleans out empty
-directories depth-first, hoping that the parents become empty and can
-be removed too.  It uses `-mindepth' to avoid removing `/tmp' itself if
-it becomes totally empty.
+   The second `find' command above cleans out empty directories
+depth-first (`-delete' implies `-depth' anyway), hoping that the
+parents become empty and can be removed too.  It uses `-mindepth' to
+avoid removing `/tmp' itself if it becomes totally empty.
+
+   Lastly, an example of a program that almost certainly does not do
+what the user intended:
+
+     find dirname -delete -name quux
+
+   If the user hoped to delete only files named `quux' they will get an
+unpleasant surprise; this command will attempt to delete everything at
+or below the starting point `dirname'.  This is because `find'
+evaluates the items on the command line as an expression.  The `find'
+program will normally execute an action if the preceeding action
+succeeds.  Here, there is no action or test before the `-delete' so it
+will always be executed.  The `-name quux' test will be performed for
+files we successfully deleted, but that test has no effect since
+`-delete' also disables the default `-print' operation.   So the above
+example will probably delete a lot of files the user didn't want to
+delete.
+
+   This command is also likely to do something you did not intend:
+     find dirname -path dirname/foo -prune -o -delete
+
+   Because `-delete' turns on `-depth', the `-prune' action has no
+effect and files in `dirname/foo' will be deleted too.
 
 
 File: find.info,  Node: Strange File Names,  Next: Fixing Permissions,  Prev: Cleaning Up,  Up: Common Tasks
 
-7.4 Strange File Names
+8.4 Strange File Names
 ======================
 
 `find' can help you remove or rename a file with strange characters in
@@ -4493,7 +5379,7 @@ printed, then use `-execdir' instead of `-okdir'.
 
 File: find.info,  Node: Fixing Permissions,  Next: Classifying Files,  Prev: Strange File Names,  Up: Common Tasks
 
-7.5 Fixing Permissions
+8.5 Fixing Permissions
 ======================
 
 Suppose you want to make sure that everyone can write to the
@@ -4509,7 +5395,7 @@ directories do _not_ have world write permission.
 
 File: find.info,  Node: Classifying Files,  Prev: Fixing Permissions,  Up: Common Tasks
 
-7.6 Classifying Files
+8.6 Classifying Files
 =====================
 
 If you want to classify a set of files into several groups based on
@@ -4531,7 +5417,7 @@ is one of the most time consuming parts of its work).
 
 File: find.info,  Node: Worked Examples,  Next: Security Considerations,  Prev: Common Tasks,  Up: Top
 
-8 Worked Examples
+9 Worked Examples
 *****************
 
 The tools in the findutils package, and in particular `find', have a
@@ -4546,12 +5432,13 @@ performed, and compares the different ways of achieving them.
 * Menu:
 
 * Deleting Files::
+* Copying A Subset of Files::
 * Updating A Timestamp File::
 
 
-File: find.info,  Node: Deleting Files,  Next: Updating A Timestamp File,  Up: Worked Examples
+File: find.info,  Node: Deleting Files,  Next: Copying A Subset of Files,  Up: Worked Examples
 
-8.1 Deleting Files
+9.1 Deleting Files
 ==================
 
 One of the most common tasks that `find' is used for is locating files
@@ -4569,10 +5456,10 @@ sophisticated ways of locating the files that need to be deleted.
 We'll assume that the files we want to delete are old files underneath
 `/var/tmp/stuff'.
 
-8.1.1 The Traditional Way
+9.1.1 The Traditional Way
 -------------------------
 
-The traditional way to delete files in `var/tmp/stuff' that have not
+The traditional way to delete files in `/var/tmp/stuff' that have not
 been modified in over 90 days would have been:
 
      find /var/tmp/stuff -mtime +90 -exec /bin/rm {} \;
@@ -4604,7 +5491,7 @@ technique will usually work, it will suddenly fail when there are lots
 of files to delete.  Since the task is to delete unwanted files, this
 is precisely the time we don't want things to go wrong.
 
-8.1.2 Making Use of xargs
+9.1.2 Making Use of xargs
 -------------------------
 
 So, is there a way to be more efficient in the use of `fork()' and
@@ -4631,7 +5518,7 @@ given the limits on command line length.
 is widely implemented (all modern versions of Unix offer it).  So far
 then, the news is all good.  However, there is bad news too.
 
-8.1.3 Unusual characters in filenames
+9.1.3 Unusual characters in filenames
 -------------------------------------
 
 Unix-like systems allow any characters to appear in file names with the
@@ -4666,11 +5553,11 @@ command:
 all the possible characters that could appear in the list of files to
 delete.  This is good news.  However, there is, as I'm sure you're
 expecting, also more bad news.  The problem is that this is not a
-portable construct; although other versions of Unix (notable
+portable construct; although other versions of Unix (notably
 BSD-derived ones) support `-print0', it's not universal.  So, is there
 a more universal mechanism?
 
-8.1.4 Going back to -exec
+9.1.4 Going back to -exec
 -------------------------
 
 There is indeed a more universal mechanism, which is a slight
@@ -4693,7 +5580,7 @@ findutils did not support `-exec ... +' until version 4.2.12; one of
 the reasons for this is that it already had the `-print0' action in any
 case.
 
-8.1.5 A more secure version of -exec
+9.1.5 A more secure version of -exec
 ------------------------------------
 
 The command above seems to be efficient and portable.  However, within
@@ -4761,7 +5648,7 @@ how many files we actually need to delete from each directory.
 processing, no.  However, in the specific case of deleting files it is
 indeed possible to do better.
 
-8.1.6 Using the -delete action
+9.1.6 Using the -delete action
 ------------------------------
 
 The most efficient and secure method of solving this problem is to use
@@ -4780,7 +5667,7 @@ action has.
    The `-delete' action was introduced by the BSD family of operating
 systems.
 
-8.1.7 Improving things still further
+9.1.7 Improving things still further
 ------------------------------------
 
 Is it possible to improve things still further?  Not without either
@@ -4834,7 +5721,7 @@ things:
    * Other activity - are other programs also doing things on those
      disks?
 
-8.1.8 Conclusion
+9.1.8 Conclusion
 ----------------
 
 The fastest and most secure way to delete files with the help of `find'
@@ -4852,9 +5739,52 @@ insecure and isn't supported by versions of GNU findutils prior to
 4.2.12.
 
 
-File: find.info,  Node: Updating A Timestamp File,  Prev: Deleting Files,  Up: Worked Examples
+File: find.info,  Node: Copying A Subset of Files,  Next: Updating A Timestamp File,  Prev: Deleting Files,  Up: Worked Examples
 
-8.2 Updating A Timestamp File
+9.2 Copying A Subset of Files
+=============================
+
+Suppose you want to copy some files from `/source-dir' to `/dest-dir',
+but there are a small number of files in `/source-dir' you don't want
+to copy.
+
+   One option of course is `cp /source-dir /dest-dir' followed by
+deletion of the unwanted material under `/dest-dir'.  But often that
+can be inconvenient, because for example we would have copied a large
+amount of extraneous material, or because `/dest-dir' is too small.
+Naturally there are many other possible reasons why this strategy may
+be unsuitable.
+
+   So we need to have some way of identifying which files we want to
+copy, and we need to have a way of copying that file list.  The second
+part of this condition is met by `cpio -p'.  Of course, we can identify
+the files we wish to copy by using `find'.  Here is a command that
+solves our problem:
+
+     cd /source-dir
+     find . -name '.snapshot' -prune -o \( \! -name '*~' -print0 \) |
+     cpio -pmd0   /dest-dir
+
+   The first part of the `find' command here identifies files or
+directoires named `.snapshot' and tells `find' not to recurse into them
+(since they do not need to be copied).  The combination `-name
+'.snapshot' -prune' yields false for anything that didn't get pruned,
+but it is exactly those files we want to copy.  Therefore we need to
+use an OR (`-o') condition to introduce the rest of our expression.
+The remainder of the expression simply arranges for the name of any
+file not ending in `~' to be printed.
+
+   Using `-print0' ensures that white space characters in file names do
+not pose a problem.  The `cpio' command does the actual work of copying
+files.  The program as a whole fails if the `cpio' program returns
+nonzero.  If the `find' command returns non-zero on the other hand, the
+Unix shell will not diagnose a problem (since `find' is not the last
+command in the pipeline).
+
+
+File: find.info,  Node: Updating A Timestamp File,  Prev: Copying A Subset of Files,  Up: Worked Examples
+
+9.3 Updating A Timestamp File
 =============================
 
 Suppose we have a directory full of files which is maintained with a
@@ -4867,7 +5797,7 @@ file which gives the timestamp on the newest file in the collection.
    We can use `find' to achieve this, but there are several different
 ways to do it.
 
-8.2.1 Updating the Timestamp The Wrong Way
+9.3.1 Updating the Timestamp The Wrong Way
 ------------------------------------------
 
 The obvious but wrong answer is just to use `-newer':-
@@ -4885,7 +5815,7 @@ be different, this could well be the wrong value.
 modification time of `timestamp' every time a file is to be compared
 against it, but that will reduce the performance of `find'.
 
-8.2.2 Using the test utility to compare timestamps
+9.3.2 Using the test utility to compare timestamps
 --------------------------------------------------
 
 The `test' command can be used to compare timestamps:
@@ -4897,7 +5827,7 @@ The `test' command can be used to compare timestamps:
 into account.  This resolves our earlier problem, but unfortunately
 this runs much more slowly.
 
-8.2.3 A combined approach
+9.3.3 A combined approach
 -------------------------
 
 We can of course still use `-newer' to cut down on the number of calls
@@ -4915,7 +5845,7 @@ timestamp.
    This is indeed faster in general, but the speed difference will
 depend on how many updated files there are.
 
-8.2.4 Using -printf and sort to compare timestamps
+9.3.4 Using -printf and sort to compare timestamps
 --------------------------------------------------
 
 It is possible to use the `-printf' action to abandon the use of `test'
@@ -4938,35 +5868,14 @@ of `$newest' if that variable is set, but to `timestamp' otherwise.
 This ensures that an argument is always given to the `-r' option of the
 `touch' command.
 
-   This approach seems quite efficient, but unfortunately it has a bug.
-Many operating systems now keep file modification time information at a
-granularity which is finer than one second.  Unfortunately the `%A@'
-format for `-printf' only prints a whole-number value currently; that
-is, these values are at a one-second granularity.  This means that in
-our example above, `$newest' will be the name of a file which is no
-more than one second older than the newest file, but may indeed be
-older.
+   This approach seems quite efficient, but unfortunately it has a
+problem.  Many operating systems now keep file modification time
+information at a granularity which is finer than one second.  Findutils
+version 4.3.3 and later will print a fractional part with %A@, but
+older versions will not.
 
-   It would be possible to solve this problem with some kind of loop:
-
-     while true; do
-             newest=$(find subdir -newer timestamp -printf "%A@:%p\n" |
-                sort -n |
-                tail -1 |
-                cut -d: -f2- )
-             if test -z "$newest" ; then
-                     break
-             else
-                     touch -r "$newest" timestamp
-             fi
-     done
-
-   A better fix for this problem would be to allow the `%A@' format to
-produce a result having a fractional part, too.  While this is planned
-for GNU `find', it hasn't been done yet.
-
-8.2.5 Coping with sub-second timestamp resolution
--------------------------------------------------
+9.3.5 Solving the problem with make
+-----------------------------------
 
 Another tool which often works with timestamps is `make'.  We can use
 `find' to generate a `Makefile' file on the fly and then use `make' to
@@ -4984,7 +5893,7 @@ update the timestamps:
 to cope with white space within file names, and adjusting it to do so
 would require a rather complex shell script.
 
-8.2.6 Coping with odd filenames too
+9.3.6 Coping with odd filenames too
 -----------------------------------
 
 We can fix both of these problems (looping and problems with white
@@ -5027,8 +5936,8 @@ file, the timestamp is updated.
 
 File: find.info,  Node: Security Considerations,  Next: Error Messages,  Prev: Worked Examples,  Up: Top
 
-9 Security Considerations
-*************************
+10 Security Considerations
+**************************
 
 Security considerations are important if you are using `find' or
 `xargs' to search for or process files that don't belong to you or
@@ -5059,8 +5968,8 @@ on what the system is going to do with the files found by `find'.
 
 File: find.info,  Node: Levels of Risk,  Next: Security Considerations for find,  Up: Security Considerations
 
-9.1 Levels of Risk
-==================
+10.1 Levels of Risk
+===================
 
 There are some security risks inherent in the use of `find', `xargs'
 and (to a lesser extent) `locate'.  The severity of these risks depends
@@ -5123,8 +6032,8 @@ this way, and that's a deliberate choice
 
 File: find.info,  Node: Security Considerations for find,  Next: Security Considerations for xargs,  Prev: Levels of Risk,  Up: Security Considerations
 
-9.2 Security Considerations for `find'
-======================================
+10.2 Security Considerations for `find'
+=======================================
 
 Some of the actions `find' might take have a direct effect; these
 include `-exec' and `-delete'.  However, it is also common to use
@@ -5179,8 +6088,8 @@ which would not normally be included in the search (defeating the
 
 File: find.info,  Node: Problems with -exec and filenames,  Next: Changing the Current Working Directory,  Up: Security Considerations for find
 
-9.2.1 Problems with -exec and filenames
----------------------------------------
+10.2.1 Problems with -exec and filenames
+----------------------------------------
 
 It is safe in many cases to use the `-execdir' action with any file
 name.  Because `-execdir' prefixes the arguments it passes to programs
@@ -5192,6 +6101,7 @@ interpreted as an option.  For example the file `-f' would be passed to
 program you are running.  For example constructs such as these two
 commands
 
+     # risky
      find -exec sh -c "something {}" \;
      find -execdir sh -c "something {}" \;
 
@@ -5205,11 +6115,22 @@ someone's home directory.
 data (such as the names of files) to commands which interpret arguments
 as commands to be further interpreted (for example `sh').
 
+   In the case of the shell, there is a clever workaround for this
+problem:
+
+     # safer
+     find -exec sh -c 'something "$@"' {} \;
+     find -execdir sh -c 'something "$@"' {}\;
+
+   This approach is not guaranteed to avoid every problem, but it is
+much safer than substituting data of an attacker's choice into the text
+of a shell command.
+
 
 File: find.info,  Node: Changing the Current Working Directory,  Next: Race Conditions with -exec,  Prev: Problems with -exec and filenames,  Up: Security Considerations for find
 
-9.2.2 Changing the Current Working Directory
---------------------------------------------
+10.2.2 Changing the Current Working Directory
+---------------------------------------------
 
 As `find' searches the filesystem, it finds subdirectories and then
 searches within them by changing its working directory.  First, `find'
@@ -5245,11 +6166,11 @@ of your system.
 
 File: find.info,  Node: O_NOFOLLOW,  Next: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
 
-9.2.2.1 O_NOFOLLOW
-..................
+10.2.2.1 O_NOFOLLOW
+...................
 
 If your system supports the O_NOFOLLOW flag (1) to the `open(2)' system
-call, `find' uses it when safely changing directory.  The target
+call, `find' uses it to safely change directories.  The target
 directory is first opened and then `find' changes working directory
 with the `fchdir()' system call.  This ensures that symbolic links are
 not followed, preventing the sort of race condition attack in which use
@@ -5286,8 +6207,8 @@ system and version number; when this happens you will see
 
 File: find.info,  Node: Systems without O_NOFOLLOW,  Prev: O_NOFOLLOW,  Up: Changing the Current Working Directory
 
-9.2.2.2 Systems without O_NOFOLLOW
-..................................
+10.2.2.2 Systems without O_NOFOLLOW
+...................................
 
 The strategy for preventing this type of problem on systems that lack
 support for the O_NOFOLLOW flag is more complex.  Each time `find'
@@ -5307,8 +6228,8 @@ O_NOFOLLOW, this will cause `find''s security check to fail.
    However, this does not normally represent a security problem, since
 the automounter configuration is normally set up by the system
 administrator.  Therefore, if the `chdir()' sanity check fails, `find'
-will make one more attempt.  If that succeeds, execution carries on as
-normal.  This is the usual case for automounters.
+will make one more attempt(1).  If that succeeds, execution carries on
+as normal.  This is the usual case for automounters.
 
    Where an attacker is trying to exploit a race condition, the problem
 may not have gone away on the second attempt.  If this is the case,
@@ -5323,11 +6244,15 @@ check, in the worst case the only things that `find' would have done
 with the directory are to move into it and back out to the original
 parent.  No operations would have been performed within that directory.
 
+   ---------- Footnotes ----------
+
+   (1) This may not be the case for the fts-based executable
+
 
 File: find.info,  Node: Race Conditions with -exec,  Next: Race Conditions with -print and -print0,  Prev: Changing the Current Working Directory,  Up: Security Considerations for find
 
-9.2.3 Race Conditions with -exec
---------------------------------
+10.2.3 Race Conditions with -exec
+---------------------------------
 
 The `-exec' action causes another program to be run.  It passes to the
 program the name of the file which is being considered at the time.
@@ -5378,8 +6303,8 @@ by untrusted users.  For similar reasons, `-execdir' does not allow
 
 File: find.info,  Node: Race Conditions with -print and -print0,  Prev: Race Conditions with -exec,  Up: Security Considerations for find
 
-9.2.4 Race Conditions with -print and -print0
----------------------------------------------
+10.2.4 Race Conditions with -print and -print0
+----------------------------------------------
 
 The `-print' and `-print0' actions can be used to produce a list of
 files matching some criteria, which can then be used with some other
@@ -5400,8 +6325,8 @@ action is less secure even than `-print0'.
 
 File: find.info,  Node: Security Considerations for xargs,  Next: Security Considerations for locate,  Prev: Security Considerations for find,  Up: Security Considerations
 
-9.3 Security Considerations for `xargs'
-=======================================
+10.3 Security Considerations for `xargs'
+========================================
 
 The description of the race conditions affecting the `-print' action of
 `find' shows that `xargs' cannot be secure if it is possible for an
@@ -5439,32 +6364,48 @@ considers file names to be separated by ASCII NUL characters rather
 than whitespace.  However, useful as this option is, the POSIX standard
 does not make it mandatory.
 
+   POSIX also specifies that `xargs' interprets quoting and trailing
+whitespace specially in filenames, too.  This means that using `find
+... -print | xargs ...' can cause the commands run by `xargs' to
+receive a list of file names which is not the same as the list printed
+by `find'.   The interpretation of quotes and trailing whitespace is
+turned off by the `-0' argument to `xargs', which is another reason to
+use that option.
+
 
 File: find.info,  Node: Security Considerations for locate,  Next: Security Summary,  Prev: Security Considerations for xargs,  Up: Security Considerations
 
-9.4 Security Considerations for `locate'
-========================================
+10.4 Security Considerations for `locate'
+=========================================
 
-9.4.1 Race Conditions
----------------------
+10.4.1 Race Conditions
+----------------------
 
 It is fairly unusual for the output of `locate' to be fed into another
 command.  However, if this were to be done, this would raise the same
-set of security issues as the use of `find ...  -print'.  Although the
-problems relating to whitespace in file names can be resolved by the
-`-0' option of `locate', this still leaves the race condition problems
-associated with `find ...  -print0'.  There is no way to avoid these
+set of security issues as the use of `find ... -print'.  Although the
+problems relating to whitespace in file names can be resolved by using
+`locate''s `-0' option, this still leaves the race condition problems
+associated with `find ... -print0'.  There is no way to avoid these
 problems in the case of `locate'.
 
-9.4.2 Long File Name Bugs with Old-Format Databases
----------------------------------------------------
+10.4.2 Long File Name Bugs with Old-Format Databases
+----------------------------------------------------
 
-All versions of `locate' prior to 4.2.31, and also versions 4.3.0 to
-4.3.6, have a bug in the way that old-format databases are read.  They
-read file names into a fixed-length 1026 byte buffer, allocated on the
-heap.  This buffer is not extended if file names are too long to fit
-into the buffer.  No range checking on the length of the filename is
-performed.  This could in theory lead to a privilege escalation attack.
+Old versions of `locate' have a bug in the way that old-format
+databases are read.  This bug affects the following versions of
+`locate':
+
+  1. All releases prior to 4.2.31
+
+  2. All 4.3.x releases prior to 4.3.7
+
+   The affected versions of `locate' read file names into a
+fixed-length 1026 byte buffer, allocated on the heap.  This buffer is
+not extended if file names are too long to fit into the buffer.  No
+range checking on the length of the filename is performed.  This could
+in theory lead to a privilege escalation attack.  Findutils versions
+4.3.0 to 4.3.6 are also affected.
 
    On systems using the old database format and affected versions of
 `locate', carefully-chosen long file names could in theory allow
@@ -5472,9 +6413,9 @@ malicious users to run code of their choice as any user invoking locate.
 
    If remote users can choose the names of files stored on your system,
 and these files are indexed by `updatedb', this may be a remote
-security vulnerability.  Findutils version 4.2.31 fixes this problem.
-The `updatedb', `bigram' and `code' programs do no appear to be
-affected.
+security vulnerability.  Findutils version 4.2.31 and findutils version
+4.3.7 include fixes for this problem.  The `updatedb', `bigram' and
+`code' programs do no appear to be affected.
 
    If you are also using GNU coreutils, you can use the following
 command to determine the length of the longest file name on a given
@@ -5489,8 +6430,8 @@ installations and most users will not be affected by this problem.
 
 File: find.info,  Node: Security Summary,  Prev: Security Considerations for locate,  Up: Security Considerations
 
-9.5 Summary
-===========
+10.5 Summary
+============
 
 Where untrusted parties can create files on the system, or affect the
 names of files that are created, all uses for `find', `locate' and
@@ -5512,7 +6453,7 @@ Informational use only
 
 File: find.info,  Node: Error Messages,  Next: GNU Free Documentation License,  Prev: Security Considerations,  Up: Top
 
-10 Error Messages
+11 Error Messages
 *****************
 
 This section describes some of the error messages sometimes made by
@@ -5539,8 +6480,13 @@ listed.
 
 File: find.info,  Node: Error Messages From find,  Next: Error Messages From xargs,  Up: Error Messages
 
-10.1 Error Messages From `find'
+11.1 Error Messages From `find'
 ===============================
+
+Most error messages produced by find are self-explanatory.  Error
+messages sometimes include a filename.  When this happens, the filename
+is quoted in order to prevent any unusual characters in the filename
+making unwanted changes in the state of the terminal.
 
 `invalid predicate `-foo''
      This means that the `find' command line included something that
@@ -5559,7 +6505,7 @@ File: find.info,  Node: Error Messages From find,  Next: Error Messages From xar
 `Warning: filesystem /path/foo has recently been mounted'
 `Warning: filesystem /path/foo has recently been unmounted'
      These messages might appear when `find' moves into a directory and
-     finds that the device number and inode are different to what it
+     finds that the device number and inode are different from what it
      expected them to be.  If the directory `find' has moved into is on
      an network filesystem (NFS), it will not issue this message,
      because `automount' frequently mounts new filesystems on
@@ -5598,9 +6544,9 @@ File: find.info,  Node: Error Messages From find,  Next: Error Messages From xar
      somebody has moved one of the parent directories to another
      location in the same filesystem.  This may or may not have been
      done maliciously.  In any case, `find' stops at this point to
-     avoid traversing parts of the filesystem that it wasn't intended.
-     You can use `ls -li' or `find /path -inum 12345 -o -inum 67893' to
-     find out more about what has happened.
+     avoid traversing parts of the filesystem that it wasn't intended
+     to.  You can use `ls -li' or `find /path -inum 12345 -o -inum
+     67893' to find out more about what has happened.
 
 `sanity check of the fnmatch() library function failed.'
      Please submit a bug report.  You may well be asked questions about
@@ -5626,7 +6572,7 @@ File: find.info,  Node: Error Messages From find,  Next: Error Messages From xar
 
 File: find.info,  Node: Error Messages From xargs,  Next: Error Messages From locate,  Prev: Error Messages From find,  Up: Error Messages
 
-10.2 Error Messages From xargs
+11.2 Error Messages From xargs
 ==============================
 
 `environment is too large for exec'
@@ -5663,7 +6609,7 @@ File: find.info,  Node: Error Messages From xargs,  Next: Error Messages From lo
 
 File: find.info,  Node: Error Messages From locate,  Next: Error Messages From updatedb,  Prev: Error Messages From xargs,  Up: Error Messages
 
-10.3 Error Messages From `locate'
+11.3 Error Messages From `locate'
 =================================
 
 `warning: database `/usr/local/var/locatedb' is more than 8 days old'
@@ -5687,7 +6633,7 @@ File: find.info,  Node: Error Messages From locate,  Next: Error Messages From u
 
 File: find.info,  Node: Error Messages From updatedb,  Prev: Error Messages From locate,  Up: Error Messages
 
-10.4 Error Messages From updatedb
+11.4 Error Messages From updatedb
 =================================
 
 The `updatedb' program (and the programs it invokes) do issue error
@@ -6148,25 +7094,26 @@ Expressions::, for more information on expressions.
                                                               (line  27)
 * -a:                                    Combining Primaries With Operators.
                                                               (line  20)
-* -amin:                                 Age Ranges.          (line  18)
+* -amin:                                 Age Ranges.          (line  20)
 * -and:                                  Combining Primaries With Operators.
                                                               (line  20)
 * -anewer:                               Comparing Timestamps.
-                                                              (line  17)
+                                                              (line  62)
 * -atime:                                Age Ranges.          (line   9)
-* -cmin:                                 Age Ranges.          (line  19)
+* -cmin:                                 Age Ranges.          (line  21)
 * -cnewer:                               Comparing Timestamps.
-                                                              (line  18)
+                                                              (line  63)
 * -ctime:                                Age Ranges.          (line  10)
 * -d:                                    Directories.         (line  29)
-* -daystart:                             Age Ranges.          (line  29)
+* -daystart:                             Age Ranges.          (line  31)
 * -delete:                               Delete Files.        (line   7)
 * -depth:                                Directories.         (line  21)
 * -empty:                                Size.                (line  50)
 * -exec <1>:                             Multiple Files.      (line  25)
-* -exec:                                 Single File.         (line  34)
+* -exec:                                 Single File.         (line  53)
 * -execdir <1>:                          Multiple Files.      (line  15)
 * -execdir:                              Single File.         (line   9)
+* -executable:                           Mode Bits.           (line  42)
 * -false:                                Combining Primaries With Operators.
                                                               (line  47)
 * -fls:                                  Print File Information.
@@ -6179,28 +7126,30 @@ Expressions::, for more information on expressions.
 * -fstype:                               Filesystems.         (line  22)
 * -gid:                                  Owner.               (line  13)
 * -group:                                Owner.               (line   8)
-* -ignore_readdir_race:                  Directories.         (line  88)
+* -ignore_readdir_race:                  Directories.         (line  92)
 * -ilname:                               Symbolic Links.      (line  87)
 * -iname:                                Base Name Patterns.  (line   8)
 * -inum:                                 Hard Links.          (line  41)
 * -ipath:                                Full Name Patterns.  (line  20)
-* -iregex:                               Full Name Patterns.  (line  26)
-* -iwholename:                           Full Name Patterns.  (line   8)
+* -iregex:                               Full Name Patterns.  (line  51)
+* -iwholename:                           Full Name Patterns.  (line  21)
 * -links:                                Hard Links.          (line  53)
 * -lname:                                Symbolic Links.      (line  86)
 * -ls:                                   Print File Information.
                                                               (line   7)
 * -maxdepth:                             Directories.         (line  11)
 * -mindepth:                             Directories.         (line  16)
-* -mmin:                                 Age Ranges.          (line  20)
+* -mmin:                                 Age Ranges.          (line  22)
 * -mount:                                Filesystems.         (line  15)
 * -mtime:                                Age Ranges.          (line  11)
 * -name:                                 Base Name Patterns.  (line   7)
 * -newer:                                Comparing Timestamps.
-                                                              (line  19)
+                                                              (line  64)
+* -newerXY:                              Comparing Timestamps.
+                                                              (line   7)
 * -nogroup:                              Owner.               (line  18)
-* -noignore_readdir_race:                Directories.         (line 105)
-* -noleaf:                               Directories.         (line  73)
+* -noignore_readdir_race:                Directories.         (line 109)
+* -noleaf:                               Directories.         (line  77)
 * -not:                                  Combining Primaries With Operators.
                                                               (line  14)
 * -nouser:                               Owner.               (line  17)
@@ -6210,17 +7159,18 @@ Expressions::, for more information on expressions.
 * -okdir:                                Querying.            (line  11)
 * -or:                                   Combining Primaries With Operators.
                                                               (line  24)
-* -path:                                 Full Name Patterns.  (line  19)
-* -perm:                                 Permissions.         (line  10)
+* -path:                                 Full Name Patterns.  (line   7)
+* -perm:                                 Mode Bits.           (line  45)
 * -print:                                Print File Name.     (line   7)
 * -print0:                               Safe File Name Handling.
                                                               (line  12)
 * -printf:                               Print File Information.
                                                               (line  53)
 * -prune:                                Directories.         (line  34)
-* -quit:                                 Directories.         (line  62)
-* -regex:                                Full Name Patterns.  (line  25)
-* -regextype:                            Full Name Patterns.  (line  37)
+* -quit:                                 Directories.         (line  66)
+* -readable:                             Mode Bits.           (line  34)
+* -regex:                                Full Name Patterns.  (line  50)
+* -regextype:                            Full Name Patterns.  (line  62)
 * -samefile:                             Hard Links.          (line  36)
 * -size:                                 Size.                (line   7)
 * -true:                                 Combining Primaries With Operators.
@@ -6228,133 +7178,190 @@ Expressions::, for more information on expressions.
 * -type:                                 Type.                (line   7)
 * -uid:                                  Owner.               (line  12)
 * -used:                                 Comparing Timestamps.
-                                                              (line  29)
+                                                              (line  74)
 * -user:                                 Owner.               (line   7)
-* -wholename:                            Full Name Patterns.  (line   7)
+* -wholename:                            Full Name Patterns.  (line   8)
+* -writable:                             Mode Bits.           (line  37)
 * -xdev:                                 Filesystems.         (line  14)
 * -xtype:                                Type.                (line  36)
+* ago in date strings:                   Relative items in date strings.
+                                                              (line  23)
+* am in date strings:                    Time of day items.   (line  22)
+* day in date strings:                   Relative items in date strings.
+                                                              (line  15)
+* first in date strings:                 General date syntax. (line  26)
+* fortnight in date strings:             Relative items in date strings.
+                                                              (line  15)
+* get_date:                              Date input formats.  (line   6)
+* hour in date strings:                  Relative items in date strings.
+                                                              (line  15)
+* last DAY:                              Day of week items.   (line  15)
+* last in date strings:                  General date syntax. (line  26)
+* midnight in date strings:              Time of day items.   (line  22)
+* minute in date strings:                Relative items in date strings.
+                                                              (line  15)
+* month in date strings:                 Relative items in date strings.
+                                                              (line  15)
+* next DAY:                              Day of week items.   (line  15)
+* next in date strings:                  General date syntax. (line  26)
+* noon in date strings:                  Time of day items.   (line  22)
+* now in date strings:                   Relative items in date strings.
+                                                              (line  33)
+* pm in date strings:                    Time of day items.   (line  22)
+* this in date strings:                  Relative items in date strings.
+                                                              (line  33)
+* today in date strings:                 Relative items in date strings.
+                                                              (line  33)
+* tomorrow in date strings:              Relative items in date strings.
+                                                              (line  29)
+* week in date strings:                  Relative items in date strings.
+                                                              (line  15)
+* year in date strings:                  Relative items in date strings.
+                                                              (line  15)
+* yesterday in date strings:             Relative items in date strings.
+                                                              (line  29)
 
 
 
 Tag Table:
-Node: Top1259
-Node: Introduction3021
-Node: Scope5317
-Node: Overview7242
-Node: find Expressions9113
-Node: Finding Files10738
-Node: Name11205
-Node: Base Name Patterns11833
-Ref: Base Name Patterns-Footnote-112931
-Node: Full Name Patterns13143
-Node: Fast Full Name Search15806
-Node: Shell Pattern Matching18227
-Node: Links20317
-Node: Symbolic Links20752
-Node: Hard Links25249
-Node: Time27803
-Node: Age Ranges28391
-Node: Comparing Timestamps29918
-Node: Size31210
-Node: Type33052
-Node: Owner34720
-Node: Permissions35547
-Node: Contents38708
-Node: Directories39881
-Node: Filesystems45002
-Node: Combining Primaries With Operators46353
-Node: Actions47971
-Node: Print File Name48533
-Node: Print File Information49550
-Node: Escapes52545
-Node: Format Directives53296
-Node: Name Directives54759
-Node: Ownership Directives55745
-Node: Size Directives56762
-Node: Location Directives57527
-Node: Time Directives58646
-Node: Time Formats59549
-Node: Time Components59985
-Node: Date Components60491
-Node: Combined Time Formats61314
-Node: Formatting Flags62031
-Node: Run Commands62643
-Node: Single File63001
-Node: Multiple Files64923
-Node: Unsafe File Name Handling69459
-Node: Safe File Name Handling71022
-Node: Unusual Characters in File Names72598
-Node: Limiting Command Size75634
-Node: Interspersing File Names77927
-Node: Querying80382
-Node: Delete Files81912
-Node: Adding Tests82316
-Node: Databases84956
-Node: Database Locations85674
-Node: Database Formats86682
-Node: New Database Format87586
-Node: Sample Database89253
-Node: Old Database Format89901
-Node: Newline Handling92187
-Node: File Permissions93633
-Node: Mode Structure94202
-Node: Symbolic Modes97343
-Node: Setting Permissions98440
-Node: Copying Permissions100988
-Node: Changing Special Permissions101802
-Node: Conditional Executability103346
-Node: Multiple Changes103878
-Node: Umask and Protection105535
-Node: Numeric Modes106633
-Node: Reference108325
-Node: Invoking find108673
-Node: Warning Messages111005
-Node: Invoking locate112941
-Node: Invoking updatedb118832
-Node: Invoking xargs122678
-Node: Regular Expressions127708
-Node: findutils-default regular expression syntax128903
-Node: awk regular expression syntax131408
-Node: egrep regular expression syntax133293
-Node: emacs regular expression syntax135504
-Node: gnu-awk regular expression syntax138032
-Node: grep regular expression syntax140372
-Node: posix-awk regular expression syntax143097
-Node: posix-basic regular expression syntax145368
-Node: posix-egrep regular expression syntax148006
-Node: posix-extended regular expression syntax150379
-Node: Environment Variables152854
-Node: Common Tasks154798
-Node: Viewing And Editing155223
-Node: Archiving156229
-Node: Cleaning Up157861
-Node: Strange File Names159650
-Node: Fixing Permissions161300
-Node: Classifying Files161864
-Node: Worked Examples162582
-Node: Deleting Files163219
-Node: Updating A Timestamp File176238
-Node: Security Considerations182968
-Node: Levels of Risk184502
-Ref: Levels of Risk-Footnote-1187300
-Node: Security Considerations for find187479
-Ref: Security Considerations for find-Footnote-1189801
-Node: Problems with -exec and filenames189874
-Node: Changing the Current Working Directory191137
-Node: O_NOFOLLOW192906
-Ref: O_NOFOLLOW-Footnote-1194550
-Node: Systems without O_NOFOLLOW194652
-Node: Race Conditions with -exec196756
-Node: Race Conditions with -print and -print0199667
-Node: Security Considerations for xargs200586
-Node: Security Considerations for locate202656
-Node: Security Summary204828
-Node: Error Messages205585
-Node: Error Messages From find206614
-Node: Error Messages From xargs211471
-Node: Error Messages From locate213231
-Node: Error Messages From updatedb214463
-Node: GNU Free Documentation License214866
-Node: Primary Index237305
+Node: Top1329
+Node: Introduction3147
+Node: Scope6075
+Node: Overview8021
+Node: find Expressions9892
+Node: Finding Files11724
+Node: Name12189
+Node: Base Name Patterns12817
+Ref: Base Name Patterns-Footnote-113915
+Node: Full Name Patterns14127
+Node: Fast Full Name Search17631
+Node: Shell Pattern Matching20678
+Node: Links22768
+Node: Symbolic Links23203
+Node: Hard Links27708
+Node: Time30262
+Node: Age Ranges31239
+Node: Comparing Timestamps32928
+Node: Size35793
+Node: Type37637
+Node: Owner39305
+Node: Mode Bits40130
+Node: Contents45326
+Node: Directories46497
+Node: Filesystems51775
+Node: Combining Primaries With Operators53126
+Node: Actions54744
+Node: Print File Name55306
+Node: Print File Information56323
+Node: Escapes59332
+Node: Format Directives60083
+Node: Name Directives61546
+Node: Ownership Directives62532
+Node: Size Directives63540
+Node: Location Directives64911
+Node: Time Directives66030
+Node: Time Formats66933
+Node: Time Components67369
+Node: Date Components68335
+Node: Combined Time Formats69158
+Node: Formatting Flags70043
+Node: Run Commands70655
+Node: Single File71013
+Node: Multiple Files73508
+Node: Unsafe File Name Handling78172
+Node: Safe File Name Handling79885
+Node: Unusual Characters in File Names81461
+Node: Limiting Command Size84497
+Node: Interspersing File Names87240
+Node: Querying89691
+Node: Delete Files91221
+Node: Adding Tests91868
+Node: Databases94508
+Node: Database Locations95226
+Node: Database Formats96673
+Node: LOCATE02 Database Format97782
+Node: Sample LOCATE02 Database99473
+Node: slocate Database Format100157
+Node: Old Database Format101164
+Node: Newline Handling104349
+Node: File Permissions105795
+Node: Mode Structure106373
+Node: Symbolic Modes109514
+Node: Setting Permissions110611
+Node: Copying Permissions113159
+Node: Changing Special Permissions113973
+Node: Conditional Executability115517
+Node: Multiple Changes116049
+Node: Umask and Protection117706
+Node: Numeric Modes118804
+Node: Date input formats120496
+Node: General date syntax122823
+Node: Calendar date items125775
+Node: Time of day items127773
+Node: Time zone items129890
+Node: Day of week items131125
+Node: Relative items in date strings132115
+Node: Pure numbers in date strings134918
+Node: Seconds since the Epoch135900
+Node: Specifying time zone rules137522
+Node: Authors of get_date139887
+Node: Reference140640
+Node: Invoking find140990
+Node: Filesystem Traversal Options142472
+Node: Warning Messages143565
+Node: Optimisation Options145626
+Node: Debug Options147359
+Node: Find Expressions148413
+Node: Invoking locate148779
+Node: Invoking updatedb155078
+Node: Invoking xargs159318
+Node: xargs options160044
+Node: Invoking the shell from xargs164550
+Node: Regular Expressions168348
+Node: findutils-default regular expression syntax169543
+Node: awk regular expression syntax172048
+Node: egrep regular expression syntax173933
+Node: emacs regular expression syntax176144
+Node: gnu-awk regular expression syntax178672
+Node: grep regular expression syntax181012
+Node: posix-awk regular expression syntax183737
+Node: posix-basic regular expression syntax186008
+Node: posix-egrep regular expression syntax186309
+Node: posix-extended regular expression syntax188682
+Node: Environment Variables191157
+Node: Common Tasks193500
+Node: Viewing And Editing193925
+Node: Archiving195642
+Node: Cleaning Up197274
+Node: Strange File Names200168
+Node: Fixing Permissions201818
+Node: Classifying Files202382
+Node: Worked Examples203100
+Node: Deleting Files203767
+Node: Copying A Subset of Files216787
+Node: Updating A Timestamp File218802
+Node: Security Considerations224723
+Node: Levels of Risk226259
+Ref: Levels of Risk-Footnote-1229059
+Node: Security Considerations for find229238
+Ref: Security Considerations for find-Footnote-1231562
+Node: Problems with -exec and filenames231635
+Node: Changing the Current Working Directory233258
+Node: O_NOFOLLOW235029
+Ref: O_NOFOLLOW-Footnote-1236673
+Node: Systems without O_NOFOLLOW236775
+Ref: Systems without O_NOFOLLOW-Footnote-1238920
+Node: Race Conditions with -exec238982
+Node: Race Conditions with -print and -print0241895
+Node: Security Considerations for xargs242816
+Node: Security Considerations for locate245320
+Node: Security Summary247702
+Node: Error Messages248461
+Node: Error Messages From find249490
+Node: Error Messages From xargs254615
+Node: Error Messages From locate256375
+Node: Error Messages From updatedb257607
+Node: GNU Free Documentation License258010
+Node: Primary Index280449
 
 End Tag Table

@@ -1,4 +1,7 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Define so that source code can verify that config.h was already included */
+#undef ALREADY_INCLUDED_CONFIG_H
 
 /* Define to the number of bits in type 'ptrdiff_t'. */
 #undef BITSIZEOF_PTRDIFF_T
@@ -44,6 +47,9 @@
 /* Define if you want to see a message every time find calls the stat() system
    call */
 #undef DEBUG_STAT
+
+/* If defined, the default argument size used in child processes */
+#undef DEFAULT_ARG_SIZE
 
 /* the name of the file descriptor member of DIR */
 #undef DIR_FD_MEMBER_NAME
@@ -93,6 +99,9 @@
    MSVC and with C++ compilers. */
 #undef FLEXIBLE_ARRAY_MEMBER
 
+/* Define if gettimeofday clobbers the localtime buffer. */
+#undef GETTIMEOFDAY_CLOBBERS_LOCALTIME
+
 /* Define to make the limit macros in <stdint.h> visible. */
 #undef GL_TRIGGER_STDC_LIMIT_MACROS
 
@@ -107,6 +116,9 @@
 
 /* Define to 1 when using the gnulib module fopen-safer. */
 #undef GNULIB_FOPEN_SAFER
+
+/* Define to 1 when using the gnulib module fts. */
+#undef GNULIB_FTS
 
 /* Define to indicate the 'malloc' module. */
 #undef GNULIB_MALLOC_GNU
@@ -125,6 +137,12 @@
    includes <alloca.h> only if HAVE_ALLOCA_H is defined. */
 #undef HAVE_ALLOCA_H
 
+/* Define to 1 if the compiler supports __attribute__ ((__noreturn__)) */
+#undef HAVE_ATTRIBUTE_NORETURN
+
+/* Define to 1 if you have the <bp-sym.h> header file. */
+#undef HAVE_BP_SYM_H
+
 /* Define to 1 if you have the `btowc' function. */
 #undef HAVE_BTOWC
 
@@ -141,6 +159,15 @@
 
 /* Define to 1 if your system has a working `chown' function. */
 #undef HAVE_CHOWN
+
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+
+/* Define to 1 if you have the `clock_settime' function. */
+#undef HAVE_CLOCK_SETTIME
+
+/* Define if you have compound literals. */
+#undef HAVE_COMPOUND_LITERALS
 
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
@@ -242,6 +269,10 @@
    */
 #undef HAVE_DECL_TZNAME
 
+/* Define to 1 if you have the declaration of `wcwidth', and to 0 if you
+   don't. */
+#undef HAVE_DECL_WCWIDTH
+
 /* Define to 1 if you have the declaration of `__fpending', and to 0 if you
    don't. */
 #undef HAVE_DECL___FPENDING
@@ -268,8 +299,14 @@
 /* Define to 1 if you have the `endpwent' function. */
 #undef HAVE_ENDPWENT
 
+/* Define if you have the declaration of environ. */
+#undef HAVE_ENVIRON_DECL
+
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
+
+/* fabs is defined in -lm */
+#undef HAVE_FABS_IN_LIBM
 
 /* Define to 1 if you have the `fchdir' function. */
 #undef HAVE_FCHDIR
@@ -327,6 +364,9 @@
 
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
+
+/* Define to 1 if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
 
 /* Define to 1 if you have the `hasmntopt' function. */
 #undef HAVE_HASMNTOPT
@@ -412,6 +452,9 @@
 /* Define to 1 if <wchar.h> declares mbstate_t. */
 #undef HAVE_MBSTATE_T
 
+/* Define to 1 if you have the `memchr' function. */
+#undef HAVE_MEMCHR
+
 /* Define to 1 if you have the `memcmp' function. */
 #undef HAVE_MEMCMP
 
@@ -432,6 +475,12 @@
 
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
+
+/* modf is defined in -lm */
+#undef HAVE_MODF_IN_LIBM
+
+/* Define to 1 if you have the `nanotime' function. */
+#undef HAVE_NANOTIME
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
@@ -470,6 +519,15 @@
 /* Define to 1 if you have the `rpmatch' function. */
 #undef HAVE_RPMATCH
 
+/* Define to 1 if you have the <search.h> header file. */
+#undef HAVE_SEARCH_H
+
+/* Define to 1 if you have the `setenv' function. */
+#undef HAVE_SETENV
+
+/* Define to 1 if you have the `setgroups' function. */
+#undef HAVE_SETGROUPS
+
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
 
@@ -505,6 +563,9 @@
 
 /* Define to 1 if you have the `stpcpy' function. */
 #undef HAVE_STPCPY
+
+/* Define to 1 if you have the `strcasestr' function. */
+#undef HAVE_STRCASESTR
 
 /* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
@@ -559,6 +620,27 @@
 
 /* Define to 1 if `f_fstypename' is member of `struct statfs'. */
 #undef HAVE_STRUCT_STATFS_F_FSTYPENAME
+
+/* Define to 1 if `st_atimensec' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_ATIMENSEC
+
+/* Define to 1 if `st_atimespec.tv_nsec' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
+
+/* Define to 1 if `st_atim.st__tim.tv_nsec' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_ATIM_ST__TIM_TV_NSEC
+
+/* Define to 1 if `st_atim.tv_nsec' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
+
+/* Define to 1 if `st_birthtimensec' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_BIRTHTIMENSEC
+
+/* Define to 1 if `st_birthtimespec.tv_nsec' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_BIRTHTIMESPEC_TV_NSEC
+
+/* Define to 1 if `st_birthtim.tv_nsec' is member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_BIRTHTIM_TV_NSEC
 
 /* Define to 1 if `st_blocks' is member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLOCKS
@@ -617,6 +699,9 @@
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
+/* Define to 1 if you have the <sys/timeb.h> header file. */
+#undef HAVE_SYS_TIMEB_H
+
 /* Define to 1 if you have the <sys/time.h> header file. */
 #undef HAVE_SYS_TIME_H
 
@@ -642,6 +727,9 @@
    `HAVE_STRUCT_TM_TM_ZONE' instead. */
 #undef HAVE_TM_ZONE
 
+/* Define to 1 if you have the `tsearch' function. */
+#undef HAVE_TSEARCH
+
 /* Define to 1 if you don't have `tm_zone' but do have the external array
    `tzname'. */
 #undef HAVE_TZNAME
@@ -651,6 +739,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `unsetenv' function. */
+#undef HAVE_UNSETENV
 
 /* Define to 1 if the system has the type `unsigned long long int'. */
 #undef HAVE_UNSIGNED_LONG_LONG_INT
@@ -676,6 +767,9 @@
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
+/* Define to 1 if you have the `wcwidth' function. */
+#undef HAVE_WCWIDTH
+
 /* Define if you have the 'wint_t' type. */
 #undef HAVE_WINT_T
 
@@ -696,6 +790,9 @@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
+
+/* Define to 1 if you have the `_ftime' function. */
+#undef HAVE__FTIME
 
 /* Define to 1 if you have the `__fpending' function. */
 #undef HAVE___FPENDING
@@ -783,6 +880,12 @@
    declares `struct vmount.' (AIX) */
 #undef MOUNTED_VMOUNT
 
+/* Define to 1 if assertions should be disabled. */
+#undef NDEBUG
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
 /* Name of package */
 #undef PACKAGE
 
@@ -845,11 +948,18 @@
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
 
+/* Define to 1 if the type of the st_atim member of a struct stat is struct
+   timespec. */
+#undef TYPEOF_STRUCT_STAT_ST_ATIM_IS_STRUCT_TIMESPEC
+
 /* Defined if you specify --enable-d_type-optimisation to configure. */
 #undef USE_STRUCT_DIRENT_D_TYPE
 
 /* Version number of package */
 #undef VERSION
+
+/* Define if unsetenv() returns void, not int. */
+#undef VOID_UNSETENV
 
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'wchar_t'. */
@@ -858,6 +968,9 @@
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'wint_t'. */
 #undef WINT_T_SUFFIX
+
+/* Define if you want to use fts() to do the filesystem search. */
+#undef WITH_FTS
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
@@ -937,6 +1050,12 @@
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
 
+/* A replacement for va_copy, if needed.  */
+#define gl_va_copy(a,b) ((a) = (b))
+
+/* Define to rpl_gmtime if the replacement function should be used. */
+#undef gmtime
+
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
@@ -945,6 +1064,9 @@
 
 /* Define to `unsigned long' if <sys/types.h> does not define. */
 #undef ino_t
+
+/* Define to rpl_localtime if the replacement function should be used. */
+#undef localtime
 
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
@@ -1042,3 +1164,6 @@
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
+
+/* Define as a macro for copying va_list variables. */
+#undef va_copy

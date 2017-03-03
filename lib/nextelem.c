@@ -1,5 +1,5 @@
 /* Return the next element of a path.
-   Copyright (C) 1992, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1992,2005 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,12 +18,11 @@
 /* Written by David MacKenzie <djm@gnu.org>,
    inspired by John P. Rouillard <rouilj@cs.umb.edu>.  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
+
 
 #include <stdio.h>
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
+#if defined HAVE_STRING_H || defined STDC_HEADERS
 #include <string.h>
 #else
 #include <strings.h>
@@ -31,7 +30,7 @@
 #define strchr index
 #endif
 #endif
-#if defined(STDC_HEADERS)
+#if defined STDC_HEADERS
 #include <stdlib.h>
 #endif
 

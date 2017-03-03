@@ -1,6 +1,5 @@
 /* Emulate waitpid on systems that just have wait.
-   Copyright (C) 1991, 1993, 2000, 2003, 2004, 2007 Free Software
-   Foundation, Inc.
+   Copyright 1994, 1995, 1998, 1999 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,10 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <config.h>
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
 
 #include <errno.h>
 #ifndef errno

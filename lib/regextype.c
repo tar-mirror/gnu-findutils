@@ -29,7 +29,6 @@
 #include "regextype.h"
 #include "regex.h"
 #include "quote.h"
-#include "quotearg.h"
 #include "xalloc.h"
 #include "error.h"
 
@@ -48,35 +47,29 @@
 #endif
 
 
-
 struct tagRegexTypeMap
 {
   char *name;
+  int  context;
   int   option_val;
 };
 
 struct tagRegexTypeMap regex_map[] = 
   {
-#ifdef FINDUTILS
-   { "findutils-default",      RE_SYNTAX_EMACS|RE_DOT_NEWLINE  },
-#endif
-   { "awk",                    RE_SYNTAX_AWK                   },
-   { "egrep",                  RE_SYNTAX_EGREP                 },
-#ifndef FINDUTILS
-   { "ed",                     RE_SYNTAX_ED                    },
-#endif
-   { "emacs",                  RE_SYNTAX_EMACS                 },
-   { "gnu-awk",                RE_SYNTAX_GNU_AWK               },
-   { "grep",                   RE_SYNTAX_GREP                  },
-   { "posix-awk",              RE_SYNTAX_POSIX_AWK             },
-   { "posix-basic",            RE_SYNTAX_POSIX_BASIC           },
-   { "posix-egrep",            RE_SYNTAX_POSIX_EGREP           },
-   { "posix-extended",         RE_SYNTAX_POSIX_EXTENDED        },
-#ifndef FINDUTILS
-   { "posix-minimal-basic",   RE_SYNTAX_POSIX_MINIMAL_BASIC    },
-   { "sed",                    RE_SYNTAX_SED                   },
-   /*    ,{ "posix-common",   _RE_SYNTAX_POSIX_COMMON   } */
-#endif
+   { "findutils-default",     CONTEXT_FINDUTILS, RE_SYNTAX_EMACS|RE_DOT_NEWLINE  },
+   { "awk",                   CONTEXT_ALL,       RE_SYNTAX_AWK                   },
+   { "egrep",                 CONTEXT_ALL,       RE_SYNTAX_EGREP                 },
+   { "ed",                    CONTEXT_GENERIC,   RE_SYNTAX_ED                    },
+   { "emacs",                 CONTEXT_ALL,       RE_SYNTAX_EMACS                 },
+   { "gnu-awk",               CONTEXT_ALL,       RE_SYNTAX_GNU_AWK               },
+   { "grep",                  CONTEXT_ALL,       RE_SYNTAX_GREP                  },
+   { "posix-awk",             CONTEXT_ALL,       RE_SYNTAX_POSIX_AWK             },
+   { "posix-basic",           CONTEXT_ALL,       RE_SYNTAX_POSIX_BASIC           },
+   { "posix-egrep",           CONTEXT_ALL,       RE_SYNTAX_POSIX_EGREP           },
+   { "posix-extended",        CONTEXT_ALL,       RE_SYNTAX_POSIX_EXTENDED        },
+   { "posix-minimal-basic",   CONTEXT_GENERIC,   RE_SYNTAX_POSIX_MINIMAL_BASIC    },
+   { "sed",                   CONTEXT_GENERIC,   RE_SYNTAX_SED                   },
+   /*    ,{ "posix-common",   CONTEXT_GENERIC,  _RE_SYNTAX_POSIX_COMMON   } */
   };
 enum { N_REGEX_MAP_ENTRIES = sizeof(regex_map)/sizeof(regex_map[0]) };
 
@@ -119,7 +112,7 @@ get_regex_type(const char *s)
 
   
 const char *
-get_regex_type_name(int ix)
+get_regex_type_name(unsigned int ix)
 {
   if (ix < N_REGEX_MAP_ENTRIES)
     return regex_map[ix].name;
@@ -128,7 +121,7 @@ get_regex_type_name(int ix)
 }
 
 int
-get_regex_type_flags(int ix)
+get_regex_type_flags(unsigned int ix)
 {
   if (ix < N_REGEX_MAP_ENTRIES)
     return regex_map[ix].option_val;
@@ -136,8 +129,15 @@ get_regex_type_flags(int ix)
     return -1;
 }
 
+unsigned int get_regex_type_context(unsigned int ix)
+{
+  if (ix < N_REGEX_MAP_ENTRIES)
+    return regex_map[ix].context;
+  else
+    return 0u;
+}
 
-int get_regex_type_synonym(int ix)
+int get_regex_type_synonym(unsigned int ix)
 {
   unsigned i;
   int flags;
@@ -155,3 +155,6 @@ int get_regex_type_synonym(int ix)
     }
   return -1;
 }
+
+
+

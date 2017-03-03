@@ -1,5 +1,5 @@
 /* bigram -- list bigrams for locate
-   Copyright (C) 1994, 2000, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2007 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #include <config.h>
 #include <stdio.h>
 
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
+#if defined HAVE_STRING_H || defined STDC_HEADERS
 #include <string.h>
 #else
 #include <strings.h>
@@ -72,7 +72,7 @@ main (int argc, char **argv)
   program_name = argv[0];
   (void) argc;
   atexit (close_stdout);
-
+  
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);
   oldpath = xmalloc (oldpathsize);

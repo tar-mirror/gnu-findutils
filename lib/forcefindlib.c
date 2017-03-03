@@ -1,5 +1,5 @@
 /* Ensures that the FINDLIB_REPLACE_FUNCS macro in configure.in works 
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 /* Written by James Youngman. */
 
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
 
 
 extern void forcefindlib(void);	/* prevent GCC warning... */

@@ -1,6 +1,6 @@
 /* find -- search for files in a directory hierarchy
    Copyright (C) 1990, 91, 92, 93, 94, 2000, 
-                 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+                 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 */
 
 
+#include <config.h>
 #include "defs.h"
 
 #define USE_SAFE_CHDIR 1
@@ -34,27 +35,23 @@
 #include <errno.h>
 #include <assert.h>
 
-
-#ifdef HAVE_FCNTL_H
+#include <sys/stat.h>
 #include <fcntl.h>
-#else
-#include <sys/file.h>
-#endif
+#include <openat.h>
 
-#ifdef HAVE_SYS_UTSNAME_H
-#include <sys/utsname.h>
-#endif
-
-#include "../gnulib/lib/xalloc.h"
-#include "../gnulib/lib/human.h"
-#include "../gnulib/lib/canonicalize.h"
-#include "closein.h"
+#include "xalloc.h"
+#include "human.h"
+#include "canonicalize.h"
 #include <modetype.h>
+
+#include "closein.h"
 #include "savedirinfo.h"
 #include "buildcmd.h"
 #include "dirname.h"
 #include "quote.h"
 #include "quotearg.h"
+#include "xgetcwd.h"
+#include "error.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -67,6 +64,7 @@
 # define _(Text) Text
 #define textdomain(Domain)
 #define bindtextdomain(Package, Directory)
+#define ngettext(singular,plural,n) ((1==n) ? singular : plural)
 #endif
 #ifdef gettext_noop
 # define N_(String) gettext_noop (String)
@@ -75,51 +73,26 @@
 # define N_(String) String
 #endif
 
-#define apply_predicate(pathname, stat_buf_ptr, node)	\
-  (*(node)->pred_func)((pathname), (stat_buf_ptr), (node))
-
 #ifdef STAT_MOUNTPOINTS
 static void init_mounted_dev_list(int mandatory);
 #endif
 
 static void process_top_path PARAMS((char *pathname, mode_t mode));
 static int process_path PARAMS((char *pathname, char *name, boolean leaf, char *parent, mode_t type));
-static void process_dir PARAMS((char *pathname, char *name, int pathlen, struct stat *statp, char *parent));
-
-static void complete_pending_execdirs(struct predicate *p);
-static void complete_pending_execs   (struct predicate *p);
+static void process_dir PARAMS((char *pathname, char *name, int pathlen, const struct stat *statp, char *parent));
 
 
-
-static boolean default_prints PARAMS((struct predicate *pred));
 
 /* Name this program was run with. */
-char *program_name;
-
-/* All predicates for each path to process. */
-struct predicate *predicates;
-
-/* The last predicate allocated. */
-struct predicate *last_pred;
-
-/* The root of the evaluation tree. */
-static struct predicate *eval_tree = NULL;
-
-
-struct options options;
-struct state state;
-
-/* The full path of the initial working directory, or "." if
-   STARTING_DESC is nonnegative.  */
-char const *starting_dir = ".";
+extern char *program_name;
 
 /* A file descriptor open to the initial working directory.
    Doing it this way allows us to work when the i.w.d. has
    unreadable parents.  */
-int starting_desc;
+extern int starting_desc;
 
 /* The stat buffer of the initial working directory. */
-struct stat starting_stat_buf;
+static struct stat starting_stat_buf;
 
 enum ChdirSymlinkHandling
   {
@@ -141,276 +114,29 @@ enum WdSanityCheckFatality
     NON_FATAL_IF_SANITY_CHECK_FAILS
   };
 
-
-int
-following_links(void)
+
+int get_current_dirfd(void)
 {
-  switch (options.symlink_handling)
-    {
-    case SYMLINK_ALWAYS_DEREF:
-      return 1;
-    case SYMLINK_DEREF_ARGSONLY:
-      return (state.curdepth == 0);
-    case SYMLINK_NEVER_DEREF:
-    default:
-      return 0;
-    }
+  return AT_FDCWD;
 }
 
-
-static int
-fallback_stat(const char *name, struct stat *p, int prev_rv)
-{
-  /* Our original stat() call failed.  Perhaps we can't follow a
-   * symbolic link.  If that might be the problem, lstat() the link. 
-   * Otherwise, admit defeat. 
-   */
-  switch (errno)
-    {
-    case ENOENT:
-    case ENOTDIR:
-#ifdef DEBUG_STAT
-      fprintf(stderr, "fallback_stat(): stat(%s) failed; falling back on lstat()\n", name);
-#endif
-      return lstat(name, p);
-
-    case EACCES:
-    case EIO:
-    case ELOOP:
-    case ENAMETOOLONG:
-#ifdef EOVERFLOW
-    case EOVERFLOW:	    /* EOVERFLOW is not #defined on UNICOS. */
-#endif
-    default:
-      return prev_rv;	       
-    }
-}
-
-
-/* optionh_stat() implements the stat operation when the -H option is
- * in effect.
- * 
- * If the item to be examined is a command-line argument, we follow
- * symbolic links.  If the stat() call fails on the command-line item,
- * we fall back on the properties of the symbolic link.
- *
- * If the item to be examined is not a command-line argument, we
- * examine the link itself.
- */
-int 
-optionh_stat(const char *name, struct stat *p)
-{
-  if (0 == state.curdepth) 
-    {
-      /* This file is from the command line; deference the link (if it
-       * is a link).  
-       */
-      int rv = stat(name, p);
-      if (0 == rv)
-	return 0;		/* success */
-      else
-	return fallback_stat(name, p, rv);
-    }
-  else
-    {
-      /* Not a file on the command line; do not dereference the link.
-       */
-      return lstat(name, p);
-    }
-}
-
-/* optionl_stat() implements the stat operation when the -L option is
- * in effect.  That option makes us examine the thing the symbolic
- * link points to, not the symbolic link itself.
- */
-int 
-optionl_stat(const char *name, struct stat *p)
-{
-  int rv = stat(name, p);
-  if (0 == rv)
-    return 0;			/* normal case. */
-  else
-    return fallback_stat(name, p, rv);
-}
-
-/* optionp_stat() implements the stat operation when the -P option is
- * in effect (this is also the default).  That option makes us examine
- * the symbolic link itself, not the thing it points to.
- */
-int 
-optionp_stat(const char *name, struct stat *p)
-{
-  return lstat(name, p);
-}
-
-#ifdef DEBUG_STAT
-static uintmax_t stat_count = 0u;
-
-static int
-debug_stat (const char *file, struct stat *bufp)
-{
-  ++stat_count;
-  fprintf (stderr, "debug_stat (%s)\n", file);
-  switch (options.symlink_handling)
-    {
-    case SYMLINK_ALWAYS_DEREF:
-      return optionl_stat(file, bufp);
-    case SYMLINK_DEREF_ARGSONLY:
-      return optionh_stat(file, bufp);
-    case SYMLINK_NEVER_DEREF:
-      return optionp_stat(file, bufp);
-    }
-}
-#endif /* DEBUG_STAT */
-
-void 
-set_follow_state(enum SymlinkOption opt)
-{
-  switch (opt)
-    {
-    case SYMLINK_ALWAYS_DEREF:  /* -L */
-      options.xstat = optionl_stat;
-      options.no_leaf_check = true;
-      break;
-      
-    case SYMLINK_NEVER_DEREF:	/* -P (default) */
-      options.xstat = optionp_stat;
-      /* Can't turn no_leaf_check off because the user might have specified 
-       * -noleaf anyway
-       */
-      break;
-      
-    case SYMLINK_DEREF_ARGSONLY: /* -H */
-      options.xstat = optionh_stat;
-      options.no_leaf_check = true;
-    }
-
-  options.symlink_handling = opt;
-  
-  /* For DEBUG_STAT, the choice is made at runtime within debug_stat()
-   * by checking the contents of the symlink_handling variable.
-   */
-#if defined(DEBUG_STAT)
-  options.xstat = debug_stat;
-#endif /* !DEBUG_STAT */
-}
-
-
-/* Complete any outstanding commands.
- */
-void 
-cleanup(void)
-{
-  if (eval_tree)
-    {
-      complete_pending_execs(eval_tree);
-      complete_pending_execdirs(eval_tree);
-    }
-}
-
-/* Get the stat information for a file, if it is 
- * not already known. 
- */
-int
-get_statinfo (const char *pathname, const char *name, struct stat *p)
-{
-  if (!state.have_stat && (*options.xstat) (name, p) != 0)
-    {
-      if (!options.ignore_readdir_race || (errno != ENOENT) )
-	{
-	  error (0, errno, "%s", pathname);
-	  state.exit_status = 1;
-	}
-      return -1;
-    }
-  state.have_stat = true;
-  state.have_type = true;
-  state.type = p->st_mode;
-  return 0;
-}
-
-/* Get the stat/type information for a file, if it is 
- * not already known. 
- */
-int
-get_info (const char *pathname,
-	  const char *name,
-	  struct stat *p,
-	  struct predicate *pred_ptr)
-{
-  /* If we need the full stat info, or we need the type info but don't 
-   * already have it, stat the file now.
-   */
-  (void) name;
-  if (pred_ptr->need_stat)
-    {
-      return get_statinfo(pathname, state.rel_pathname, p);
-    }
-  if ((pred_ptr->need_type && (0 == state.have_type)))
-    {
-      return get_statinfo(pathname, state.rel_pathname, p);
-    }
-  return 0;
-}
-
-/* Determine if we can use O_NOFOLLOW.
- */
-#if defined(O_NOFOLLOW)
-static boolean 
-check_nofollow(void)
-{
-  struct utsname uts;
-  float  release;
-
-  if (0 == uname(&uts))
-    {
-      /* POSIX requires that atof() ignore "unrecognised suffixes". */
-      release = atof(uts.release);
-      
-      if (0 == strcmp("Linux", uts.sysname))
-	{
-	  /* Linux kernels 2.1.126 and earlier ignore the O_NOFOLLOW flag. */
-	  return release >= 2.2; /* close enough */
-	}
-      else if (0 == strcmp("FreeBSD", uts.sysname)) 
-	{
-	  /* FreeBSD 3.0-CURRENT and later support it */
-	  return release >= 3.1;
-	}
-    }
-
-  /* Well, O_NOFOLLOW was defined, so we'll try to use it. */
-  return true;
-}
-#endif
 
 int
 main (int argc, char **argv)
 {
   int i;
-  const struct parser_table *entry_close, *entry_print, *entry_open;
-  const struct parser_table *parse_entry; /* Pointer to the parsing table entry for this expression. */
-  struct predicate *cur_pred;
-  char *predicate_name;		/* Name of predicate being parsed. */
   int end_of_leading_options = 0; /* First arg after any -H/-L etc. */
+  struct predicate *eval_tree;
 
-  
   program_name = argv[0];
+  state.exit_status = 0;
 
-  /* We call check_nofollow() before setlocale() because the numbers 
-   * for which we check (in the results of uname) definitiely have "."
-   * as the decimal point indicator even under locales for which that 
-   * is not normally true.   Hence atof() would do the wrong thing 
-   * if we call it after setlocale().
+  /* Set the option defaults before we do the locale
+   * initialisation as check_nofollow() needs to be executed in the
+   * POSIX locale.
    */
-#ifdef O_NOFOLLOW
-  options.open_nofollow_available = check_nofollow();
-#else
-  options.open_nofollow_available = false;
-#endif
+  set_option_defaults(&options);
 
-  options.regex_options = RE_SYNTAX_EMACS;
-  
 #ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
 #endif
@@ -418,223 +144,32 @@ main (int argc, char **argv)
   textdomain (PACKAGE);
   atexit (close_stdin);
 
+  /* Check for -P, -H or -L options. */
+  end_of_leading_options = process_leading_options(argc, argv);
 
-  if (isatty(0))
-    {
-      options.warnings = true;
-    }
-  else
-    {
-      options.warnings = false;
-    }
-  
-  
-  predicates = NULL;
-  last_pred = NULL;
-  options.do_dir_first = true;
-  options.maxdepth = options.mindepth = -1;
-  options.start_time = time (NULL);
-  options.cur_day_start = options.start_time - DAYSECS;
-  options.full_days = false;
-  options.stay_on_filesystem = false;
-  options.ignore_readdir_race = false;
-
-  state.exit_status = 0;
-
-#if defined(DEBUG_STAT)
-  options.xstat = debug_stat;
-#endif /* !DEBUG_STAT */
-
-  if (getenv("POSIXLY_CORRECT"))
-    options.output_block_size = 512;
-  else
-    options.output_block_size = 1024;
-
-  if (getenv("FIND_BLOCK_SIZE"))
-    {
-      error (1, 0, _("The environment variable FIND_BLOCK_SIZE is not supported, the only thing that affects the block size is the POSIXLY_CORRECT environment variable"));
-    }
-
-#if LEAF_OPTIMISATION
-  /* The leaf optimisation is enabled. */
-  options.no_leaf_check = false;
-#else
-  /* The leaf optimisation is disabled. */
-  options.no_leaf_check = true;
-#endif
-
-  set_follow_state(SYMLINK_NEVER_DEREF); /* The default is equivalent to -P. */
+  if (options.debug_options & DebugStat)
+    options.xstat = debug_stat;
 
 #ifdef DEBUG
   fprintf (stderr, "cur_day_start = %s", ctime (&options.cur_day_start));
 #endif /* DEBUG */
 
-  /* Check for -P, -H or -L options. */
-  for (i=1; (end_of_leading_options = i) < argc; ++i)
-    {
-      if (0 == strcmp("-H", argv[i]))
-	{
-	  /* Meaning: dereference symbolic links on command line, but nowhere else. */
-	  set_follow_state(SYMLINK_DEREF_ARGSONLY);
-	}
-      else if (0 == strcmp("-L", argv[i]))
-	{
-	  /* Meaning: dereference all symbolic links. */
-	  set_follow_state(SYMLINK_ALWAYS_DEREF);
-	}
-      else if (0 == strcmp("-P", argv[i]))
-	{
-	  /* Meaning: never dereference symbolic links (default). */
-	  set_follow_state(SYMLINK_NEVER_DEREF);
-	}
-      else if (0 == strcmp("--", argv[i]))
-	{
-	  /* -- signifies the end of options. */
-	  end_of_leading_options = i+1;	/* Next time start with the next option */
-	  break;
-	}
-      else
-	{
-	  /* Hmm, must be one of 
-	   * (a) A path name
-	   * (b) A predicate
-	   */
-	  end_of_leading_options = i; /* Next time start with this option */
-	  break;
-	}
-    }
-
+  /* state.cwd_dir_fd has to be initialised before we call build_expression_tree()
+   * because command-line parsing may lead us to stat some files.
+   */
+  state.cwd_dir_fd = AT_FDCWD;
+  
   /* We are now processing the part of the "find" command line 
    * after the -H/-L options (if any).
    */
+  eval_tree = build_expression_tree(argc, argv, end_of_leading_options);
 
-  /* fprintf(stderr, "rest: optind=%ld\n", (long)optind); */
   
-  /* Find where in ARGV the predicates begin. */
-  for (i = end_of_leading_options; i < argc && strchr ("-!(),", argv[i][0]) == NULL; i++)
-    {
-      /* fprintf(stderr, "Looks like %s is not a predicate\n", argv[i]); */
-      /* Do nothing. */ ;
-    }
-  
-  /* Enclose the expression in `( ... )' so a default -print will
-     apply to the whole expression. */
-  entry_open  = find_parser("(");
-  entry_close = find_parser(")");
-  entry_print = find_parser("print");
-  assert(entry_open  != NULL);
-  assert(entry_close != NULL);
-  assert(entry_print != NULL);
-  
-  parse_openparen (entry_open, argv, &argc);
-  parse_begin_user_args(argv, argc, last_pred, predicates);
-  pred_sanity_check(last_pred);
-  
-  /* Build the input order list. */
-  while (i < argc)
-    {
-      if (strchr ("-!(),", argv[i][0]) == NULL)
-	usage (_("paths must precede expression"));
-      predicate_name = argv[i];
-      parse_entry = find_parser (predicate_name);
-      if (parse_entry == NULL)
-	{
-	  /* Command line option not recognized */
-	  error (1, 0, _("invalid predicate `%s'"), predicate_name);
-	}
-      
-      i++;
-      if (!(*(parse_entry->parser_func)) (parse_entry, argv, &i))
-	{
-	  if (argv[i] == NULL)
-	    /* Command line option requires an argument */
-	    error (1, 0, _("missing argument to `%s'"), predicate_name);
-	  else
-	    error (1, 0, _("invalid argument `%s' to `%s'"),
-		   argv[i], predicate_name);
-	}
-
-      pred_sanity_check(last_pred);
-      pred_sanity_check(predicates); /* XXX: expensive */
-    }
-  parse_end_user_args(argv, argc, last_pred, predicates);
-  
-  if (predicates->pred_next == NULL)
-    {
-      /* No predicates that do something other than set a global variable
-	 were given; remove the unneeded initial `(' and add `-print'. */
-      cur_pred = predicates;
-      predicates = last_pred = predicates->pred_next;
-      free ((char *) cur_pred);
-      parse_print (entry_print, argv, &argc);
-      pred_sanity_check(last_pred); 
-      pred_sanity_check(predicates); /* XXX: expensive */
-    }
-  else if (!default_prints (predicates->pred_next))
-    {
-      /* One or more predicates that produce output were given;
-	 remove the unneeded initial `('. */
-      cur_pred = predicates;
-      predicates = predicates->pred_next;
-      pred_sanity_check(predicates); /* XXX: expensive */
-      free ((char *) cur_pred);
-    }
-  else
-    {
-      /* `( user-supplied-expression ) -print'. */
-      parse_closeparen (entry_close, argv, &argc);
-      pred_sanity_check(last_pred);
-      parse_print (entry_print, argv, &argc);
-      pred_sanity_check(last_pred);
-      pred_sanity_check(predicates); /* XXX: expensive */
-    }
-
-#ifdef	DEBUG
-  fprintf (stderr, "Predicate List:\n");
-  print_list (stderr, predicates);
-#endif /* DEBUG */
-
-  /* do a sanity check */
-  pred_sanity_check(predicates);
-  
-  /* Done parsing the predicates.  Build the evaluation tree. */
-  cur_pred = predicates;
-  eval_tree = get_expr (&cur_pred, NO_PREC);
-
-  /* Check if we have any left-over predicates (this fixes
-   * Debian bug #185202).
-   */
-  if (cur_pred != NULL)
-    {
-      error (1, 0, _("unexpected extra predicate"));
-    }
-  
-#ifdef	DEBUG
-  fprintf (stderr, "Eval Tree:\n");
-  print_tree (stderr, eval_tree, 0);
-#endif /* DEBUG */
-
-  /* Rearrange the eval tree in optimal-predicate order. */
-  opt_expr (&eval_tree);
-
-  /* Determine the point, if any, at which to stat the file. */
-  mark_stat (eval_tree);
-  /* Determine the point, if any, at which to determine file type. */
-  mark_type (eval_tree);
-
-#ifdef DEBUG
-  fprintf (stderr, "Optimized Eval Tree:\n");
-  print_tree (stderr, eval_tree, 0);
-  fprintf (stderr, "Optimized command line:\n");
-  print_optlist(stderr, eval_tree);
-  fprintf(stderr, "\n");
-#endif /* DEBUG */
-
   /* safely_chdir() needs to check that it has ended up in the right place. 
    * To avoid bailing out when something gets automounted, it checks if 
    * the target directory appears to have had a directory mounted on it as
    * we chdir()ed.  The problem with this is that in order to notice that 
-   * a filesystem was mounted, we would need to lstat() all the mount points.
+   * a file system was mounted, we would need to lstat() all the mount points.
    * That strategy loses if our machine is a client of a dead NFS server.
    *
    * Hence if safely_chdir() and wd_sanity_check() can manage without needing 
@@ -648,23 +183,29 @@ main (int argc, char **argv)
     }
   
 
-  starting_desc = open (".", O_RDONLY);
+  starting_desc = open (".", O_RDONLY
+#if defined O_LARGEFILE
+			|O_LARGEFILE
+#endif
+			);
   if (0 <= starting_desc && fchdir (starting_desc) != 0)
     {
       close (starting_desc);
       starting_desc = -1;
     }
+
   if (starting_desc < 0)
     {
       starting_dir = xgetcwd ();
       if (! starting_dir)
 	error (1, errno, _("cannot get current directory"));
     }
+  set_stat_placeholders(&starting_stat_buf);
   if ((*options.xstat) (".", &starting_stat_buf) != 0)
-    error (1, errno, _("cannot get current directory"));
+    error (1, errno, _("cannot stat current directory"));
 
   /* If no paths are given, default to ".".  */
-  for (i = end_of_leading_options; i < argc && strchr ("-!(),", argv[i][0]) == NULL; i++)
+  for (i = end_of_leading_options; i < argc && !looks_like_expression(argv[i], true); i++)
     {
       process_top_path (argv[i], 0);
     }
@@ -686,11 +227,19 @@ main (int argc, char **argv)
    * partially-full command lines which have been built, 
    * but which are not yet complete.   Execute those now.
    */
+  show_success_rates(eval_tree);
   cleanup();
   return state.exit_status;
 }
+
+boolean is_fts_enabled(int *ftsoptions)
+{
+  /* this version of find (i.e. this main()) does not use fts. */
+  *ftsoptions = 0;
+  return false;
+}
 
-
+
 static char *
 specific_dirname(const char *dir)
 {
@@ -720,7 +269,7 @@ specific_dirname(const char *dir)
 
 
 
-/* Return non-zero if FS is the name of a filesystem that is likely to
+/* Return non-zero if FS is the name of a file system that is likely to
  * be automounted
  */
 static int
@@ -739,8 +288,8 @@ static size_t num_mounted_devices = 0u;
 static void
 init_mounted_dev_list(int mandatory)
 {
-  assert(NULL == mounted_devices);
-  assert(0 == num_mounted_devices);
+  assert (NULL == mounted_devices);
+  assert (0 == num_mounted_devices);
   mounted_devices = get_mounted_devices(&num_mounted_devices);
   if (mandatory && (NULL == mounted_devices))
     {
@@ -807,15 +356,15 @@ get_mount_state(dev_t newdev)
 /* We stat()ed a directory, chdir()ed into it (we know this 
  * since direction is TraversingDown), stat()ed it again,
  * and noticed that the device numbers are different.  Check
- * if the filesystem was recently mounted. 
+ * if the file system was recently mounted. 
  * 
  * If it was, it looks like chdir()ing into the directory
- * caused a filesystem to be mounted.  Maybe automount is
+ * caused a file system to be mounted.  Maybe automount is
  * running.  Anyway, that's probably OK - but it happens
  * only when we are moving downward.
  *
  * We also allow for the possibility that a similar thing
- * has happened with the unmounting of a filesystem.  This
+ * has happened with the unmounting of a file system.  This
  * is much rarer, as it relies on an automounter timeout
  * occurring at exactly the wrong moment.
  */
@@ -833,8 +382,8 @@ dirchange_is_fatal(const char *specific_what,
       if (!silent)
 	{
 	  error (0, 0,
-		 _("Warning: filesystem %s has recently been unmounted."),
-		 specific_what);
+		 _("Warning: file system %s has recently been unmounted."),
+		 safely_quote_err_filename(0, specific_what));
 	}
       break;
 	      
@@ -843,8 +392,8 @@ dirchange_is_fatal(const char *specific_what,
       if (!silent)
 	{
 	  error (0, 0,
-		 _("Warning: filesystem %s has recently been mounted."),
-		 specific_what);
+		 _("Warning: file system %s has recently been mounted."),
+		 safely_quote_err_filename(0, specific_what));
 	}
       break;
 
@@ -863,13 +412,13 @@ dirchange_is_fatal(const char *specific_what,
 
 /* Examine the results of the stat() of a directory from before we
  * entered or left it, with the results of stat()ing it afterward.  If
- * these are different, the filesystem tree has been modified while we
+ * these are different, the file system tree has been modified while we
  * were traversing it.  That might be an attempt to use a race
  * condition to persuade find to do something it didn't intend
  * (e.g. an attempt by an ordinary user to exploit the fact that root
- * sometimes runs find on the whole filesystem).  However, this can
+ * sometimes runs find on the whole file system).  However, this can
  * also happen if automount is running (certainly on Solaris).  With 
- * automount, moving into a directory can cause a filesystem to be 
+ * automount, moving into a directory can cause a file system to be 
  * mounted there.
  *
  * To cope sensibly with this, we will raise an error if we see the
@@ -883,11 +432,11 @@ dirchange_is_fatal(const char *specific_what,
  *
  * If the device number and inode are both the same, we are happy.
  *
- * If a filesystem is (un)mounted as we chdir() into the directory, that 
- * may mean that we're now examining a section of the filesystem that might 
+ * If a file system is (un)mounted as we chdir() into the directory, that 
+ * may mean that we're now examining a section of the file system that might 
  * have been excluded from consideration (via -prune or -quit for example).
  * Hence we print a warning message to indicate that the output of find 
- * might be inconsistent due to the change in the filesystem.
+ * might be inconsistent due to the change in the file system.
  */
 static boolean
 wd_sanity_check(const char *thing_to_stat,
@@ -909,8 +458,9 @@ wd_sanity_check(const char *thing_to_stat,
   
   *changed = false;
   
+  set_stat_placeholders(newinfo);
   if ((*options.xstat) (current_dir, newinfo) != 0)
-    error (1, errno, "%s", thing_to_stat);
+    fatal_file_error(thing_to_stat);
   
   if (old_dev != newinfo->st_dev)
     {
@@ -938,14 +488,14 @@ wd_sanity_check(const char *thing_to_stat,
 	  {
 	    fstype = filesystem_type(newinfo, current_dir);
 	    error (1, 0,
-		   _("%s%s changed during execution of %s (old device number %ld, new device number %ld, filesystem type is %s) [ref %ld]"),
-		   specific_what,
+		   _("%s%s changed during execution of %s (old device number %ld, new device number %ld, file system type is %s) [ref %ld]"),
+		   safely_quote_err_filename(0, specific_what),
 		   parent ? "/.." : "",
-		   progname,
+		   safely_quote_err_filename(1, progname),
 		   (long) old_dev,
 		   (long) newinfo->st_dev,
 		   fstype,
-		   line_no);
+		   (long)line_no);
 	    /*NOTREACHED*/
 	    return false;
 	  }
@@ -975,14 +525,16 @@ wd_sanity_check(const char *thing_to_stat,
       
       error ((isfatal == FATAL_IF_SANITY_CHECK_FAILS) ? 1 : 0,
 	     0,			/* no relevant errno value */
-	     _("%s%s changed during execution of %s (old inode number %ld, new inode number %ld, filesystem type is %s) [ref %ld]"),
-	     specific_what, 
+	     _("%s%s changed during execution of %s "
+	       "(old inode number %" PRIuMAX ", new inode number %" PRIuMAX
+	       ", file system type is %s) [ref %ld]"),
+	     safely_quote_err_filename(0, specific_what), 
 	     parent ? "/.." : "",
-	     progname,
-	     (long) old_ino,
-	     (long) newinfo->st_ino,
+	     safely_quote_err_filename(1, progname),
+	     (uintmax_t) old_ino,
+	     (uintmax_t) newinfo->st_ino,
 	     fstype,
-	     line_no);
+	     (long)line_no);
       free(specific_what);
       return false;
     }
@@ -1026,7 +578,11 @@ safely_chdir_lstat(const char *dest,
   
   saved_errno = errno = 0;
 
-  dotfd = open(".", O_RDONLY);
+  dotfd = open(".", O_RDONLY
+#if defined O_LARGEFILE
+	       |O_LARGEFILE
+#endif
+	       );
 
   /* We jump back to here if wd_sanity_check()
    * recoverably triggers an alert.
@@ -1037,6 +593,7 @@ safely_chdir_lstat(const char *dest,
   if (dotfd >= 0)
     {
       /* Stat the directory we're going to. */
+      set_stat_placeholders(statbuf_dest);
       if (0 == options.xstat(dest, statbuf_dest))
 	{
 	  statflag = true;
@@ -1098,10 +655,11 @@ safely_chdir_lstat(const char *dest,
 	      saved_errno = 0;	/* silence the error message */
 	      goto fail;
 	    }
-#endif	  
-#ifdef DEBUG_STAT
-	  fprintf(stderr, "safely_chdir(): chdir(\"%s\")\n", dest);
 #endif
+	  
+	  if (options.debug_options & DebugSearch)
+	    fprintf(stderr, "safely_chdir(): chdir(\"%s\")\n", dest);
+
 	  if (0 == chdir(dest))
 	    {
 	      /* check we ended up where we wanted to go */
@@ -1144,7 +702,7 @@ safely_chdir_lstat(const char *dest,
 		      goto fail;
 		    }
 		}
-	      
+
 	      close(dotfd);
 	      return SafeChdirOK;
 	    }
@@ -1161,7 +719,7 @@ safely_chdir_lstat(const char *dest,
 	      else if (ENOTDIR == saved_errno)
 		{
 		  /* This can happen if the we stat a directory,
-		   * and then filesystem activity changes it into 
+		   * and then file system activity changes it into 
 		   * a non-directory.
 		   */
 		  saved_errno = 0;	/* don't issue err msg */
@@ -1217,11 +775,11 @@ safely_chdir_lstat(const char *dest,
     }
   
   *did_stat = statflag;
-  assert(rv_set);
+  assert (rv_set);
   return rv;
 }
 
-#if defined(O_NOFOLLOW)
+#if defined O_NOFOLLOW
 /* Safely change working directory to the specified subdirectory.  If
  * we are not allowed to follow symbolic links, we use open() with
  * O_NOFOLLOW, followed by fchdir().  This ensures that we don't
@@ -1236,8 +794,11 @@ safely_chdir_nofollow(const char *dest,
 		      boolean *did_stat)
 {
   int extraflags, fd;
-  extraflags = 0;
 
+  (void) direction;
+  (void) statbuf_dest;
+  
+  extraflags = 0;
   *did_stat = false;
   
   switch (symlink_follow_option)
@@ -1255,7 +816,11 @@ safely_chdir_nofollow(const char *dest,
     }
   
   errno = 0;
-  fd = open(dest, O_RDONLY|extraflags);
+  fd = open(dest, O_RDONLY
+#if defined O_LARGEFILE
+	    |O_LARGEFILE
+#endif
+	    |extraflags);
   if (fd < 0)
     {
       switch (errno)
@@ -1304,17 +869,20 @@ safely_chdir(const char *dest,
 	     enum ChdirSymlinkHandling symlink_follow_option,
 	     boolean *did_stat)
 {
+  enum SafeChdirStatus result;
+  
   /* We're about to leave a directory.  If there are any -execdir
    * argument lists which have been built but have not yet been
    * processed, do them now because they must be done in the same
    * directory.
    */
-  complete_pending_execdirs(eval_tree);
+  complete_pending_execdirs(get_current_dirfd());
 
-#if defined(O_NOFOLLOW)
+#if !defined(O_NOFOLLOW)
+  options.open_nofollow_available = false;
+#endif
   if (options.open_nofollow_available)
     {
-      enum SafeChdirStatus result;
       result = safely_chdir_nofollow(dest, direction, statbuf_dest,
 				     symlink_follow_option, did_stat);
       if (SafeChdirFailDestUnreadable != result)
@@ -1329,13 +897,12 @@ safely_chdir(const char *dest,
 	  /* Do nothing. */
 	}
     }
-#endif
   /* Even if O_NOFOLLOW is available, we may need to use the alternative 
    * method, since parent of the start point may be executable but not 
    * readable. 
    */
   return safely_chdir_lstat(dest, direction, statbuf_dest,
-			    symlink_follow_option, did_stat);
+				  symlink_follow_option, did_stat);
 }
 
 
@@ -1349,9 +916,8 @@ chdir_back (void)
   
   if (starting_desc < 0)
     {
-#ifdef DEBUG_STAT
-      fprintf(stderr, "chdir_back(): chdir(\"%s\")\n", starting_dir);
-#endif
+      if (options.debug_options & DebugSearch)
+	fprintf(stderr, "chdir_back(): chdir(\"%s\")\n", starting_dir);
       
 #ifdef STAT_MOUNTPOINTS
       /* We will need the mounted device list.  Get it now if we don't
@@ -1362,7 +928,7 @@ chdir_back (void)
 #endif
       
       if (chdir (starting_dir) != 0)
-	error (1, errno, "%s", starting_dir);
+	fatal_file_error(starting_dir);
 
       wd_sanity_check(starting_dir,
 		      program_name,
@@ -1376,11 +942,13 @@ chdir_back (void)
     }
   else
     {
-#ifdef DEBUG_STAT
-      fprintf(stderr, "chdir_back(): chdir(<starting-point>)\n");
-#endif
+      if (options.debug_options & DebugSearch)
+	fprintf(stderr, "chdir_back(): chdir(<starting-point>)\n");
+
       if (fchdir (starting_desc) != 0)
-	error (1, errno, "%s", starting_dir);
+	{
+	  fatal_file_error(starting_dir);
+	}
     }
 }
 
@@ -1402,7 +970,7 @@ at_top (char *pathname,
   char *base = last_component (pathname);
 
   state.curdepth = 0;
-  state.path_length = strlen (pathname);
+  state.starting_path_length = strlen (pathname);
 
   if (0 == *base
       || 0 == strcmp(parent_dir, "."))
@@ -1438,10 +1006,11 @@ at_top (char *pathname,
 	{
 	  const char *what = (SafeChdirFailWouldBeUnableToReturn == chdir_status) ? "." : parent_dir;
 	  if (errno)
-	    error (0, errno, "%s", what);
+	    error (0, errno, "%s",
+		   safely_quote_err_filename(0, what));
 	  else
-	    error (0, 0, "Failed to safely change directory into `%s'",
-		   parent_dir);
+	    error (0, 0, _("Failed to safely change directory into %s"),
+		   safely_quote_err_filename(0, parent_dir));
 	    
 	  /* We can't process this command-line argument. */
 	  state.exit_status = 1;
@@ -1466,8 +1035,10 @@ static void do_process_top_dir(char *pathname,
 			       int mode,
 			       struct stat *pstat)
 {
+  (void) pstat;
+  
   process_path (pathname, base, false, ".", mode);
-  complete_pending_execdirs(eval_tree);
+  complete_pending_execdirs(get_current_dirfd());
 }
 
 static void do_process_predicate(char *pathname,
@@ -1475,8 +1046,10 @@ static void do_process_predicate(char *pathname,
 				 int mode,
 				 struct stat *pstat)
 {
-  state.rel_pathname = base;
-  apply_predicate (pathname, pstat, eval_tree);
+  (void) mode;
+  
+  state.rel_pathname = base;	/* cwd_dir_fd was already set by safely_chdir */
+  apply_predicate (pathname, pstat, get_eval_tree());
 }
 
 
@@ -1512,7 +1085,7 @@ static int dir_curr = -1;
 
 
 
-/* We've detected a filesystem loop.   This is caused by one of 
+/* We've detected a file system loop.   This is caused by one of 
  * two things:
  *
  * 1. Option -L is in effect and we've hit a symbolic link that 
@@ -1533,8 +1106,11 @@ issue_loop_warning(const char *name, const char *pathname, int level)
   if (S_ISLNK(stbuf_link.st_mode))
     {
       error(0, 0,
-	    _("Symbolic link `%s' is part of a loop in the directory hierarchy; we have already visited the directory to which it points."),
-	    pathname);
+	    _("Symbolic link %s is part of a loop in the directory hierarchy; we have already visited the directory to which it points."),
+	    safely_quote_err_filename(0, pathname));
+      /* XXX: POSIX appears to require that the exit status be non-zero if a 
+       * diagnostic is issued.  
+       */
     }
   else
     {
@@ -1548,72 +1124,15 @@ issue_loop_warning(const char *name, const char *pathname, int level)
        * to /a/b/c.
        */
       error(0, 0,
-	    _("Filesystem loop detected; `%s' has the same device number and inode as a directory which is %d %s."),
-	    pathname,
-	    distance,
-	    (distance == 1 ?
-	     _("level higher in the filesystem hierarchy") :
-	     _("levels higher in the filesystem hierarchy")));
+	    ngettext(
+		     "Filesystem loop detected; %s has the same device number and inode as "
+		     "a directory which is %d level higher in the file system hierarchy",
+		     "Filesystem loop detected; %s has the same device number and inode as "
+		     "a directory which is %d levels higher in the file system hierarchy",
+		     (long)distance),
+	    safely_quote_err_filename(0, pathname),
+	    distance);
     }
-}
-
-/* Take a "mode" indicator and fill in the files of 'state'.
- */
-static int
-digest_mode(mode_t mode,
-	    const char *pathname,
-	    const char *name,
-	    struct stat *pstat,
-	    boolean leaf)
-{
-  /* If we know the type of the directory entry, and it is not a
-   * symbolic link, we may be able to avoid a stat() or lstat() call.
-   */
-  if (mode)
-    {
-      if (S_ISLNK(mode) && following_links())
-	{
-	  /* mode is wrong because we should have followed the symlink. */
-	  if (get_statinfo(pathname, name, pstat) != 0)
-	    return 0;
-	  mode = state.type = pstat->st_mode;
-	  state.have_type = true;
-	}
-      else
-	{
-	  state.have_type = true;
-	  pstat->st_mode = state.type = mode;
-	}
-    }
-  else
-    {
-      /* Mode is not yet known; may have to stat the file unless we 
-       * can deduce that it is not a directory (which is all we need to 
-       * know at this stage)
-       */
-      if (leaf)
-	{
-	  state.have_stat = false;
-	  state.have_type = false;;
-	  state.type = 0;
-	}
-      else
-	{
-	  if (get_statinfo(pathname, name, pstat) != 0)
-	    return 0;
-	  
-	  /* If -L is in effect and we are dealing with a symlink,
-	   * st_mode is the mode of the pointed-to file, while mode is
-	   * the mode of the directory entry (S_IFLNK).  Hence now
-	   * that we have the stat information, override "mode".
-	   */
-	  state.type = pstat->st_mode;
-	  state.have_type = true;
-	}
-    }
-
-  /* success. */
-  return 1;
 }
 
 
@@ -1639,7 +1158,9 @@ process_path (char *pathname, char *name, boolean leaf, char *parent,
   struct stat stat_buf;
   static dev_t root_dev;	/* Device ID of current argument pathname. */
   int i;
+  struct predicate *eval_tree;
 
+  eval_tree = get_eval_tree();
   /* Assume it is a non-directory initially. */
   stat_buf.st_mode = 0;
   state.rel_pathname = name;
@@ -1702,14 +1223,15 @@ process_path (char *pathname, char *name, boolean leaf, char *parent,
   if (options.do_dir_first && state.curdepth >= options.mindepth)
     apply_predicate (pathname, &stat_buf, eval_tree);
 
-#ifdef DEBUG
-  fprintf(stderr, "pathname = %s, stop_at_current_level = %d\n",
-	  pathname, state.stop_at_current_level);
-#endif /* DEBUG */
+  if (options.debug_options & DebugSearch)
+    fprintf(stderr, "pathname = %s, stop_at_current_level = %d\n",
+	    pathname, state.stop_at_current_level);
   
   if (state.stop_at_current_level == false)
-    /* Scan directory on disk. */
-    process_dir (pathname, name, strlen (pathname), &stat_buf, parent);
+    {
+      /* Scan directory on disk. */
+      process_dir (pathname, name, strlen (pathname), &stat_buf, parent);
+    }
 
   if (options.do_dir_first == false && state.curdepth >= options.mindepth)
     {
@@ -1732,84 +1254,6 @@ process_path (char *pathname, char *name, boolean leaf, char *parent,
 
   return 1;
 }
-
-/* Examine the predicate list for instances of -execdir or -okdir
- * which have been terminated with '+' (build argument list) rather
- * than ';' (singles only).  If there are any, run them (this will
- * have no effect if there are no arguments waiting).
- */
-static void
-complete_pending_execdirs(struct predicate *p)
-{
-#if defined(NEW_EXEC)
-  if (NULL == p)
-    return;
-  
-  complete_pending_execdirs(p->pred_left);
-  
-  if (p->pred_func == pred_execdir || p->pred_func == pred_okdir)
-    {
-      /* It's an exec-family predicate.  p->args.exec_val is valid. */
-      if (p->args.exec_vec.multiple)
-	{
-	  struct exec_val *execp = &p->args.exec_vec;
-	  
-	  /* This one was terminated by '+' and so might have some
-	   * left... Run it if necessary.
-	   */
-	  if (execp->state.todo)
-	    {
-	      /* There are not-yet-executed arguments. */
-	      launch (&execp->ctl, &execp->state);
-	    }
-	}
-    }
-
-  complete_pending_execdirs(p->pred_right);
-#else
-  /* nothing to do. */
-  return;
-#endif
-}
-
-/* Examine the predicate list for instances of -exec which have been
- * terminated with '+' (build argument list) rather than ';' (singles
- * only).  If there are any, run them (this will have no effect if
- * there are no arguments waiting).
- */
-static void
-complete_pending_execs(struct predicate *p)
-{
-#if defined(NEW_EXEC)
-  if (NULL == p)
-    return;
-  
-  complete_pending_execs(p->pred_left);
-  
-  /* It's an exec-family predicate then p->args.exec_val is valid
-   * and we can check it. 
-   */
-  if (p->pred_func == pred_exec && p->args.exec_vec.multiple)
-    {
-      struct exec_val *execp = &p->args.exec_vec;
-      
-      /* This one was terminated by '+' and so might have some
-       * left... Run it if necessary.  Set state.exit_status if
-       * there are any problems.
-       */
-      if (execp->state.todo)
-	{
-	  /* There are not-yet-executed arguments. */
-	  launch (&execp->ctl, &execp->state);
-	}
-    }
-
-  complete_pending_execs(p->pred_right);
-#else
-  /* nothing to do. */
-  return;
-#endif
-}
 
 
 /* Scan directory PATHNAME and recurse through process_path for each entry.
@@ -1824,18 +1268,25 @@ complete_pending_execs(struct predicate *p)
    starting directory.  */
 
 static void
-process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *parent)
+process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, char *parent)
 {
   int subdirs_left;		/* Number of unexamined subdirs in PATHNAME. */
   boolean subdirs_unreliable;	/* if true, cannot use dir link count as subdir limif (if false, it may STILL be unreliable) */
-  int idx;			/* Which entry are we on? */
+  unsigned int idx;		/* Which entry are we on? */
   struct stat stat_buf;
-
+  size_t dircount = 0u;
   struct savedir_dirinfo *dirinfo;
-
+#if 0
+  printf("process_dir: pathname=%s name=%s statp->st_nlink=%d st_ino=%d\n",
+	 pathname,
+	 name,
+	 (int)statp->st_nlink,
+	 (int)statp->st_ino);
+#endif  
   if (statp->st_nlink < 2)
     {
       subdirs_unreliable = true;
+      subdirs_left = 0;
     }
   else
     {
@@ -1849,8 +1300,8 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
   
   if (dirinfo == NULL)
     {
-      assert(errno != 0);
-      error (0, errno, "%s", pathname);
+      assert (errno != 0);
+      error (0, errno, "%s", safely_quote_err_filename(0, pathname));
       state.exit_status = 1;
     }
   else
@@ -1875,7 +1326,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
        * yet been processed, do them now because they must be done in
        * the same directory.
        */
-      complete_pending_execdirs(eval_tree);
+      complete_pending_execdirs(get_current_dirfd());
       
       if (strcmp (name, "."))
 	{
@@ -1899,6 +1350,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 		  /* If there is a link we need to follow it.  Hence 
 		   * the direct call to stat() not through (options.xstat)
 		   */
+		  set_stat_placeholders(&stat_buf);
 		  if (0 != stat(".", &stat_buf))
 		    break;	/* skip the assignment. */
 		}
@@ -1917,14 +1369,15 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	    case SafeChdirFailStat:
 	    case SafeChdirFailNotDir:
 	    case SafeChdirFailChdirFailed:
-	      error (0, errno, "%s", pathname);
+	      error (0, errno, "%s",
+		     safely_quote_err_filename(0, pathname));
 	      state.exit_status = 1;
 	      return;
 	      
 	    case SafeChdirFailSymlink:
 	      error (0, 0,
 		     _("warning: not following the symbolic link %s"),
-		     pathname);
+		     safely_quote_err_filename(0, pathname));
 	      state.exit_status = 1;
 	      return;
 	    }
@@ -1962,34 +1415,42 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 		  /* This is a subdirectory, but the number of directories we 
 		   * have found now exceeds the number we would expect given 
 		   * the hard link count on the parent.   This is likely to be 
-		   * a bug in the filesystem driver (e.g. Linux's 
-		   * /proc filesystem) or may just be a fact that the OS 
+		   * a bug in the file system driver (e.g. Linux's 
+		   * /proc file system) or may just be a fact that the OS 
 		   * doesn't really handle hard links with Unix semantics.
 		   * In the latter case, -noleaf should be used routinely.
 		   */
-		  error(0, 0, _("WARNING: Hard link count is wrong for %s: this may be a bug in your filesystem driver.  Automatically turning on find's -noleaf option.  Earlier results may have failed to include directories that should have been searched."),
-			pathname);
+		  error(0, 0, _("WARNING: Hard link count is wrong for %s (saw only st_nlink=%d but we already saw %d subdirectories): this may be a bug in your file system driver.  Automatically turning on find's -noleaf option.  Earlier results may have failed to include directories that should have been searched."),
+			safely_quote_err_filename(0, pathname),
+			statp->st_nlink,
+			dircount);
 		  state.exit_status = 1; /* We know the result is wrong, now */
 		  options.no_leaf_check = true;	/* Don't make same
 						   mistake again */
+		  subdirs_unreliable = 1;
 		  subdirs_left = 1; /* band-aid for this iteration. */
 		}
 	      
 	      /* Normal case optimization.  On normal Unix
-		 filesystems, a directory that has no subdirectories
+		 file systems, a directory that has no subdirectories
 		 has two links: its name, and ".".  Any additional
 		 links are to the ".." entries of its subdirectories.
 		 Once we have processed as many subdirectories as
 		 there are additional links, we know that the rest of
 		 the entries are non-directories -- in other words,
 		 leaf files. */
-	      subdirs_left -= process_path (cur_path, cur_name,
+	      {
+		int count;
+		count = process_path (cur_path, cur_name,
 					    subdirs_left == 0, pathname,
 					    mode);
+		subdirs_left -= count;
+		dircount += count;
+	      }
 	    }
 	  else
 	    {
-	      /* There might be weird (e.g., CD-ROM or MS-DOS) filesystems
+	      /* There might be weird (e.g., CD-ROM or MS-DOS) file systems
 		 mounted, which don't have Unix-like directory link counts. */
 	      process_path (cur_path, cur_name, false, pathname, mode);
 	    }
@@ -2003,14 +1464,12 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
        * yet been processed, do them now because they must be done in
        * the same directory.
        */
-      complete_pending_execdirs(eval_tree); 
-
+      complete_pending_execdirs(get_current_dirfd()); 
 
       if (strcmp (name, "."))
 	{
 	  enum SafeChdirStatus status;
 	  struct dir_id did;
-	  boolean did_stat = false;
 	  
 	  /* We could go back and do the next command-line arg
 	     instead, maybe using longjmp.  */
@@ -2025,6 +1484,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	      dir = parent;
 	    }
 	  
+	  did_stat = false;
 	  status = safely_chdir (dir, TraversingUp, &stat_buf, SymlinkHandleDefault, &did_stat);
 	  switch (status)
 	    {
@@ -2041,7 +1501,7 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	    case SafeChdirFailSymlink:
 	    case SafeChdirFailNotDir:
 	    case SafeChdirFailChdirFailed:
-	      error (1, errno, "%s", pathname);
+	      error (1, errno, "%s", safely_quote_err_filename(0, pathname));
 	      return;
 	    }
 
@@ -2061,20 +1521,12 @@ process_dir (char *pathname, char *name, int pathlen, struct stat *statp, char *
 	free (cur_path);
       free_dirinfo(dirinfo);
     }
-}
-
-/* Return true if there are no predicates with no_default_print in
-   predicate list PRED, false if there are any.
-   Returns true if default print should be performed */
 
-static boolean
-default_prints (struct predicate *pred)
-{
-  while (pred != NULL)
+  if (subdirs_unreliable)
     {
-      if (pred->no_default_print)
-	return (false);
-      pred = pred->pred_next;
+      /* Make sure we hasn't used the variable subdirs_left if we knew
+       * we shouldn't do so.
+       */
+      assert (0 == subdirs_left || options.no_leaf_check);
     }
-  return (true);
 }

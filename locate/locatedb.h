@@ -1,5 +1,5 @@
 /* locatedb.h -- declarations for the locate database
-   Copyright (C) 1994, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1994 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -43,8 +43,6 @@
 #if LOCATEDB_ESCAPE <= LOCATEDB_ONEBYTE_MAX
 #error "You have a bad combination of LOCATEDB_ESCAPE and LOCATEDB_ONEBYTE_MAX, see above"
 #endif
-  
-
 
 /* These are used for old, bigram-encoded databases:  */
 
@@ -61,5 +59,22 @@
 #   define PARAMS(Args) ()
 #  endif
 # endif
+
+typedef enum 
+  { 
+    GetwordEndianStateInitial = 0,
+    GetwordEndianStateNative  = 1,
+    GetwordEndianStateSwab    = 2
+  } GetwordEndianState;
+
+int getword (FILE *fp, const char *filename,
+	     size_t minvalue, size_t maxvalue,
+	     GetwordEndianState *endian_state_flag);
+
+bool putword (FILE *fp, int word,
+	      GetwordEndianState endian_state_flag);
+
+
+#define SLOCATE_DB_MAGIC_LEN 2
 
 #endif /* !_LOCATEDB_H */

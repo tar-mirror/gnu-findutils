@@ -17,13 +17,20 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+/*
+   The output of this program is included in the GNU findutils source 
+   distribution.  The copying conditions for that file are generated 
+   by the copying() function below.
+*/
+
 /* Written by James Youngman, <jay@gnu.org>. */
 
-#if HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
+
 
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -36,6 +43,8 @@ char *program_name;
 
 static void output(const char *s, int escape)
 {
+  (void) escape;
+  
   fputs(s, stdout);
 }
 
@@ -60,6 +69,13 @@ static void directive(const char *s)
   output(s, 0);
 }
 
+static void comment(const char *s)
+{
+  directive("@c ");
+  literal(s);
+  newline();
+}
+
 static void enum_item(const char *s)
 {
   newline();
@@ -67,26 +83,16 @@ static void enum_item(const char *s)
   literal(s);
   newline();
 }
-static void table_item(const char *s)
-{
-  directive("@item");
-  newline();
-  content(s);
-  newline();
-}
-
-static void code(const char *s)
-{
-  directive("@code{");
-  content(s);
-  directive("}");
-}
 
 static void begin_subsection(const char *name,
 			  const char *next,
 			  const char *prev,
 			  const char *up)
 {
+  (void) next;
+  (void) prev;
+  (void) up;
+  
   newline();
   
   directive("@node ");
@@ -99,13 +105,6 @@ static void begin_subsection(const char *name,
   content(name);
   output("}", 0);
   content(" regular expression syntax");
-  newline();
-}
-
-static void begintable_asis()
-{
-  newline();
-  directive("@table @asis");
   newline();
 }
 
@@ -144,7 +143,8 @@ static void newpara()
 }
 
 
-static int describe_regex_syntax(int options)
+static void
+describe_regex_syntax(int options)
 {
   newpara();
   content("The character @samp{.} matches any single character");
@@ -434,8 +434,35 @@ static int describe_regex_syntax(int options)
 }
 
 
+static void copying(void)
+{
+  static const char *copy_para[]=
+    {
+      "Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005, 2006, 2007"
+      ,"Free Software Foundation, Inc."
+      ,""
+      ,"Permission is granted to copy, distribute and/or modify this document"
+      ,"under the terms of the GNU Free Documentation License, Version 1.2 or"
+      ,"any later version published by the Free Software Foundation; with no"
+      ,"Invariant Sections, with no Front-Cover Texts, and with no Back-Cover"
+      ,"Texts.  A copy of the license is included in the ``GNU Free"
+      ,"Documentation License'' file as part of this distribution."
+      ""
+      ,NULL
+    };
+  const char **s = copy_para;
+  while (*s)
+    comment(*s++);
+}
 
-static int menu()
+static int
+ignore(int ix, const unsigned int context)
+{
+  return 0 == (get_regex_type_context(ix) & context);
+}
+
+static void
+menu(unsigned int context)
 {
   int i, options;
   const char *name;
@@ -446,23 +473,56 @@ static int menu()
 	 name=get_regex_type_name(i);
        ++i)
     {
-      output("* ", 0);
-      output(name, 0);
-      content(" regular expression syntax");
-      output("::", 0);
-      newline();
+      if (!ignore(i, context))
+	{
+	  output("* ", 0);
+	  output(name, 0);
+	  content(" regular expression syntax");
+	  output("::", 0);
+	  newline();
+	}
     }
   output("@end menu\n", 0);
 }
 
 
-static int describe_all(const char *up)
+
+static const char *
+get_next(unsigned int ix, unsigned int context)
+{
+  const char *next;
+  while (get_regex_type_name(ix))
+    {
+      if (!ignore(ix, context))
+	{
+	  next = get_regex_type_name(ix);
+	  if (NULL == next)
+	    return "";
+	  else 
+	    return next;
+	}
+      ++ix;
+    }
+  return "";
+}
+
+
+static void
+describe_all(const char *contextname,
+	     unsigned int context,
+	     const char *up)
 {
   const char *name, *next, *previous;
   int options;
   int i, parent;
 
-  menu();
+  copying();
+  newline();
+  literal("@c this regular expression description is for: ");
+  literal(contextname);
+  newline();
+  newline();
+  menu(context);
   
   previous = "";
   
@@ -471,7 +531,16 @@ static int describe_all(const char *up)
 	 name=get_regex_type_name(i);
        ++i)
     {
-      next = get_regex_type_name(i+1);
+      if (ignore(i, context))
+	{
+	  fprintf(stderr,
+		  "Skipping regexp type %s for context %s\n",
+		  name, contextname);
+	  name = previous;
+	  continue;
+	}
+
+      next = get_next(i+1, context);
       if (NULL == next)
 	next = "";
       begin_subsection(name, next, previous, up);
@@ -495,11 +564,31 @@ static int describe_all(const char *up)
 int main (int argc, char *argv[])
 {
   const char *up = "";
+  unsigned int context = CONTEXT_ALL;
+  const char *contextname = "all";
   program_name = argv[0];
   
   if (argc > 1)
-    up = argv[1];
+    {
+      up = argv[1];
+    }
+  if (argc > 2)
+    {
+      contextname = argv[2];
+      if (0 == strcmp(contextname, "findutils"))
+	context = CONTEXT_FINDUTILS;
+      else if (0 == strcmp(contextname, "generic"))
+	context = CONTEXT_GENERIC;
+      else if (0 == strcmp(contextname, "all"))
+	context = CONTEXT_ALL;
+      else
+	{
+	  fprintf(stderr, "Unexpected context %s",
+		  contextname);
+	  return 1;
+	}
+    }
   
-  describe_all(up);
+  describe_all(contextname, context, up);
   return 0;
 }

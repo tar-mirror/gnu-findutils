@@ -1,5 +1,5 @@
-/* buildcmd.h -- build command lines from a stream of arguments
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+/* buildcmd.[ch] -- build command lines from a stream of arguments
+   Copyright (C) 2005, 2008 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,6 +45,9 @@ struct buildcmd_state
 
   /* to-do flag. */
   int todo;
+
+  /* Directory in which to perform the exec. */
+  int dir_fd;
 };
 
 struct buildcmd_control
@@ -97,7 +100,8 @@ struct buildcmd_control
 enum BC_INIT_STATUS 
   {
     BC_INIT_OK = 0,
-    BC_INIT_ENV_TOO_BIG
+    BC_INIT_ENV_TOO_BIG,
+    BC_INIT_CANNOT_ACCOMODATE_HEADROOM
   };
 
 extern size_t bc_size_of_environment (void);
@@ -117,9 +121,10 @@ extern void bc_push_arg (const struct buildcmd_control *ctl,
 			 int initial_args);
 
 extern void  bc_init_state(const struct buildcmd_control *ctl,
-					 struct buildcmd_state *state,
-					 void *usercontext);
-extern enum BC_INIT_STATUS bc_init_controlinfo(struct buildcmd_control *ctl);
+			   struct buildcmd_state *state,
+			   void *usercontext);
+extern enum BC_INIT_STATUS bc_init_controlinfo(struct buildcmd_control *ctl,
+					       size_t arglen_headroom);
 extern size_t bc_get_arg_max(void);
 extern void bc_use_sensible_arg_max(struct buildcmd_control *ctl);
 extern void bc_clear_args(const struct buildcmd_control *ctl,
